@@ -1,13 +1,37 @@
 #!/bin/sh
+
 set -e
+
 composer update
-wget -O PhpStorm.tar.gz https://download.jetbrains.com/webide/PhpStorm-2021.1.2.tar.gz
-tar -xzf PhpStorm.tar.gz --one-top-level --strip-components 1
-wget -O java.tar.gz https://javadl.oracle.com/webapps/download/AutoDL?BundleId=244575_d7fc238d0cbf4b0dac67be84580cfb4b
-tar -xzf java.tar.gz --one-top-level --strip-components 1
-mkdir test/.idea
+
+if [ ! -d "PhpStorm" ]; then
+    if [ ! -f "PhpStorm.tar.gz" ]; then
+        wget -O PhpStorm.tar.gz https://download.jetbrains.com/webide/PhpStorm-2021.1.2.tar.gz
+    fi
+    tar -xzf PhpStorm.tar.gz --one-top-level --strip-components 1
+fi
+
+if [ ! -d "java" ]; then
+    if [ ! -f "java.tar.gz" ]; then
+        wget -O java.tar.gz https://javadl.oracle.com/webapps/download/AutoDL?BundleId=244575_d7fc238d0cbf4b0dac67be84580cfb4b
+    fi
+    tar -xzf java.tar.gz --one-top-level --strip-components 1
+fi
+
+if [ ! -d "test/.idea" ]; then
+    mkdir test/.idea
+fi
+
+if [ -d "inspectionResults" ]; then
+    rm -rf inspectionResults
+fi
+
 php_language_level_config='<?xml version="1.0" encoding="UTF-8"?><project version="4"><component name="PhpProjectSharedConfiguration" php_language_level="7.3" /></project>'
-echo $php_language_level_config >> test/.idea/php.xml
-project_path=$(pwd)
-PhpStorm/bin/phpstorm.sh inspect $project_path/test exampleStandards.xml inspectionResults -format json -v2
-php inspect.php $project_path/inspectionResults
+
+echo $php_language_level_config > test/.idea/php.xml
+
+rm -rf ~/.cache/JetBrains
+
+PhpStorm/bin/phpstorm.sh inspect test exampleStandards.xml inspectionResults -format json -v2
+
+php inspect.php inspectionResults
