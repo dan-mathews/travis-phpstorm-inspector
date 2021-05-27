@@ -32,6 +32,10 @@ echo $php_language_level_config > test/.idea/php.xml
 
 rm -rf ~/.cache/JetBrains
 
-PhpStorm/bin/phpstorm.sh inspect test exampleStandards.xml inspectionResults -format json -v2
+project_path=$(pwd)
+
+echo About to run inspections with xml file: $project_path/exampleStandards.xml
+
+PhpStorm/bin/phpstorm.sh inspect test $project_path/exampleStandards.xml inspectionResults -format json -v2
 
 php inspect.php inspectionResults
