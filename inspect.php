@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-include 'vendor/autoload.php';
+include dirname(__FILE__) . '/vendor/autoload.php';
 
 use TravisPhpstormInspector\ResultsProcessor;
 
