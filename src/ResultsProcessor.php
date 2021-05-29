@@ -23,7 +23,10 @@ class ResultsProcessor
         foreach ($directory as $fileInfo) {
             if (
                 $fileInfo->isDot() ||
-                '.descriptions.json' === $fileInfo->getFilename()
+                '.descriptions.json' === $fileInfo->getFilename() ||
+                // DuplicatedCode_aggregate.json is both formatted differently and
+                // contains unnecessary detail above DuplicatedCode.json
+                'DuplicatedCode_aggregate.json' === $fileInfo->getFilename()
             ) {
                 continue;
             }
