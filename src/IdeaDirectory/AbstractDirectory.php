@@ -6,24 +6,70 @@ namespace TravisPhpstormInspector\IdeaDirectory;
 
 abstract class AbstractDirectory
 {
+    /**
+     * @var AbstractDirectory[]
+     */
+    protected $directories = [];
+
+    /**
+     * @var AbstractFile[]
+     */
+    protected $files = [];
+
+    /**
+     * @var string
+     */
+    protected $path = '';
+
     public function create(string $projectRoot): void
     {
-        $path = $projectRoot . '/' . $this->getName();
+        $this->path = $projectRoot . '/' . $this->getName();
 
-        exec('mkdir ' . $path);
+        $output = [];
 
-        /* @var AbstractFile $fileClass */
-        foreach ($this->getFiles() as $fileClass) {
-            $file = new $fileClass();
+        $code = 0;
 
-            $file->create($path);
+        exec('mkdir ' . $this->path, $output, $code);
+
+        if (0 !== $code) {
+            echo 'Failed to create directory ' . $this->getName();
+            exit(1);
+        }
+
+        foreach ($this->getDirectories() as $directory) {
+            $directory->create($this->path);
+        }
+
+        foreach ($this->getFiles() as $file) {
+            $file->create($this->path);
         }
     }
 
+    public function addDirectory(AbstractDirectory $directory): void
+    {
+        $this->directories[] = $directory;
+    }
+
+    public function addFile(AbstractFile $file): void
+    {
+        $this->files[] = $file;
+    }
+
     /**
-     * @return class-string[]
+     * @return AbstractDirectory[]
      */
-    abstract protected function getFiles(): array;
+    protected function getDirectories(): array
+    {
+        return $this->directories;
+    }
+
+    /**
+     * @return AbstractFile[]
+     */
+    protected function getFiles(): array
+    {
+        return $this->files;
+    }
 
     abstract protected function getName(): string;
 }

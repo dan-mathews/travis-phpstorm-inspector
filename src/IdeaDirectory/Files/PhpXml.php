@@ -14,7 +14,9 @@ class PhpXml extends AbstractFile
 
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<project version="4">'
-        . '<component name="PhpProjectSharedConfiguration" php_language_level="' . $phpLanguageLevel . '" />'
+        . '<component name="PhpProjectSharedConfiguration" php_language_level="' . $phpLanguageLevel . '">'
+        . '<option name="suggestChangeDefaultLanguageLevel" value="false" />'
+        . '</component>'
         . '</project>';
     }
 

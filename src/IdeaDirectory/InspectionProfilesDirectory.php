@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory;
 
+use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 
 class InspectionProfilesDirectory extends AbstractDirectory
 {
     public const DIRECTORY_NAME = 'inspectionProfiles';
 
-    /**
-     * @return class-string[]
-     */
-    protected function getFiles(): array
+    public function __construct()
     {
-        return [
-            ProfileSettingsXml::class,
-        ];
+        $this->files[] = new ProfileSettingsXml();
     }
 
     protected function getName(): string
