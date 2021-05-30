@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\IdeaDirectory\IdeaDirectory;
+use TravisPhpstormInspector\IdeaDirectory\InspectionProfilesDirectory;
 
 class App
 {
-    public const RESULTS_DIR_NAME = 'inspectionResults';
-
     public const NAME = 'travis-phpstorm-inspector';
+
+    /**
+     * @var string
+     */
+    private $inspectionsXmlPath;
 
     /**
      * @var string
@@ -20,31 +24,71 @@ class App
     /**
      * @var string
      */
-    private $resultsDirPath;
+    private $resultsDirectoryPath;
 
-    public function __construct(string $projectRoot)
+    public function __construct(string $projectRoot, string $inspectionsXmlPath)
     {
-        $this->projectRoot = $projectRoot;
+        $projectRootInfo = new \SplFileInfo($projectRoot);
 
-        $this->resultsDirPath = $projectRoot . '/' . self::RESULTS_DIR_NAME;
-    }
+        $this->projectRoot = $projectRootInfo->getRealPath();
 
-    public function run(): void
-    {
-        if (!is_dir($this->projectRoot . '/' . IdeaDirectory::DIR_NAME)) {
+        $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
+
+        $ideaDirectoryPath = $this->projectRoot . '/' . IdeaDirectory::DIRECTORY_NAME;
+
+        if (!is_dir($ideaDirectoryPath)) {
             $ideaDirectory = new IdeaDirectory();
 
             $ideaDirectory->create($this->projectRoot);
         }
 
-       $command = "PhpStorm/bin/phpstorm.sh inspect $this->projectRoot $this->projectRoot/.idea/inspectionProfiles/exampleStandards.xml $this->resultsDirPath -changes -format json -v2";
+        $inspectionProfilesDirectoryPath = $ideaDirectoryPath . '/' . InspectionProfilesDirectory::DIRECTORY_NAME;
 
-       echo 'Running command: ' . $command . "/n";
+        if (!is_dir($inspectionProfilesDirectoryPath)) {
+            $inspectionProfilesDirectory = new InspectionProfilesDirectory();
 
-       passthru($command);
+            $inspectionProfilesDirectory->create($ideaDirectoryPath);
+        }
 
-       $resultsProcessor = new ResultsProcessor();
+        $inspectionsXmlFile = new \SplFileInfo($inspectionsXmlPath);
 
-       $resultsProcessor->process($this->resultsDirPath);
+        if (!$inspectionsXmlFile->isReadable()) {
+            echo 'Could not read the inspections profile at ' . $inspectionsXmlPath;
+            exit(1);
+        }
+
+        if ('xml' !== $inspectionsXmlFile->getExtension()) {
+            echo 'The inspections profile at ' . $inspectionsXmlPath . ' does not have an xml extension';
+            exit(1);
+        }
+
+        //PhpStorm runs better when the inspections xml is within the idea directory
+        $idealInspectionsXmlPath = $inspectionProfilesDirectoryPath . '/' . $inspectionsXmlFile->getFilename();
+
+        if ($inspectionsXmlFile->getRealPath() !== $idealInspectionsXmlPath) {
+            if (!is_file($inspectionProfilesDirectoryPath . '/' . $inspectionsXmlFile->getFilename())){
+                echo "Copying the inspection profile to the project's " . IdeaDirectory::DIRECTORY_NAME . ' directory.';
+
+                passthru('cp ' . $inspectionsXmlFile->getRealPath() . ' ' . $idealInspectionsXmlPath);
+            } else {
+                echo 'Using the inspection profile of the same name which already exists in the '
+                . IdeaDirectory::DIRECTORY_NAME . " directory (this makes the inspections more reliable).\n";
+            }
+        }
+
+        $this->inspectionsXmlPath = $idealInspectionsXmlPath;
+    }
+
+    public function run(): void
+    {
+        $command = "PhpStorm/bin/phpstorm.sh inspect $this->projectRoot $this->inspectionsXmlPath $this->resultsDirectoryPath -changes -format json -v2";
+
+        echo 'Running command: ' . $command . "/n";
+
+        passthru($command);
+
+        $resultsProcessor = new ResultsProcessor();
+
+        $resultsProcessor->process($this->resultsDirectoryPath);
     }
 }

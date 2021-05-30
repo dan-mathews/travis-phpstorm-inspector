@@ -8,12 +8,14 @@ use DirectoryIterator;
 
 class ResultsProcessor
 {
+    public const DIRECTORY_NAME = 'inspectionResults';
+
     public function process(string $directoryName): void
     {
         try {
-            $directory = new DirectoryIterator($directoryName);
+            $directory = new DirectoryIterator(self::DIRECTORY_NAME);
         } catch (\Throwable $e) {
-            echo "Error: couldn't read inspection results directory\n" . $e->getMessage() . "\n" . $e->getTraceAsString();
+            echo "Error: couldn't read inspection results directory (" . self::DIRECTORY_NAME . ")\n" . $e->getMessage() . "\n" . $e->getTraceAsString();
 
             exit(1);
         }

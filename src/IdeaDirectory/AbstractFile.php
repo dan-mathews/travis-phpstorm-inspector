@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory;
 
-abstract class AbstractIdeaFile
+abstract class AbstractFile
 {
     public function create(string $directoryPath): void
     {

@@ -12,6 +12,12 @@ if (!isset($argv[1])) {
     exit(1);
 }
 
-$app = new App($argv[1]);
+if (!isset($argv[2])) {
+    echo 'Second argument passed to this script must be a path to the inspections xml file';
+
+    exit(1);
+}
+
+$app = new App($argv[1], $argv[2]);
 
 $app->run();

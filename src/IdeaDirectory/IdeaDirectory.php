@@ -8,32 +8,24 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
-class IdeaDirectory
+class IdeaDirectory extends AbstractDirectory
 {
-    public const DIR_NAME = '.idea';
+    public const DIRECTORY_NAME = '.idea';
 
     /**
-     * @var class-string[]
+     * @return class-string[]
      */
-    private const FILES = [
-        ModulesXml::class,
-        PhpXml::class,
-        ProjectIml::class,
-    ];
-
-    public function create(string $projectRoot)
+    protected function getFiles(): array
     {
-        $path = $projectRoot . '/' . self::DIR_NAME;
+        return [
+            ModulesXml::class,
+            PhpXml::class,
+            ProjectIml::class,
+        ];
+    }
 
-        echo $path;
-
-        exec('mkdir ' . $path);
-
-        /* @var AbstractIdeaFile $fileClass */
-        foreach (self::FILES as $fileClass) {
-            $ideaFile = new $fileClass();
-
-            $ideaFile->create($path);
-        }
+    protected function getName(): string
+    {
+        return self::DIRECTORY_NAME;
     }
 }

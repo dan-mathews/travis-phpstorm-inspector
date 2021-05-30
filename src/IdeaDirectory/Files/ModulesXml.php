@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory\Files;
 
-use TravisPhpstormInspector\IdeaDirectory\AbstractIdeaFile;
+use TravisPhpstormInspector\IdeaDirectory\AbstractFile;
 
-class ModulesXml extends AbstractIdeaFile
+class ModulesXml extends AbstractFile
 {
     protected function getContents(): string
     {

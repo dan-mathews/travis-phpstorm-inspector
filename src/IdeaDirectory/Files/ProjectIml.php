@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\IdeaDirectory\Files;
 
 use TravisPhpstormInspector\App;
-use TravisPhpstormInspector\IdeaDirectory\AbstractIdeaFile;
+use TravisPhpstormInspector\IdeaDirectory\AbstractFile;
 
-class ProjectIml extends AbstractIdeaFile
+class ProjectIml extends AbstractFile
 {
     protected function getContents(): string
     {
