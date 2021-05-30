@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use TravisPhpstormInspector\IdeaDirectory\IdeaDirectory;
+
 class App
 {
     public const RESULTS_DIR_NAME = 'inspectionResults';
+
+    public const NAME = 'travis-phpstorm-inspector';
 
     /**
      * @var string
@@ -27,14 +31,20 @@ class App
 
     public function run(): void
     {
-        $command = "PhpStorm/bin/phpstorm.sh inspect $this->projectRoot $this->projectRoot/.idea/inspectionProfiles/exampleStandards.xml $this->resultsDirPath -changes -format json -v2";
+        if (!is_dir($this->projectRoot . '/' . IdeaDirectory::DIR_NAME)) {
+            $ideaDirectory = new IdeaDirectory();
 
-        echo 'Running command: ' . $command . "/n";
+            $ideaDirectory->create($this->projectRoot);
+        }
 
-        passthru($command);
+       $command = "PhpStorm/bin/phpstorm.sh inspect $this->projectRoot $this->projectRoot/.idea/inspectionProfiles/exampleStandards.xml $this->resultsDirPath -changes -format json -v2";
 
-        $resultsProcessor = new ResultsProcessor();
+       echo 'Running command: ' . $command . "/n";
 
-        $resultsProcessor->process($this->resultsDirPath);
+       passthru($command);
+
+       $resultsProcessor = new ResultsProcessor();
+
+       $resultsProcessor->process($this->resultsDirPath);
     }
 }
