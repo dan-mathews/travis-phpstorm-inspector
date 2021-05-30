@@ -51,7 +51,7 @@ class App
 
             $ideaDirectory->addDirectory($inspectionProfilesDirectory);
 
-            $ideaDirectory->create($this->projectRoot);
+            $ideaDirectory->create();
 
             $this->inspectionsXmlPath = $inspectionProfilesDirectory->getPath() . '/' . $inspectionsXml->getName();
         }
