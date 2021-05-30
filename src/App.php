@@ -39,21 +39,21 @@ class App
         $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
 
         if (false === $useExistingIdeaDirectory) {
+            $ideaDirectory = new IdeaDirectory($this->projectRoot);
+
+            $inspectionProfilesDirectory = new InspectionProfilesDirectory($ideaDirectory->getPath());
+
             $inspectionsXml = new InspectionsXml();
 
-            $inspectionsXml->setContentsFromPath($inspectionsXmlPath);
-
-            $inspectionProfilesDirectory = new InspectionProfilesDirectory();
+            $inspectionsXml->setContentsFromInspectionsXml($inspectionsXmlPath);
 
             $inspectionProfilesDirectory->addFile($inspectionsXml);
-
-            $ideaDirectory = new IdeaDirectory();
 
             $ideaDirectory->addDirectory($inspectionProfilesDirectory);
 
             $ideaDirectory->create($this->projectRoot);
 
-            $this->inspectionsXmlPath = $this->projectRoot . '/' . IdeaDirectory::DIRECTORY_NAME . '/' . InspectionProfilesDirectory::DIRECTORY_NAME . '/' . $inspectionsXml->getName();
+            $this->inspectionsXmlPath = $inspectionProfilesDirectory->getPath() . '/' . $inspectionsXml->getName();
         }
     }
 

@@ -11,9 +11,11 @@ class InspectionProfilesDirectory extends AbstractDirectory
 {
     public const DIRECTORY_NAME = 'inspectionProfiles';
 
-    public function __construct()
+    public function __construct(string $parentDirectoryPath)
     {
         $this->files[] = new ProfileSettingsXml();
+
+        parent::__construct($parentDirectoryPath);
     }
 
     protected function getName(): string

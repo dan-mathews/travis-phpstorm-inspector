@@ -11,6 +11,7 @@ class ProjectIml extends AbstractFile
 {
     protected function getContents(): string
     {
+        //TODO add exclude for java and phpstorm folders here too from a const in App and add excludes from config in future
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<module type="WEB_MODULE" version="4">'
         . '<component name="NewModuleRootManager">'

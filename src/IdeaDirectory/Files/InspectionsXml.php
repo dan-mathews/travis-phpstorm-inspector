@@ -18,7 +18,7 @@ class InspectionsXml extends AbstractFile
      */
     private $name = '';
 
-    public function setContentsFromPath(string $inspectionsXmlPath): void
+    public function setContentsFromInspectionsXml(string $inspectionsXmlPath): void
     {
         $inspectionsXmlInfo = new \SplFileInfo($inspectionsXmlPath);
 

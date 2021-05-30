@@ -12,11 +12,13 @@ class IdeaDirectory extends AbstractDirectory
 {
     public const DIRECTORY_NAME = '.idea';
 
-    public function __construct()
+    public function __construct(string $parentDirectoryPath)
     {
         $this->files[] = new ModulesXml();
         $this->files[] = new PhpXml();
         $this->files[] = new ProjectIml();
+
+        parent::__construct($parentDirectoryPath);
     }
 
     protected function getName(): string

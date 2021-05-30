@@ -19,12 +19,15 @@ abstract class AbstractDirectory
     /**
      * @var string
      */
-    protected $path = '';
+    protected $path;
 
-    public function create(string $projectRoot): void
+    protected function __construct(string $parentDirectoryPath)
     {
-        $this->path = $projectRoot . '/' . $this->getName();
+        $this->path = $parentDirectoryPath . '/' . $this->getName();
+    }
 
+    public function create(): void
+    {
         $output = [];
 
         $code = 0;
@@ -69,6 +72,11 @@ abstract class AbstractDirectory
     protected function getFiles(): array
     {
         return $this->files;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
     }
 
     abstract protected function getName(): string;
