@@ -20,7 +20,7 @@ class ModulesXml extends AbstractFile
         . '</project>';
     }
 
-    protected function getName(): string
+    public function getName(): string
     {
         return 'modules.xml';
     }

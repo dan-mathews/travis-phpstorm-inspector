@@ -49,7 +49,7 @@ class InspectionsXml extends AbstractFile
         return $this->contents;
     }
 
-    protected function getName(): string
+    public function getName(): string
     {
         return $this->name;
     }

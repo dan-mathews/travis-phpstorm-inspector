@@ -19,7 +19,7 @@ class ProfileSettingsXml extends AbstractFile
         . '</component>';
     }
 
-    protected function getName(): string
+    public function getName(): string
     {
         return 'profiles_settings.xml';
     }

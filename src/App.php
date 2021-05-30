@@ -27,11 +27,6 @@ class App
      */
     private $resultsDirectoryPath;
 
-    /**
-     * @var string
-     */
-    private $inspectionProfilesDirectoryPath;
-
     public function __construct(string $projectRoot, string $inspectionsXmlPath)
     {
         //TODO make this configurable and throw for now if it's true
@@ -57,6 +52,8 @@ class App
             $ideaDirectory->addDirectory($inspectionProfilesDirectory);
 
             $ideaDirectory->create($this->projectRoot);
+
+            $this->inspectionsXmlPath = $this->projectRoot . '/' . IdeaDirectory::DIRECTORY_NAME . '/' . InspectionProfilesDirectory::DIRECTORY_NAME . '/' . $inspectionsXml->getName();
         }
     }
 

@@ -21,7 +21,7 @@ class ProjectIml extends AbstractFile
         . '</module>';
     }
 
-    protected function getName(): string
+    public function getName(): string
     {
         return 'project.iml';
     }

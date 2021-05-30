@@ -32,5 +32,5 @@ abstract class AbstractFile
 
     abstract protected function getContents(): string;
 
-    abstract protected function getName(): string;
+    abstract public function getName(): string;
 }
