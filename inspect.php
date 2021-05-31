@@ -20,4 +20,4 @@ if (!isset($argv[2])) {
 
 $app = new App($argv[1], $argv[2]);
 
-//$app->run();
+$app->run();
