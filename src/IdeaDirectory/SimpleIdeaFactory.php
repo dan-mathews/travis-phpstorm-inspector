@@ -17,25 +17,21 @@ class SimpleIdeaFactory
 {
     public function create(string $location, string $inspectionsXmlPath): Idea
     {
-        $fileCreator = new FileCreator();
-        $directoryCreator = new DirectoryCreator();
-
-        $inspectionsXml = new InspectionsXml($fileCreator, $inspectionsXmlPath);
-        $profileSettingsXml = new ProfileSettingsXml($fileCreator, $inspectionsXml->getProfileNameValue());
+        $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
+        $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
 
         $inspectionProfilesDirectory = new InspectionProfiles(
-            $directoryCreator,
             $profileSettingsXml,
             $inspectionsXml
         );
 
-        $modulesXml = new ModulesXml($fileCreator);
+        //TODO use the real project name from location in ModulesXml and ProjectIml
+        $modulesXml = new ModulesXml();
         //TODO read the language level from config
-        $phpXml = new PhpXml($fileCreator, '7.3');
-        $projectIml = new ProjectIml($fileCreator, App::NAME);
+        $phpXml = new PhpXml('7.3');
+        $projectIml = new ProjectIml(App::NAME);
 
         $ideaDirectory = new Idea(
-            $directoryCreator,
             $modulesXml,
             $phpXml,
             $projectIml,

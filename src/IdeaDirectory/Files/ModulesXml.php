@@ -4,24 +4,13 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory\Files;
 
-use TravisPhpstormInspector\IdeaDirectory\CreateInterface;
-use TravisPhpstormInspector\IdeaDirectory\FileCreator;
+use TravisPhpstormInspector\IdeaDirectory\AbstractFile;
 
-class ModulesXml implements CreateInterface
+class ModulesXml extends AbstractFile
 {
     private const NAME = 'modules.xml';
 
-    /**
-     * @var FileCreator
-     */
-    private $fileCreator;
-
-    public function __construct(FileCreator $fileCreator)
-    {
-        $this->fileCreator = $fileCreator;
-    }
-
-    private function getContents(): string
+    protected function getContents(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<project version="4">'
@@ -33,8 +22,8 @@ class ModulesXml implements CreateInterface
         . '</project>';
     }
 
-    public function create(string $location): void
+    protected function getName(): string
     {
-        $this->fileCreator->createFile($location, self::NAME, $this->getContents());
+        return self::NAME;
     }
 }

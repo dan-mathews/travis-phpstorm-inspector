@@ -4,31 +4,23 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory\Files;
 
-use TravisPhpstormInspector\IdeaDirectory\CreateInterface;
-use TravisPhpstormInspector\IdeaDirectory\FileCreator;
+use TravisPhpstormInspector\IdeaDirectory\AbstractFile;
 
-class PhpXml implements CreateInterface
+class PhpXml extends AbstractFile
 {
     private const NAME = 'php.xml';
-
-    /**
-     * @var FileCreator
-     */
-    private $fileCreator;
 
     /**
      * @var string
      */
     private $phpLanguageLevel;
 
-    public function __construct(FileCreator $fileCreator, string $phpLanguageLevel)
+    public function __construct(string $phpLanguageLevel)
     {
-        $this->fileCreator = $fileCreator;
-
         $this->phpLanguageLevel = $phpLanguageLevel;
     }
 
-    private function getContents(): string
+    protected function getContents(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<project version="4">'
@@ -38,8 +30,8 @@ class PhpXml implements CreateInterface
         . '</project>';
     }
 
-    public function create(string $location): void
+    protected function getName(): string
     {
-        $this->fileCreator->createFile($location, self::NAME, $this->getContents());
+        return self::NAME;
     }
 }

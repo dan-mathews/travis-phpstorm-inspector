@@ -38,7 +38,7 @@ class App
         $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
 
         if (false !== $useExistingIdeaDirectory) {
-            echo self::NAME . ' has not been built to work with existing ' . Idea::DIRECTORY_NAME . ' directories yet';
+            echo self::NAME . ' has not been built to work with existing ' . Idea::NAME . ' directories yet';
         }
 
         $simpleIdeaFactory = new SimpleIdeaFactory();

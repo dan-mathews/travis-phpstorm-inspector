@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory\Files;
 
-use TravisPhpstormInspector\IdeaDirectory\CreateInterface;
-use TravisPhpstormInspector\IdeaDirectory\FileCreator;
+use TravisPhpstormInspector\IdeaDirectory\AbstractFile;
 
-class InspectionsXml implements CreateInterface
+class InspectionsXml extends AbstractFile
 {
     /**
      * @var string
@@ -20,24 +19,12 @@ class InspectionsXml implements CreateInterface
     private $name;
 
     /**
-     * @var FileCreator
-     */
-    private $fileCreator;
-
-    /**
      * @var string
      */
     private $profileNameValue;
 
-    /**
-     * @var null|string
-     */
-    private $path;
-
-    public function __construct(FileCreator $fileCreator, string $inspectionsXmlPath)
+    public function __construct(string $inspectionsXmlPath)
     {
-        $this->fileCreator = $fileCreator;
-
         $inspectionsXmlInfo = $this->validateInspectionsXml($inspectionsXmlPath);
 
         $this->contents = $this->getInspectionsXmlContents($inspectionsXmlInfo);
@@ -47,26 +34,9 @@ class InspectionsXml implements CreateInterface
         $this->profileNameValue = $this->extractProfileNameValue($inspectionsXmlPath);
     }
 
-    public function getPath(): string
-    {
-        if (null === $this->path){
-            echo $this->name . ' must be created before the path is retrieved.';
-            exit(1);
-        }
-
-        return $this->path;
-    }
-
     public function getProfileNameValue(): string
     {
         return $this->profileNameValue;
-    }
-
-    public function create(string $location): void
-    {
-        $this->fileCreator->createFile($location, $this->name, $this->contents);
-
-        $this->path = $location . '/' . $this->name;
     }
 
     private function extractProfileNameValue(string $inspectionsXmlPath): string
@@ -126,5 +96,15 @@ class InspectionsXml implements CreateInterface
         }
 
         return $contents;
+    }
+
+    protected function getName(): string
+    {
+        return $this->name;
+    }
+
+    protected function getContents(): string
+    {
+        return $this->contents;
     }
 }
