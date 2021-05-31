@@ -52,7 +52,13 @@ class App
 
         echo 'Running command: ' . $command . "/n";
 
-        passthru($command);
+        $code = 1;
+
+        passthru($command, $code);
+
+        if ($code !== 0) {
+            throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.", 1);
+        }
 
         $resultsProcessor = new ResultsProcessor($this->projectRoot);
 

@@ -1,2 +1,5 @@
-/.idea/
+.idea/
 vendor/
+PhpStorm.tar.gz
+PhpStorm/
+inspectionResults/
