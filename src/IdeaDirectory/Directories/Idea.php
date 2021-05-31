@@ -11,6 +11,11 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
 class Idea extends AbstractDirectory
 {
+    /**
+     * @var string
+     */
+    private $inspectionsXmlPath;
+
     public const DIRECTORY_NAME = '.idea';
 
     public function __construct(string $parentDirectoryPath)
@@ -25,5 +30,20 @@ class Idea extends AbstractDirectory
     protected function getName(): string
     {
         return self::DIRECTORY_NAME;
+    }
+
+    public function setInspectionsXmlPath(string $path): void
+    {
+        $this->inspectionsXmlPath = $path;
+    }
+
+    public function getInspectionsXmlPath(): string
+    {
+        if (!isset($this->inspectionsXmlPath)){
+            echo 'inspections xml has not been set correctly before retrieval';
+            exit(1);
+        }
+
+        return $this->inspectionsXmlPath;
     }
 }

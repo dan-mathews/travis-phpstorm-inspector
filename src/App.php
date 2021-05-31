@@ -7,6 +7,7 @@ namespace TravisPhpstormInspector;
 use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfiles;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
+use TravisPhpstormInspector\IdeaDirectory\SimpleIdeaFactory;
 
 class App
 {
@@ -27,6 +28,11 @@ class App
      */
     private $resultsDirectoryPath;
 
+    /**
+     * @var Idea
+     */
+    private $ideaDirectory;
+
     public function __construct(string $projectRoot, string $inspectionsXmlPath)
     {
         //TODO make this configurable and throw for now if it's true
@@ -38,29 +44,18 @@ class App
 
         $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
 
-        //TODO make a factory of some kind
-        if (false === $useExistingIdeaDirectory) {
-            $ideaDirectory = new Idea($this->projectRoot);
-
-            $inspectionProfilesDirectory = new InspectionProfiles($ideaDirectory->getPath());
-
-            $inspectionsXml = new InspectionsXml();
-
-            $inspectionsXml->setContentsFromInspectionsXml($inspectionsXmlPath);
-
-            $inspectionProfilesDirectory->addFile($inspectionsXml);
-
-            $ideaDirectory->addDirectory($inspectionProfilesDirectory);
-
-            $ideaDirectory->create();
-
-            $this->inspectionsXmlPath = $inspectionProfilesDirectory->getPath() . '/' . $inspectionsXml->getName();
+        if (false !== $useExistingIdeaDirectory) {
+            echo App::NAME . ' has not been built to work with existing ' . Idea::DIRECTORY_NAME . ' directories yet';
         }
+
+        $simpleIdeaFactory = new SimpleIdeaFactory();
+
+        $this->ideaDirectory = $simpleIdeaFactory->create($this->projectRoot, $inspectionsXmlPath);
     }
 
     public function run(): void
     {
-        $command = "PhpStorm/bin/phpstorm.sh inspect $this->projectRoot $this->inspectionsXmlPath $this->resultsDirectoryPath -changes -format json -v2";
+        $command = "PhpStorm/bin/phpstorm.sh inspect $this->projectRoot " . $this->ideaDirectory->getInspectionsXmlPath() . " $this->resultsDirectoryPath -changes -format json -v2";
 
         echo 'Running command: ' . $command . "/n";
 
