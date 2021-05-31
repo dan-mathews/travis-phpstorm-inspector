@@ -40,7 +40,7 @@ abstract class AbstractDirectory
         }
 
         foreach ($this->getDirectories() as $directory) {
-            $directory->create($this->path);
+            $directory->create();
         }
 
         foreach ($this->getFiles() as $file) {

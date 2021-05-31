@@ -10,24 +10,32 @@ class ResultsProcessor
 {
     public const DIRECTORY_NAME = 'inspectionResults';
 
-    public function process(string $directoryName): void
+    /**
+     * @var DirectoryIterator
+     */
+    private $directory;
+
+    public function __construct(string $parentDirectoryPath)
     {
         try {
-            $directory = new DirectoryIterator(self::DIRECTORY_NAME);
+            $this->directory = new DirectoryIterator($parentDirectoryPath . '/' . self::DIRECTORY_NAME);
         } catch (\Throwable $e) {
             echo "Error: couldn't read inspection results directory (" . self::DIRECTORY_NAME . ")\n" . $e->getMessage() . "\n" . $e->getTraceAsString();
 
             exit(1);
         }
+    }
 
+    public function process(): void
+    {
         $problems = new Problems();
 
-        foreach ($directory as $fileInfo) {
+        foreach ($this->directory as $fileInfo) {
             if (
                 $fileInfo->isDot() ||
                 '.descriptions.json' === $fileInfo->getFilename() ||
                 // DuplicatedCode_aggregate.json is both formatted differently and
-                // contains unnecessary detail above DuplicatedCode.json
+                // contains unnecessary detail beyond DuplicatedCode.json
                 'DuplicatedCode_aggregate.json' === $fileInfo->getFilename()
             ) {
                 continue;

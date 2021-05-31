@@ -67,6 +67,7 @@ class Problems
 
             echo $count . ' problem' . $plural . ' detected in ' . $filename . ":\n";
 
+            //TODO sort problems by line number for easy editing
             foreach ($problems as $problem) {
                 echo '  - ' . $problem->getSeverity() . ' (' . $problem->getProblemName() . '): '
                     . $problem->getDescription() . ' (line ' . $problem->getLine() . ")\n";

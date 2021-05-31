@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory;
+namespace TravisPhpstormInspector\IdeaDirectory\Directories;
 
+use TravisPhpstormInspector\IdeaDirectory\AbstractDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
-class IdeaDirectory extends AbstractDirectory
+class Idea extends AbstractDirectory
 {
     public const DIRECTORY_NAME = '.idea';
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
+use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfiles;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
-use TravisPhpstormInspector\IdeaDirectory\IdeaDirectory;
-use TravisPhpstormInspector\IdeaDirectory\InspectionProfilesDirectory;
 
 class App
 {
@@ -38,10 +38,11 @@ class App
 
         $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
 
+        //TODO make a factory of some kind
         if (false === $useExistingIdeaDirectory) {
-            $ideaDirectory = new IdeaDirectory($this->projectRoot);
+            $ideaDirectory = new Idea($this->projectRoot);
 
-            $inspectionProfilesDirectory = new InspectionProfilesDirectory($ideaDirectory->getPath());
+            $inspectionProfilesDirectory = new InspectionProfiles($ideaDirectory->getPath());
 
             $inspectionsXml = new InspectionsXml();
 
@@ -65,8 +66,8 @@ class App
 
         passthru($command);
 
-        $resultsProcessor = new ResultsProcessor();
+        $resultsProcessor = new ResultsProcessor($this->projectRoot);
 
-        $resultsProcessor->process($this->resultsDirectoryPath);
+        $resultsProcessor->process();
     }
 }

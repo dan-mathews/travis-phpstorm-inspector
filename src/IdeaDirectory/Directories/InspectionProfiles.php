@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory;
+namespace TravisPhpstormInspector\IdeaDirectory\Directories;
 
-use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
+use TravisPhpstormInspector\IdeaDirectory\AbstractDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 
-class InspectionProfilesDirectory extends AbstractDirectory
+class InspectionProfiles extends AbstractDirectory
 {
     public const DIRECTORY_NAME = 'inspectionProfiles';
 
