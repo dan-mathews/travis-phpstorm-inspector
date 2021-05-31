@@ -31,12 +31,14 @@ class ResultsProcessor
         $problems = new Problems();
 
         foreach ($this->directory as $fileInfo) {
+            $fileName = $fileInfo->getFilename();
+
             if (
-                $fileInfo->isDot() ||
-                '.descriptions.json' === $fileInfo->getFilename() ||
+                '.descriptions.json' === $fileName ||
                 // DuplicatedCode_aggregate.json is both formatted differently and
                 // contains unnecessary detail beyond DuplicatedCode.json
-                'DuplicatedCode_aggregate.json' === $fileInfo->getFilename()
+                'DuplicatedCode_aggregate.json' === $fileName ||
+                $fileInfo->isDot()
             ) {
                 continue;
             }
@@ -46,7 +48,7 @@ class ResultsProcessor
 
                 $contents = $file->fread($file->getSize());
             } catch (\Throwable $e) {
-                echo "Error: Could not open and read inspections results file '" . $fileInfo->getFilename() . "'\n"
+                echo "Error: Could not open and read inspections results file '" . $fileName . "'\n"
                     . $e->getMessage() . "\n" . $e->getTraceAsString();
 
                 exit(1);
@@ -55,14 +57,14 @@ class ResultsProcessor
             try {
                 $jsonContents = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
             } catch (\JsonException $e) {
-                echo "Error: Could not decode inspections results file '" . $fileInfo->getFilename() . "' as json\n"
+                echo "Error: Could not decode inspections results file '" . $fileName . "' as json\n"
                     . $e->getMessage() . "\n" . $e->getTraceAsString();
 
                 exit(1);
             }
 
             if (!isset($jsonContents['problems'])) {
-                echo "Error: No problems array within inspections file '" . $fileInfo->getFilename() . "'";
+                echo "Error: No problems array within inspections file '" . $fileName . "'";
 
                 exit(1);
             }

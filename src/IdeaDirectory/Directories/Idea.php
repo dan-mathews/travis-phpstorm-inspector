@@ -4,27 +4,52 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory\Directories;
 
-use TravisPhpstormInspector\IdeaDirectory\AbstractDirectory;
+use TravisPhpstormInspector\IdeaDirectory\CreateInterface;
+use TravisPhpstormInspector\IdeaDirectory\DirectoryCreator;
 use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
-class Idea extends AbstractDirectory
+class Idea implements CreateInterface
 {
-    /**
-     * @var string
-     */
-    private $inspectionsXmlPath;
-
     public const DIRECTORY_NAME = '.idea';
 
-    public function __construct(string $parentDirectoryPath)
-    {
-        $this->files[] = new ModulesXml();
-        $this->files[] = new PhpXml();
-        $this->files[] = new ProjectIml();
+    /**
+     * @var DirectoryCreator
+     */
+    private $directoryCreator;
 
-        parent::__construct($parentDirectoryPath);
+    /**
+     * @var CreateInterface[]
+     */
+    private $files;
+
+    /**
+     * @var CreateInterface[]
+     */
+    private $directories;
+
+    /**
+     * @var InspectionProfiles
+     */
+    private $inspectionProfiles;
+
+    public function __construct(
+        DirectoryCreator $directoryCreator,
+        ModulesXml $modulesXml,
+        PhpXml $phpXml,
+        ProjectIml $projectIml,
+        InspectionProfiles $inspectionProfiles
+    ) {
+        $this->files[] = $modulesXml;
+        $this->files[] = $phpXml;
+        $this->files[] = $projectIml;
+
+        $this->inspectionProfiles = $inspectionProfiles;
+
+        $this->directories[] = $inspectionProfiles;
+
+        $this->directoryCreator = $directoryCreator;
     }
 
     protected function getName(): string
@@ -32,18 +57,13 @@ class Idea extends AbstractDirectory
         return self::DIRECTORY_NAME;
     }
 
-    public function setInspectionsXmlPath(string $path): void
-    {
-        $this->inspectionsXmlPath = $path;
-    }
-
     public function getInspectionsXmlPath(): string
     {
-        if (!isset($this->inspectionsXmlPath)){
-            echo 'inspections xml has not been set correctly before retrieval';
-            exit(1);
-        }
+        return $this->inspectionProfiles->getInspectionsXmlPath();
+    }
 
-        return $this->inspectionsXmlPath;
+    public function create(string $location): void
+    {
+        $this->directoryCreator->createDirectory($location, self::DIRECTORY_NAME, $this->files, $this->directories);
     }
 }

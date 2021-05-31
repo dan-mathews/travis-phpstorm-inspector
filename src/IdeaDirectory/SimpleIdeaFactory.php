@@ -4,27 +4,45 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory;
 
+use TravisPhpstormInspector\App;
 use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfiles;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
+use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
+use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
+use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
+use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
 class SimpleIdeaFactory
 {
-    public function create(string $directoryPath, string $inspectionsXmlPath): Idea
+    public function create(string $location, string $inspectionsXmlPath): Idea
     {
-        $ideaDirectory = new Idea($directoryPath);
+        $fileCreator = new FileCreator();
+        $directoryCreator = new DirectoryCreator();
 
-        $inspectionProfilesDirectory = new InspectionProfiles($ideaDirectory->getPath());
+        $inspectionsXml = new InspectionsXml($fileCreator, $inspectionsXmlPath);
+        $profileSettingsXml = new ProfileSettingsXml($fileCreator, $inspectionsXml->getProfileNameValue());
 
-        $inspectionsXml = new InspectionsXml();
+        $inspectionProfilesDirectory = new InspectionProfiles(
+            $directoryCreator,
+            $profileSettingsXml,
+            $inspectionsXml
+        );
 
-        $inspectionsXml->setContentsFromInspectionsXml($inspectionsXmlPath);
+        $modulesXml = new ModulesXml($fileCreator);
+        //TODO read the language level from config
+        $phpXml = new PhpXml($fileCreator, '7.3');
+        $projectIml = new ProjectIml($fileCreator, App::NAME);
 
-        $inspectionProfilesDirectory->addFile($inspectionsXml);
+        $ideaDirectory = new Idea(
+            $directoryCreator,
+            $modulesXml,
+            $phpXml,
+            $projectIml,
+            $inspectionProfilesDirectory
+        );
 
-        $ideaDirectory->addDirectory($inspectionProfilesDirectory);
-
-        $ideaDirectory->create();
+        $ideaDirectory->create($location);
 
         return $ideaDirectory;
     }

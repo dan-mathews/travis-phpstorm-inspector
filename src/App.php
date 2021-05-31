@@ -5,18 +5,11 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
-use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfiles;
-use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 use TravisPhpstormInspector\IdeaDirectory\SimpleIdeaFactory;
 
 class App
 {
     public const NAME = 'travis-phpstorm-inspector';
-
-    /**
-     * @var string
-     */
-    private $inspectionsXmlPath;
 
     /**
      * @var string
@@ -45,7 +38,7 @@ class App
         $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
 
         if (false !== $useExistingIdeaDirectory) {
-            echo App::NAME . ' has not been built to work with existing ' . Idea::DIRECTORY_NAME . ' directories yet';
+            echo self::NAME . ' has not been built to work with existing ' . Idea::DIRECTORY_NAME . ' directories yet';
         }
 
         $simpleIdeaFactory = new SimpleIdeaFactory();
