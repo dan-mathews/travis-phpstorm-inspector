@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector;
+namespace TravisPhpstormInspector\ResultProcessing;
 
 class Problems
 {
@@ -52,26 +52,28 @@ class Problems
         return !empty($this->files);
     }
 
-    public function display(): void
+    public function getInspectionMessage(): string
     {
         if (!$this->problemsToReport()) {
-            return;
+            return "\e[31mNo problems to report\e[39m\n";
         }
 
-        echo "\e[31mProblems found from phpStorm inspection:\e[39m\n";
+        $output = "\e[31mProblems found from phpStorm inspection:\e[39m\n";
 
         foreach ($this->files as $filename => $problems) {
             $count = count($problems);
 
             $plural = (1 === $count) ? '' : 's';
 
-            echo $count . ' problem' . $plural . ' detected in ' . $filename . ":\n";
+            $output .= $count . ' problem' . $plural . ' detected in ' . $filename . ":\n";
 
             //TODO sort problems by line number for easy editing
             foreach ($problems as $problem) {
-                echo '  - ' . $problem->getSeverity() . ' (' . $problem->getProblemName() . '): '
+                $output.= '  - ' . $problem->getSeverity() . ' (' . $problem->getProblemName() . '): '
                     . $problem->getDescription() . ' (line ' . $problem->getLine() . ")\n";
             }
         }
+
+        return $output;
     }
 }

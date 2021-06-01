@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector;
+namespace TravisPhpstormInspector\ResultProcessing;
 
 class Problem
 {

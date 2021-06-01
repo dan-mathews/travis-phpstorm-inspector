@@ -6,6 +6,7 @@ namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
 use TravisPhpstormInspector\IdeaDirectory\SimpleIdeaFactory;
+use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
 class App
 {
@@ -62,6 +63,10 @@ class App
 
         $resultsProcessor = new ResultsProcessor($this->projectRoot);
 
-        $resultsProcessor->process();
+        $inspectionOutcome = $resultsProcessor->process();
+
+        echo $inspectionOutcome->getMessage();
+
+        exit($inspectionOutcome->getExitCode());
     }
 }

@@ -11,7 +11,7 @@ use TravisPhpstormInspector\App;
 
 final class AppTest extends TestCase
 {
-    public function testRun()
+    public function testRun(): void
     {
         try {
             $app = new App(TestConstants::PROJECT_PATH, TestConstants::INSPECTIONS_PATH);

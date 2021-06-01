@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector;
+namespace TravisPhpstormInspector\ResultProcessing;
 
 use DirectoryIterator;
 
@@ -26,7 +26,7 @@ class ResultsProcessor
         }
     }
 
-    public function process(): void
+    public function process(): InspectionOutcome
     {
         $problems = new Problems();
 
@@ -73,11 +73,9 @@ class ResultsProcessor
         }
 
         if (!$problems->problemsToReport()) {
-            exit(0);
+            return new InspectionOutcome(0, $problems->getInspectionMessage());
         }
 
-        $problems->display();
-
-        exit(1);
+        return new InspectionOutcome(1, $problems->getInspectionMessage());
     }
 }
