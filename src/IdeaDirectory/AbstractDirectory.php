@@ -20,15 +20,16 @@ abstract class AbstractDirectory extends AbstractFileSystemElement
     {
         $path = $location . '/' . $this->getName();
 
-        $output = [];
+        if (file_exists($path)) {
+            throw new \InvalidArgumentException(
+                'Project root must not contain a file or directory at path: "' . $path . '".'
+            );
+        }
 
-        $code = 0;
+        $success = mkdir($path);
 
-        exec('mkdir ' . $path, $output, $code);
-
-        if (0 !== $code) {
-            echo 'Failed to create directory ' . $this->getName();
-            exit(1);
+        if (!$success) {
+            throw new \RuntimeException('Failed to create directory at path: "' . $path . '".');
         }
 
         foreach ($this->directories as $directory) {

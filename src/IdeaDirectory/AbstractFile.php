@@ -13,22 +13,19 @@ abstract class AbstractFile extends AbstractFileSystemElement
         $file = fopen($path, 'wb');
 
         if (false === $file){
-            echo 'Unable to open file ' . $this->getName();
-            exit(1);
+            throw new \RuntimeException('Failed to create file at path: "' . $path . '".');
         }
 
         $written = fwrite($file, $this->getContents());
 
         if (false === $written){
-            echo 'Unable to write file ' . $this->getName();
-            exit(1);
+            throw new \RuntimeException('Failed to write to file at path: "' . $path . '".');
         }
 
         $closed = fclose($file);
 
         if (false === $closed){
-            echo 'Unable to close file ' . $this->getName();
-            exit(1);
+            throw new \RuntimeException('Failed to close file at path: "' . $path . '".');
         }
 
         $this->path = $path;

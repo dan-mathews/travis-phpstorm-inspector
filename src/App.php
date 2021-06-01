@@ -32,9 +32,7 @@ class App
         //TODO make this configurable and throw for now if it's true
         $useExistingIdeaDirectory = false;
 
-        $projectRootInfo = new \SplFileInfo($projectRoot);
-
-        $this->projectRoot = $projectRootInfo->getRealPath();
+        $this->projectRoot = $this->validateProjectRoot($projectRoot);
 
         $this->resultsDirectoryPath = $this->projectRoot . '/' . ResultsProcessor::DIRECTORY_NAME;
 
@@ -58,7 +56,7 @@ class App
         passthru($command, $code);
 
         if ($code !== 0) {
-            throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.", 1);
+            throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");
         }
 
         $resultsProcessor = new ResultsProcessor($this->projectRoot);
@@ -68,5 +66,22 @@ class App
         echo $inspectionOutcome->getMessage();
 
         exit($inspectionOutcome->getExitCode());
+    }
+
+    private function validateProjectRoot(string $projectRoot): string
+    {
+        $fullPath = realpath($projectRoot);
+
+        if (false === $fullPath) {
+            throw new \InvalidArgumentException(
+                'The given project root (' . $projectRoot . ') cannot be opened, or does not exist.'
+            );
+        }
+
+        if (!is_dir($fullPath)) {
+            throw new \InvalidArgumentException('The resolved project root (' . $fullPath . ') is not a directory.');
+        }
+
+        return $fullPath;
     }
 }

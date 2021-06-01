@@ -14,8 +14,7 @@ abstract class AbstractFileSystemElement
     public function getPath(): string
     {
         if (null === $this->path){
-            echo $this->getName() . ' must be created before the path is retrieved.';
-            exit(1);
+            throw new \LogicException($this->getName() . ' must be created before the path is retrieved.');
         }
 
         return $this->path;
