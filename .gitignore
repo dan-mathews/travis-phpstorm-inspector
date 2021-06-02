@@ -2,4 +2,6 @@
 vendor/
 PhpStorm.tar.gz
 PhpStorm/
+java.tar.gz
+java/
 inspectionResults/
