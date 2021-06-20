@@ -1,0 +1,8 @@
+# behat.yml
+
+default:
+  suites:
+    default:
+      paths:
+        - "%paths.base%/tests/behat/features"
+      contexts: [BehatTests\Context\FeatureContext]

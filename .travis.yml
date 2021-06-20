@@ -1,0 +1,10 @@
+sudo: required
+language: bash
+jobs:
+  include:
+    - stage: test
+      name: "PR Checks"
+      language: php
+      php:
+        - '7.3'
+      script: ./.travis/checks

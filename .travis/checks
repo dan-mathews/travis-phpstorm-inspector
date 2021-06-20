@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -e
+
+composer install
+
+if [ ! -d "PhpStorm" ]; then
+    if [ ! -f "PhpStorm.tar.gz" ]; then
+        wget -O PhpStorm.tar.gz https://download.jetbrains.com/webide/PhpStorm-2021.1.2.tar.gz
+    fi
+    tar -xzf PhpStorm.tar.gz --one-top-level --strip-components 1
+fi
+
+if [ ! -d "java" ]; then
+    if [ ! -f "java.tar.gz" ]; then
+        wget -O java.tar.gz https://javadl.oracle.com/webapps/download/AutoDL?BundleId=244575_d7fc238d0cbf4b0dac67be84580cfb4b
+    fi
+    tar -xzf java.tar.gz --one-top-level --strip-components 1
+fi
+
+vendor/bin/behat
+vendor/bin/psalm
+vendor/bin/phpcs src --standard=PSR12
+vendor/bin/phpstan analyse src -l 8
