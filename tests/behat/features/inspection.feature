@@ -1,11 +1,11 @@
 Feature: Run inspections
 
 @createsProject
-Scenario: Run inspections on project with no violations
+Scenario: Run inspections on a project with no problems
     Given I create a new project
     And I initialise git
     And I create a valid inspections xml file
-    And I create a php file without violations
+    And I create a php file without problems
     And I stage the php file in git
     When I run inspections
     Then the outcome exit code should be 0
@@ -15,11 +15,11 @@ Scenario: Run inspections on project with no violations
     """
 
 @createsProject
-Scenario: Run inspections on project with no violations
+Scenario: Run inspections on a project with problems
   Given I create a new project
   And I initialise git
   And I create a valid inspections xml file
-  And I create a php file with violations
+  And I create a php file with problems
   And I stage the php file in git
   When I run inspections
   Then the outcome exit code should be 1
@@ -71,7 +71,7 @@ Scenario: Run inspections on project with no violations
       Given I create a new project
       And I initialise git
       And I create an invalid inspections xml file
-      And I create a php file without violations
+      And I create a php file without problems
       And I stage the php file in git
       And I am expecting an error
       When I run inspections
