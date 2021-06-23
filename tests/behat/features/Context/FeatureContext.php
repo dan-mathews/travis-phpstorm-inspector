@@ -154,9 +154,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given I create a php file :switch violations
+     * @Given I create a php file :switch problems
      */
-    public function iCreateAPhpFileWithNoViolations(string $switch): void
+    public function iCreateAPhpFileWithNoProblems(string $switch): void
     {
         switch ($switch) {
             case 'without':
@@ -166,7 +166,7 @@ class FeatureContext implements Context
                 $filename = 'InspectionViolator.php';
                 break;
             default:
-                throw new \LogicException('This method can only be called "with" or "without" violations');
+                throw new \LogicException('This method can only be called "with" or "without" problems');
         }
 
         $phpContents = file_get_contents('tests/data/' . $filename);
