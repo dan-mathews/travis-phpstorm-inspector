@@ -25,7 +25,7 @@ Scenario: Run inspections on project with no violations
   Then the outcome exit code should be 1
   And the outcome message should be:
   """
-  36 problems were found during phpStorm inspection.
+  36 problems were found during PhpStorm inspection.
 
   Problems in InspectionViolator.php:
     line 1    ERROR         (Short open tag usage): Short opening tag usage

@@ -79,7 +79,7 @@ class ResultsProcessor
         }
 
         try {
-            rmdir($this->directory->getPath());
+            rmdir($this->directory->getRealPath());
         } catch (\Throwable $e) {
             echo 'Could not remove results directory for clean up. Continuing anyway...';
         }
