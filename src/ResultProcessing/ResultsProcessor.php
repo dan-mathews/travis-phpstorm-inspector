@@ -81,7 +81,7 @@ class ResultsProcessor
         try {
             rmdir($this->directory->getPath());
         } catch (\Throwable $e) {
-            echo 'Could not remove ' . ResultsDirectory::NAME . ' directory for clean up. Continuing anyway...';
+            echo 'Could not remove results directory for clean up. Continuing anyway...';
         }
 
         if (!$problems->problemsToReport()) {
