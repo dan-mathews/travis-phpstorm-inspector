@@ -38,7 +38,7 @@ class Problems extends \SplHeap
 
         $count = $this->count();
 
-        $output = $count . " problems were found during phpStorm inspection.\n\n";
+        $output = $count . " problems were found during PhpStorm inspection.\n\n";
 
         $currentFilename = '';
 

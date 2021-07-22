@@ -78,6 +78,12 @@ class ResultsProcessor
             $problems->addProblems($jsonContents['problems']);
         }
 
+        try {
+            rmdir($this->directory->getPath());
+        } catch (\Throwable $e) {
+            echo 'Could not remove ' . ResultsDirectory::NAME . ' directory for clean up. Continuing anyway...';
+        }
+
         if (!$problems->problemsToReport()) {
             return new InspectionOutcome(0, $problems->getInspectionMessage());
         }
