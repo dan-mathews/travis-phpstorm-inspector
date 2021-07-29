@@ -79,7 +79,7 @@ class ResultsProcessor
         }
 
         try {
-            rmdir($this->directory->getRealPath());
+            $this->removeDirectory($this->directory);
         } catch (\Throwable $e) {
             echo 'Could not remove results directory for clean up. Continuing anyway...';
         }
@@ -89,5 +89,26 @@ class ResultsProcessor
         }
 
         return new InspectionOutcome(1, $problems->getInspectionMessage());
+    }
+
+    private function removeDirectory(\DirectoryIterator $directoryIterator): void
+    {
+        foreach ($directoryIterator as $info) {
+
+            if ($info->isDot()) {
+                continue;
+            }
+
+            if ($info->isDir()) {
+                self::removeDirectory(new \DirectoryIterator($info->getRealPath()));
+                continue;
+            }
+
+            if ($info->isFile()) {
+                unlink($info->getRealPath());
+            }
+        }
+
+        rmdir($directoryIterator->getPath());
     }
 }
