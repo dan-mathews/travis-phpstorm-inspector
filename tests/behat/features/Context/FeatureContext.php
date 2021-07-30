@@ -278,17 +278,30 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Then there should only be :expectedFileCount items in the project directory
+     */
+    public function thereShouldOnlyBeItemsInTheProjectDirectory(int $expectedFileCount): void
+    {
+        $files = scandir($this->getProjectPath());
+
+        $actualFileCount = count($files) - 2;
+
+        Assert::assertSame($expectedFileCount, $actualFileCount);
+    }
+
+
+    /**
       * @AfterScenario @createsProject
       *
       * @return void
       */
      public function cleanProject()
      {
-         if (!is_dir($this->getProjectPath())) {
-            return;
-        }
-
-        $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
+        //  if (!is_dir($this->getProjectPath())) {
+        //     return;
+        // }
+        //
+        // $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
     }
 
      private function removeDirectory(\DirectoryIterator $directoryIterator): void

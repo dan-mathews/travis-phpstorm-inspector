@@ -13,6 +13,8 @@ Scenario: Run inspections on project with no violations
     """
     No problems to report.
     """
+    # TODO: We should actually delete .idea if we made that too. In success or failure, the project should be left clean
+    And there should only be 3 items in the project directory
 
 @createsProject
 Scenario: Run inspections on project with no violations
@@ -65,6 +67,7 @@ Scenario: Run inspections on project with no violations
     line 95   ERROR         (Annotator): Class should not extend itself #loc
     line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
   """
+  And there should only be 3 items in the project directory
 
   @createsProject
   Scenario: Use an inspections file with the wrong extension
@@ -76,3 +79,4 @@ Scenario: Run inspections on project with no violations
       And I am expecting an error
       When I run inspections
       Then the error message should contain 'does not have an xml extension'
+      And there should only be 3 items in the project directory
