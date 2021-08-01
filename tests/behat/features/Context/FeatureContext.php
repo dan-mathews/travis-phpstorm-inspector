@@ -6,8 +6,6 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use LogicException;
 use PHPUnit\Framework\Assert;
-use TravisPhpstormInspector\App;
-use TravisPhpstormInspector\ResultProcessing\InspectionOutcome;
 
 /**
  * Defines application features from the specific context.
@@ -17,9 +15,16 @@ class FeatureContext implements Context
     /**
      * @var null|string
      */
+    private $dockerImage;
+
+    /**
+     * @var null|string
+     */
     private $projectPath;
 
     /**
+     * This is relative to the project root
+     *
      * @var null|string
      */
     private $inspectionsPath;
@@ -28,11 +33,6 @@ class FeatureContext implements Context
      * @var null|string
      */
     private $projectName;
-
-    /**
-     * @var null|InspectionOutcome
-     */
-    private $inspectionOutcome;
 
     /**
      * @var null|string
@@ -48,6 +48,16 @@ class FeatureContext implements Context
      * @var null|string
      */
     private $errorMessage;
+
+    /**
+     * @var null|int
+     */
+    private $inspectionExitCode;
+
+    /**
+     * @var null|string[]
+     */
+    private $inspectionOutput;
 
 
     /**
@@ -73,6 +83,42 @@ class FeatureContext implements Context
         }
 
         return $this->projectPath;
+    }
+
+    private function getInspectionExitCode(): int
+    {
+        if (null === $this->inspectionExitCode) {
+            throw new LogicException(
+                'Inspection exit code must be defined before it is retrieved'
+            );
+        }
+
+        return $this->inspectionExitCode;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getInspectionOutput(): array
+    {
+        if (null === $this->inspectionOutput) {
+            throw new LogicException(
+                'Inspection output must be defined before it is retrieved'
+            );
+        }
+
+        return $this->inspectionOutput;
+    }
+
+    private function getDockerImage(): string
+    {
+        if (null === $this->dockerImage) {
+            throw new LogicException(
+                'Docker image must be defined before it is retrieved'
+            );
+        }
+
+        return $this->dockerImage;
     }
 
     private function getErrorMessage(): string
@@ -108,17 +154,6 @@ class FeatureContext implements Context
         return $this->phpFilePath;
     }
 
-    private function getInspectionOutcome(): InspectionOutcome
-    {
-        if (null === $this->inspectionOutcome) {
-            throw new LogicException(
-                'Inspection outcome must be defined before it is retrieved'
-            );
-        }
-
-        return $this->inspectionOutcome;
-    }
-
     /**
      * @Given I create a :valid inspections xml file
      * @Given I create an :valid inspections xml file
@@ -129,13 +164,13 @@ class FeatureContext implements Context
             case 'valid':
                 $xmlContents = file_get_contents('tests/data/exampleStandards.xml');
 
-                $this->inspectionsPath = $this->getProjectPath() . '/exampleStandards.xml';
+                $this->inspectionsPath = 'exampleStandards.xml';
 
                 break;
             case 'invalid':
                 $xmlContents = 'invalid';
 
-                $this->inspectionsPath = $this->getProjectPath() . '/invalid.txt';
+                $this->inspectionsPath = 'invalid.txt';
 
                 break;
             default:
@@ -144,7 +179,7 @@ class FeatureContext implements Context
                 );
         }
 
-        $file = fopen($this->inspectionsPath, 'wb');
+        $file = fopen($this->getProjectPath() . '/' . $this->inspectionsPath, 'wb');
 
         if(!fwrite($file, $xmlContents)) {
             throw new \RuntimeException($this->inspectionsPath . ' could not be created');
@@ -189,18 +224,37 @@ class FeatureContext implements Context
      */
     public function iRunInspections(): void
     {
-        try {
-            $app = new App($this->getProjectPath(), $this->getInspectionsPath());
+        //TODO can you just put property directly into exec function for it to assign?
+        $code = null;
+        $output = null;
 
-            $this->inspectionOutcome = $app->run();
-        } catch (\Throwable $e) {
-            if (!$this->expectingError) {
-                throw $e;
-            }
+        exec(
+            'docker run -v ' . $this->projectPath . ':/app -v $(pwd):/inspector ' . $this->getDockerImage() . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
+            $output,
+            $code
+        );
 
-            $this->errorMessage = $e->getMessage();
+        $this->inspectionExitCode = $code;
+
+        $this->inspectionOutput = $output;
+    }
+
+    /**
+     * @Given I pull docker image :imageTag
+     */
+    public function iPullDockerImage(string $imageTag): void
+    {
+        $this->dockerImage = 'danmathews1/phpstorm-images:' . $imageTag;
+
+        $code = 1;
+
+        exec('docker pull ' . $this->dockerImage, $output, $code);
+
+        if ($code !== 0) {
+            throw new \RuntimeException('Could not pull docker image');
         }
     }
+
 
     /**
      * @Given I am expecting an error
@@ -222,13 +276,13 @@ class FeatureContext implements Context
         Assert::assertStringContainsString($string, $this->getErrorMessage());
     }
 
-
     /**
+     * TODO rename this to output not outcome. Remove references to outcome
      * @Then the outcome exit code should be :exitCode
      */
     public function theOutcomeExitCodeShouldBe(string $exitCode): void
     {
-        Assert::assertSame((int) $exitCode, $this->getInspectionOutcome()->getExitCode());
+        Assert::assertSame((int) $exitCode, $this->getInspectionExitCode());
     }
 
     /**
@@ -268,13 +322,18 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Then /^the outcome message should be:$/
-     *
-     * @return void
+     * @Then the last lines of the output should be:
      */
-    public function theOutcomeMessageShouldBe(PyStringNode $string): void
+    public function theLastLinesOfTheOutputShouldBe(PyStringNode $string): void
     {
-        Assert::assertSame($string->getRaw(), trim($this->getInspectionOutcome()->getMessage()));
+        $assertedOutputLineCount = count($string->getStrings());
+
+        $actualOutputLinesForComparison = implode(
+            "\n",
+            array_slice($this->getInspectionOutput(), $assertedOutputLineCount * -1)
+        );
+
+        Assert::assertEquals($string->getRaw(), $actualOutputLinesForComparison);
     }
 
     /**
@@ -305,10 +364,12 @@ class FeatureContext implements Context
             }
 
             if ($info->isFile()) {
-                unlink($info->getRealPath());
+                //TODO fix in docker context - maybe if the project cleaned up after itself this wouldn't be an issue?
+//                passthru('docker exec travis-phpstorm-inspector-behat-container rm /app/' . $info->getRealPath() );
+//                unlink($info->getRealPath());
             }
         }
 
-        rmdir($directoryIterator->getPath());
+//        rmdir($directoryIterator->getPath());
     }
 }

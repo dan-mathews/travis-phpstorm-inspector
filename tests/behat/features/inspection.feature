@@ -7,9 +7,10 @@ Scenario: Run inspections on a project with no problems
     And I create a valid inspections xml file
     And I create a php file without problems
     And I stage the php file in git
+    And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
     Then the outcome exit code should be 0
-    And the outcome message should be:
+    And the last lines of the output should be:
     """
     No problems to report.
     """
@@ -21,9 +22,10 @@ Scenario: Run inspections on a project with problems
   And I create a valid inspections xml file
   And I create a php file with problems
   And I stage the php file in git
+  And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
   When I run inspections
   Then the outcome exit code should be 1
-  And the outcome message should be:
+  And the last lines of the output should be:
   """
   36 problems were found during phpStorm inspection.
 
@@ -74,5 +76,6 @@ Scenario: Run inspections on a project with problems
       And I create a php file without problems
       And I stage the php file in git
       And I am expecting an error
+      And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
       When I run inspections
       Then the error message should contain 'does not have an xml extension'
