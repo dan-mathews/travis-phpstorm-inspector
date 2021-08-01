@@ -38,7 +38,7 @@ class Problems extends \SplHeap
 
         $count = $this->count();
 
-        $output = $count . " problems were found during phpStorm inspection.\n\n";
+        $output = $count . " problems were found during phpStorm inspection.\n";
 
         $currentFilename = '';
 
@@ -49,7 +49,7 @@ class Problems extends \SplHeap
             $problem = $this->current();
 
             if ($problem->getFilename() !== $currentFilename) {
-                $output .= 'Problems in ' . $problem->getFilename() . ":\n";
+                $output .= "\nProblems in " . $problem->getFilename() . ":\n";
                 $currentFilename = $problem->getFilename();
             }
 
