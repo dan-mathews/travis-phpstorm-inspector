@@ -37,6 +37,11 @@ class FeatureContext implements Context
     /**
      * @var null|string
      */
+    private $configurationPath;
+
+    /**
+     * @var null|string
+     */
     private $phpFilePath;
 
     /**
@@ -119,6 +124,17 @@ class FeatureContext implements Context
         }
 
         return $this->dockerImage;
+    }
+
+    private function getConfigurationPath(): string
+    {
+        if (null === $this->configurationPath) {
+            throw new LogicException(
+                'Configuration path must be defined before it is retrieved'
+            );
+        }
+
+        return $this->configurationPath;
     }
 
     private function getErrorMessage(): string
@@ -334,6 +350,22 @@ class FeatureContext implements Context
         );
 
         Assert::assertEquals($string->getRaw(), $actualOutputLinesForComparison);
+    }
+
+    /**
+     * @Given I create a configuration file with:
+     */
+    public function iCreateAConfigurationFileWith(PyStringNode $string): void
+    {
+        $this->configurationPath = $this->getProjectPath() . '/travis-phpstorm-inspector.json';
+
+        $file = fopen($this->configurationPath, 'wb');
+
+        if(!fwrite($file, $string->getRaw())) {
+            throw new \RuntimeException($this->configurationPath . ' could not be created');
+        }
+
+        fclose($file);
     }
 
     /**
