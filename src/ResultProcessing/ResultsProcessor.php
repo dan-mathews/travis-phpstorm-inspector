@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\ResultProcessing;
 
 use DirectoryIterator;
+use TravisPhpstormInspector\InspectionConfiguration;
 use TravisPhpstormInspector\ResultsDirectory;
 
 class ResultsProcessor
@@ -14,7 +15,17 @@ class ResultsProcessor
      */
     private $directory;
 
-    public function __construct(ResultsDirectory $resultsDirectory)
+    /**
+     * @var InspectionConfiguration
+     */
+    private $inspectionConfiguration;
+
+    /**
+     * @param ResultsDirectory $resultsDirectory
+     * @param InspectionConfiguration $inspectionConfiguration
+     * @throws \InvalidArgumentException
+     */
+    public function __construct(ResultsDirectory $resultsDirectory, InspectionConfiguration $inspectionConfiguration)
     {
         try {
             $this->directory = new DirectoryIterator($resultsDirectory->getPath());
@@ -25,11 +36,17 @@ class ResultsProcessor
                 $e
             );
         }
+
+        $this->inspectionConfiguration = $inspectionConfiguration;
     }
 
+    /**
+     * @return InspectionOutcome
+     * @throws \RuntimeException
+     */
     public function process(): InspectionOutcome
     {
-        $problems = new Problems();
+        $problems = new Problems($this->inspectionConfiguration);
 
         foreach ($this->directory as $fileInfo) {
             $fileName = $fileInfo->getFilename();

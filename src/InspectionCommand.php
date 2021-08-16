@@ -43,6 +43,9 @@ class InspectionCommand
         $this->inspectionsXml = $this->ideaDirectory->getInspectionsXml();
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     public function run(): void
     {
         $command = 'PhpStorm/bin/phpstorm.sh inspect ' . $this->project->getPath()

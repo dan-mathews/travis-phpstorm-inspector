@@ -1,6 +1,6 @@
 Feature: Run inspections
 
-@createsProject
+@createsProject @issue-1
 Scenario: Run inspections on a project with no problems
     Given I create a new project
     And I initialise git
@@ -15,7 +15,7 @@ Scenario: Run inspections on a project with no problems
     No problems to report.
     """
 
-@createsProject
+@createsProject @issue-1
 Scenario: Run inspections on a project with problems
   Given I create a new project
   And I initialise git
@@ -27,7 +27,7 @@ Scenario: Run inspections on a project with problems
   Then the outcome exit code should be 1
   And the last lines of the output should be:
   """
-  36 problems were found during phpStorm inspection.
+  39 problems were found during phpStorm inspection.
 
   Problems in InspectionViolator.php:
     line 1    ERROR         (Short open tag usage): Short opening tag usage
@@ -35,6 +35,9 @@ Scenario: Run inspections on a project with problems
     line 10   WARNING       (Constant name is not following coding convention): Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
     line 10   WARNING       (Missing visibility): PSR-12: Missing visibility definition
     line 10   WARNING       (unused declaration): Constant is never used.
+    line 14   TYPO          (Typo): Typo: In word 'propertie'
+    line 15   TYPO          (Typo): Typo: In word 'propertie'
+    line 16   TYPO          (Typo): Typo: In word 'propertie'
     line 16   WARNING       (Language level): Typed properties are only allowed since PHP 7.4
     line 16   WARNING       (Missing PHPDoc comment): Missing PHPDoc comment for field
     line 16   WARNING       (Property name is not following coding convention): Property name <code>$bad_propertie</code> doesn't match regex '[a-z][A-Za-z\d]*' #loc
@@ -68,7 +71,7 @@ Scenario: Run inspections on a project with problems
     line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
   """
 
-  @createsProject
+  @createsProject @issue-1
   Scenario: Use an inspections file with the wrong extension
       Given I create a new project
       And I initialise git

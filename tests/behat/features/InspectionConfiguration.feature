@@ -10,7 +10,7 @@ Scenario: Run inspections on a project with severities ignored in the configurat
   And I create a configuration file with:
   """
   {
-    "ignore-severities": [
+    "ignored_severities": [
       "TYPO",
       "ERROR"
     ]
@@ -49,3 +49,43 @@ Scenario: Run inspections on a project with severities ignored in the configurat
     line 89   WARNING       (Inconsistent return points): Missing 'return' statement
     line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
   """
+
+  @createsProject @issue-8 @dd
+  Scenario Outline: Run inspections on a project with invalid ignored severities
+    Given I create a new project
+    And I initialise git
+    And I create a valid inspections xml file
+    And I create a php file with problems
+    And I stage the php file in git
+    And I create a configuration file with:
+    """
+    {
+      "ignored_severities": <payload>
+    }
+    """
+    And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
+    When I run inspections
+    Then the outcome exit code should be 1
+    And the last 15 lines of the output should contain 'InvalidArgumentException: Invalid values for ignored severities'
+
+    Examples:
+    | payload |
+    | ["CAT"] |
+    | 5       |
+    | nul     |
+
+  @createsProject @issue-8
+  Scenario: Run inspections on a project with invalid configuration file
+    Given I create a new project
+    And I initialise git
+    And I create a valid inspections xml file
+    And I create a php file with problems
+    And I stage the php file in git
+    And I create a configuration file with:
+    """
+    'cat'
+    """
+    And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
+    When I run inspections
+    Then the outcome exit code should be 1
+    And the last 15 lines of the output should contain 'InvalidArgumentException: Could not process the configuration file as json'

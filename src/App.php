@@ -35,13 +35,17 @@ class App
 
         $this->resultsDirectory->create($project->getPath());
 
+        $inspectionConfigurationParser = new InspectionConfigurationParser($project);
+
+        $inspectionConfiguration = $inspectionConfigurationParser->parse();
+
         $simpleIdeaFactory = new SimpleIdeaFactory();
 
         $ideaDirectory = $simpleIdeaFactory->create($project, $inspectionsXmlPath);
 
         $this->inspectionCommand = new InspectionCommand($project, $ideaDirectory, $this->resultsDirectory);
 
-        $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory);
+        $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory, $inspectionConfiguration);
     }
 
     public function run(): InspectionOutcome

@@ -271,6 +271,24 @@ class FeatureContext implements Context
         }
     }
 
+    /**
+     * @Then the last :arg1 lines of the output should contain :string
+     */
+    public function theLastLinesOfTheOutputShouldContain($arg1, $string)
+    {
+        $outputSnippet = array_slice($this->getInspectionOutput(), $arg1 * -1);
+
+        foreach ($outputSnippet as $line) {
+            if (false !== strpos($line, $string)) {
+                Assert::assertStringContainsString($string, $line);
+                return;
+            }
+        }
+
+        Assert::fail("The last $arg1 lines were:\n" . implode("\n", $outputSnippet));
+    }
+
+
 
     /**
      * @Given I am expecting an error

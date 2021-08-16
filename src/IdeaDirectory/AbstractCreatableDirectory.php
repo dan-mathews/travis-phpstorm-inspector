@@ -16,6 +16,11 @@ abstract class AbstractCreatableDirectory extends AbstractCreatableFileSystemEle
      */
     protected $directories = [];
 
+    /**
+     * @param string $location
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     */
     public function create(string $location): void
     {
         parent::create($location);

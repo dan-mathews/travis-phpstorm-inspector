@@ -16,6 +16,12 @@ use TravisPhpstormInspector\Project;
 
 class SimpleIdeaFactory
 {
+    /**
+     * @param Project $project
+     * @param string $inspectionsXmlPath
+     * @return Idea
+     * @throws \InvalidArgumentException
+     */
     public function create(Project $project, string $inspectionsXmlPath): Idea
     {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);

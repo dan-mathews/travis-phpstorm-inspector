@@ -23,6 +23,10 @@ class InspectionsXml extends AbstractCreatableFile
      */
     private $profileNameValue;
 
+    /**
+     * @param string $inspectionsXmlPath
+     * @throws \InvalidArgumentException
+     */
     public function __construct(string $inspectionsXmlPath)
     {
         $inspectionsXmlInfo = $this->validateInspectionsXml($inspectionsXmlPath);
@@ -39,6 +43,11 @@ class InspectionsXml extends AbstractCreatableFile
         return $this->profileNameValue;
     }
 
+    /**
+     * @param string $inspectionsXmlPath
+     * @return string
+     * @throws \InvalidArgumentException
+     */
     private function extractProfileNameValue(string $inspectionsXmlPath): string
     {
         $xml = new \XMLReader();
@@ -69,6 +78,11 @@ class InspectionsXml extends AbstractCreatableFile
         );
     }
 
+    /**
+     * @param string $inspectionsXmlPath
+     * @return \SplFileInfo
+     * @throws \InvalidArgumentException
+     */
     private function validateInspectionsXml(string $inspectionsXmlPath): \SplFileInfo
     {
         $inspectionsXmlInfo = new \SplFileInfo($inspectionsXmlPath);
@@ -86,6 +100,11 @@ class InspectionsXml extends AbstractCreatableFile
         return $inspectionsXmlInfo;
     }
 
+    /**
+     * @param \SplFileInfo $inspectionsXmlInfo
+     * @return string
+     * @throws \InvalidArgumentException
+     */
     private function getInspectionsXmlContents(\SplFileInfo $inspectionsXmlInfo): string
     {
         if (false === $inspectionsXmlInfo->getRealPath()) {

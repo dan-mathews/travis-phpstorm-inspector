@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\ResultProcessing;
 
+use TravisPhpstormInspector\InspectionConfiguration;
+
 class Problems extends \SplHeap
 {
-    private const IGNORED_SEVERITIES = [
-        'TYPO',
-    ];
+    /**
+     * @var InspectionConfiguration
+     */
+    private $inspectionConfiguration;
+
+    public function __construct(InspectionConfiguration $inspectionConfiguration)
+    {
+        $this->inspectionConfiguration = $inspectionConfiguration;
+    }
 
     /** @param array<mixed> $jsonProblems */
     public function addProblems(array $jsonProblems): void
@@ -17,7 +25,7 @@ class Problems extends \SplHeap
         foreach ($jsonProblems as $jsonProblem) {
             $problem = new Problem($jsonProblem);
 
-            if (in_array($problem->getSeverity(), self::IGNORED_SEVERITIES, true)) {
+            if (in_array($problem->getSeverity(), $this->inspectionConfiguration->getIgnoredSeverities(), true)) {
                 continue;
             }
 

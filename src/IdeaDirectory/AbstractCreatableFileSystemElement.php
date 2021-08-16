@@ -20,6 +20,11 @@ abstract class AbstractCreatableFileSystemElement
         return $this->path;
     }
 
+    /**
+     * @param string $location
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     */
     /** @psalm-assert string $this->path */
     public function create(string $location): void
     {

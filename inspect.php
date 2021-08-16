@@ -7,7 +7,7 @@ include __DIR__ . '/vendor/autoload.php';
 use TravisPhpstormInspector\App;
 
 /** @psalm-suppress InvalidArgument - not all arguments are required here */
-set_error_handler(static function (int $_errno, string $errstr){
+set_error_handler(static function (int $_errno, string $errstr) {
     throw new RuntimeException($errstr);
 });
 
@@ -29,7 +29,9 @@ if (!isset($argv[1])) {
 }
 
 if (!isset($argv[2])) {
-    throw new InvalidArgumentException('Second argument passed to this script must be a path to the inspections xml file.');
+    throw new InvalidArgumentException(
+        'Second argument passed to the script must be a path to the inspections xml file.'
+    );
 }
 
 $app = new App($argv[1], $argv[2]);
