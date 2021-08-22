@@ -26,6 +26,7 @@ class Configuration
     /**
      * @param array $ignoredSeverities
      * @throws ConfigurationException
+     * @psalm-suppress MixedPropertyTypeCoercion - We know this will be an array of strings after array_diff
      */
     public function setIgnoredSeverities(array $ignoredSeverities): void
     {
@@ -36,7 +37,6 @@ class Configuration
             );
         }
 
-        /* @psalm-suppress MixedPropertyTypeCoercion - we know this is strings now we've done array_diff */
         $this->ignoredSeverities = $ignoredSeverities;
     }
 

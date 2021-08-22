@@ -2,11 +2,13 @@ sudo: required
 jobs:
   include:
     - name: 'Tests'
+      if: type = pull_request
       language: php
       php:
         - '7.3'
       script: ./.travis/tests
     - name: 'Standards'
+      if: type = pull_request
       language: php
       php:
         - '7.3'
