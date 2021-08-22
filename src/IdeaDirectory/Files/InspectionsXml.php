@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory\Files;
 
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableFile;
 
 class InspectionsXml extends AbstractCreatableFile
@@ -25,7 +26,7 @@ class InspectionsXml extends AbstractCreatableFile
 
     /**
      * @param string $inspectionsXmlPath
-     * @throws \InvalidArgumentException
+     * @throws InspectionsProfileException
      */
     public function __construct(string $inspectionsXmlPath)
     {
@@ -46,7 +47,7 @@ class InspectionsXml extends AbstractCreatableFile
     /**
      * @param string $inspectionsXmlPath
      * @return string
-     * @throws \InvalidArgumentException
+     * @throws InspectionsProfileException
      */
     private function extractProfileNameValue(string $inspectionsXmlPath): string
     {
@@ -72,7 +73,7 @@ class InspectionsXml extends AbstractCreatableFile
 
         $xml->close();
 
-        throw new \InvalidArgumentException(
+        throw new InspectionsProfileException(
             'Could not read a "myName" attribute from the inspections profile,'
             . ' so the profile could not be referenced elsewhere.'
         );
@@ -81,19 +82,19 @@ class InspectionsXml extends AbstractCreatableFile
     /**
      * @param string $inspectionsXmlPath
      * @return \SplFileInfo
-     * @throws \InvalidArgumentException
+     * @throws InspectionsProfileException
      */
     private function validateInspectionsXml(string $inspectionsXmlPath): \SplFileInfo
     {
         $inspectionsXmlInfo = new \SplFileInfo($inspectionsXmlPath);
 
         if (!$inspectionsXmlInfo->isReadable()) {
-            throw new \InvalidArgumentException('Could not read the inspections profile at ' . $inspectionsXmlPath);
+            throw new InspectionsProfileException('Could not read the inspections profile at ' . $inspectionsXmlPath);
         }
 
         if ('xml' !== $inspectionsXmlInfo->getExtension()) {
-            throw new \InvalidArgumentException(
-                'The inspections profile at ' . $inspectionsXmlPath . ' does not have an xml extension'
+            throw new InspectionsProfileException(
+                'The inspections profile at ' . $inspectionsXmlPath . ' does not have an xml extension.'
             );
         }
 
@@ -103,18 +104,18 @@ class InspectionsXml extends AbstractCreatableFile
     /**
      * @param \SplFileInfo $inspectionsXmlInfo
      * @return string
-     * @throws \InvalidArgumentException
+     * @throws InspectionsProfileException
      */
     private function getInspectionsXmlContents(\SplFileInfo $inspectionsXmlInfo): string
     {
         if (false === $inspectionsXmlInfo->getRealPath()) {
-            throw new \InvalidArgumentException('Could not read the path of inspections profile');
+            throw new InspectionsProfileException('Could not read the path of inspections profile');
         }
 
         $contents = file_get_contents($inspectionsXmlInfo->getRealPath());
 
         if (false === $contents) {
-            throw new \InvalidArgumentException(
+            throw new InspectionsProfileException(
                 'Could not read the contents of inspections profile ' . $inspectionsXmlInfo->getRealPath()
             );
         }

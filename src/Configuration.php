@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-class InspectionConfiguration
+use TravisPhpstormInspector\Exceptions\ConfigurationException;
+
+class Configuration
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
 
@@ -23,12 +25,12 @@ class InspectionConfiguration
 
     /**
      * @param string[] $ignoredSeverities
-     * @throws \InvalidArgumentException
+     * @throws ConfigurationException
      */
     public function setIgnoredSeverities(array $ignoredSeverities): void
     {
         if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
-            throw new \InvalidArgumentException(
+            throw new ConfigurationException(
                 'Invalid values for ignored severities. The allowed values are: '
                 . implode(', ', self::VALID_IGNORED_SEVERITIES)
             );

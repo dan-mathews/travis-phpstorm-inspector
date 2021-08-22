@@ -4,54 +4,62 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\IdeaDirectory\SimpleIdeaFactory;
-use TravisPhpstormInspector\ResultProcessing\InspectionOutcome;
-use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
+use TravisPhpstormInspector\Views\Fail;
+use TravisPhpstormInspector\Views\Error;
+use TravisPhpstormInspector\Views\Pass;
 
 class App
 {
     public const NAME = 'travis-phpstorm-inspector';
 
     /**
-     * @var ResultsDirectory
+     * @var bool;
      */
-    private $resultsDirectory;
+    private $verbose;
 
     /**
-     * @var InspectionCommand
+     * @var Inspection
      */
-    private $inspectionCommand;
+    private $inspection;
 
-    /**
-     * @var ResultsProcessor
-     */
-    private $resultsProcessor;
-
-    public function __construct(string $projectPath, string $inspectionsXmlPath)
+    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose = false)
     {
-        $project = new Project($projectPath);
+        $this->verbose = $verbose;
 
-        $this->resultsDirectory = new ResultsDirectory();
-
-        $this->resultsDirectory->create($project->getPath());
-
-        $inspectionConfigurationParser = new InspectionConfigurationParser($project);
-
-        $inspectionConfiguration = $inspectionConfigurationParser->parse();
-
-        $simpleIdeaFactory = new SimpleIdeaFactory();
-
-        $ideaDirectory = $simpleIdeaFactory->create($project, $inspectionsXmlPath);
-
-        $this->inspectionCommand = new InspectionCommand($project, $ideaDirectory, $this->resultsDirectory);
-
-        $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory, $inspectionConfiguration);
+        try {
+            $this->inspection = new Inspection($projectPath, $inspectionsXmlPath);
+        } catch (\Throwable $e) {
+            $this->handleError($e);
+        }
     }
 
-    public function run(): InspectionOutcome
+    public function run(): void
     {
-        $this->inspectionCommand->run();
+        try {
+            $problems = $this->inspection->run();
 
-        return $this->resultsProcessor->process();
+            if (!$problems->isEmpty()) {
+                $view = new Fail($problems);
+
+                $view->display();
+
+                exit(1);
+            }
+
+            $view = new Pass();
+
+            $view->display();
+        } catch (\Throwable $e) {
+            $this->handleError($e);
+        }
+    }
+
+    private function handleError(\Throwable $e): void
+    {
+        $view = new Error($e, $this->verbose);
+
+        $view->display();
+
+        exit(1);
     }
 }

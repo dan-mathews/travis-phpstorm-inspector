@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\ResultProcessing;
 
 use DirectoryIterator;
-use TravisPhpstormInspector\InspectionConfiguration;
+use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\ResultsDirectory;
 
 class ResultsProcessor
@@ -16,16 +16,16 @@ class ResultsProcessor
     private $directory;
 
     /**
-     * @var InspectionConfiguration
+     * @var Configuration
      */
     private $inspectionConfiguration;
 
     /**
      * @param ResultsDirectory $resultsDirectory
-     * @param InspectionConfiguration $inspectionConfiguration
+     * @param Configuration $inspectionConfiguration
      * @throws \InvalidArgumentException
      */
-    public function __construct(ResultsDirectory $resultsDirectory, InspectionConfiguration $inspectionConfiguration)
+    public function __construct(ResultsDirectory $resultsDirectory, Configuration $inspectionConfiguration)
     {
         try {
             $this->directory = new DirectoryIterator($resultsDirectory->getPath());
@@ -41,10 +41,10 @@ class ResultsProcessor
     }
 
     /**
-     * @return InspectionOutcome
+     * @return Problems
      * @throws \RuntimeException
      */
-    public function process(): InspectionOutcome
+    public function process(): Problems
     {
         $problems = new Problems($this->inspectionConfiguration);
 
@@ -95,10 +95,6 @@ class ResultsProcessor
             $problems->addProblems($jsonContents['problems']);
         }
 
-        if (!$problems->problemsToReport()) {
-            return new InspectionOutcome(0, $problems->getInspectionMessage());
-        }
-
-        return new InspectionOutcome(1, $problems->getInspectionMessage());
+        return $problems;
     }
 }
