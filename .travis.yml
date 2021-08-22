@@ -7,4 +7,5 @@ jobs:
       language: php
       php:
         - '7.3'
-      script: ./.travis/checks
+      script: ./.travis/tests
+    - script: ./.travis/standards
