@@ -36,7 +36,7 @@ class Configuration
             );
         }
 
-        /* @var string[] $ignoredSeverities */
+        /* @psalm-suppress MixedPropertyTypeCoercion - we know this is strings now we've done array_diff */
         $this->ignoredSeverities = $ignoredSeverities;
     }
 
