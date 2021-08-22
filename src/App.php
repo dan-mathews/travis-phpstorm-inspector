@@ -13,7 +13,7 @@ class App
     public const NAME = 'travis-phpstorm-inspector';
 
     /**
-     * @var bool;
+     * @var bool
      */
     private $verbose;
 
@@ -29,7 +29,11 @@ class App
         try {
             $this->inspection = new Inspection($projectPath, $inspectionsXmlPath);
         } catch (\Throwable $e) {
-            $this->handleError($e);
+            $view = new Error($e, $this->verbose);
+
+            $view->display();
+
+            exit(1);
         }
     }
 
@@ -50,16 +54,11 @@ class App
 
             $view->display();
         } catch (\Throwable $e) {
-            $this->handleError($e);
+            $view = new Error($e, $this->verbose);
+
+            $view->display();
+
+            exit(1);
         }
-    }
-
-    private function handleError(\Throwable $e): void
-    {
-        $view = new Error($e, $this->verbose);
-
-        $view->display();
-
-        exit(1);
     }
 }

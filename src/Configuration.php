@@ -24,7 +24,7 @@ class Configuration
     private $ignoredSeverities = [];
 
     /**
-     * @param string[] $ignoredSeverities
+     * @param array $ignoredSeverities
      * @throws ConfigurationException
      */
     public function setIgnoredSeverities(array $ignoredSeverities): void

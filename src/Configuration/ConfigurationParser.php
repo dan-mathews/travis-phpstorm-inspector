@@ -16,7 +16,7 @@ class ConfigurationParser
     private const KEY_IGNORED_SEVERITIES = 'ignored_severities';
 
     /**
-     * @var string
+     * @var Project
      */
     private $project;
 
@@ -53,6 +53,10 @@ class ConfigurationParser
                 1,
                 $e
             );
+        }
+
+        if (!is_array($parsedConfiguration)) {
+            throw new ConfigurationException('Configuration should be written as a json object.');
         }
 
         if (array_key_exists(self::KEY_IGNORED_SEVERITIES, $parsedConfiguration)) {

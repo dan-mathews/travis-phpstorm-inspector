@@ -197,7 +197,7 @@ class FeatureContext implements Context
 
         $file = fopen($this->getProjectPath() . '/' . $this->inspectionsPath, 'wb');
 
-        if(!fwrite($file, $xmlContents)) {
+        if (!fwrite($file, $xmlContents)) {
             throw new \RuntimeException($this->inspectionsPath . ' could not be created');
         }
 
@@ -226,7 +226,7 @@ class FeatureContext implements Context
 
         $file = fopen($path, 'wb');
 
-        if(!fwrite($file, $phpContents)) {
+        if (!fwrite($file, $phpContents)) {
             throw new \RuntimeException($path . ' could not be created');
         }
 
@@ -245,13 +245,15 @@ class FeatureContext implements Context
         $output = null;
 
         exec(
-            'docker run -v ' . $this->projectPath . ':/app -v $(pwd):/inspector ' . $this->getDockerImage() . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
+            'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage()
+            . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
             $output,
             $code
         );
 
         $this->inspectionExitCode = $code;
 
+        /* @psalm-var array<array-key, string>|null $output */
         $this->inspectionOutput = $output;
     }
 
@@ -274,7 +276,7 @@ class FeatureContext implements Context
     /**
      * @Then the last :arg1 lines of the output should contain :string
      */
-    public function theLastLinesOfTheOutputShouldContain($arg1, $string)
+    public function theLastLinesOfTheOutputShouldContain(int $arg1, string $string): void
     {
         $outputSnippet = array_slice($this->getInspectionOutput(), $arg1 * -1);
 
@@ -340,7 +342,7 @@ class FeatureContext implements Context
     {
         $currentPath = getcwd();
 
-        if(!chdir($this->getProjectPath())) {
+        if (!chdir($this->getProjectPath())) {
             throw new \RuntimeException('Could not change directory into the project');
         }
 
@@ -379,7 +381,7 @@ class FeatureContext implements Context
 
         $file = fopen($this->configurationPath, 'wb');
 
-        if(!fwrite($file, $string->getRaw())) {
+        if (!fwrite($file, $string->getRaw())) {
             throw new \RuntimeException($this->configurationPath . ' could not be created');
         }
 
@@ -391,19 +393,18 @@ class FeatureContext implements Context
       *
       * @return void
       */
-     public function cleanProject()
-     {
-         if (!is_dir($this->getProjectPath())) {
+    public function cleanProject()
+    {
+        if (!is_dir($this->getProjectPath())) {
             return;
         }
 
         $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
     }
 
-     private function removeDirectory(\DirectoryIterator $directoryIterator): void
+    private function removeDirectory(\DirectoryIterator $directoryIterator): void
     {
         foreach ($directoryIterator as $info) {
-
             if ($info->isDot()) {
                 continue;
             }
