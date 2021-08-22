@@ -56,15 +56,11 @@ class ConfigurationParser
         }
 
         if (array_key_exists(self::KEY_IGNORED_SEVERITIES, $parsedConfiguration)) {
-            try {
-                $inspectionConfiguration->setIgnoredSeverities($parsedConfiguration[self::KEY_IGNORED_SEVERITIES]);
-            } catch (\Throwable $e) {
-                throw new ConfigurationException(
-                    'Could not process the ignored severities in configuration file.',
-                    1,
-                    $e
-                );
+            if (!is_array($parsedConfiguration[self::KEY_IGNORED_SEVERITIES])) {
+                throw new ConfigurationException('Ignored severities must be an array.');
             }
+
+            $inspectionConfiguration->setIgnoredSeverities($parsedConfiguration[self::KEY_IGNORED_SEVERITIES]);
         }
 
         return $inspectionConfiguration;

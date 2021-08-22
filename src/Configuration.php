@@ -32,7 +32,7 @@ class Configuration
         if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
             throw new ConfigurationException(
                 'Invalid values for ignored severities. The allowed values are: '
-                . implode(', ', self::VALID_IGNORED_SEVERITIES)
+                . implode(', ', self::VALID_IGNORED_SEVERITIES) . '.'
             );
         }
 

@@ -68,14 +68,14 @@ Feature: Run inspections with a configuration file
     Then the outcome exit code should be 1
     And the last lines of the output should be:
     """
-    Could not process the ignored severities in configuration file.
+    <message>
     """
 
     Examples:
-      | payload |
-      | ["CAT"] |
-      | 5       |
-      | null    |
+      | payload | message                                                                                                            |
+      | ["CAT"] | Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, SERVER PROBLEM. |
+      | 5       | Ignored severities must be an array.                                                                               |
+      | null    | Ignored severities must be an array.                                                                               |
 
   @createsProject @issue-8
   Scenario: Run inspections on a project with invalid configuration file
