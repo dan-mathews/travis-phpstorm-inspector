@@ -36,6 +36,7 @@ class Configuration
             );
         }
 
+        /* @var string[] $ignoredSeverities */
         $this->ignoredSeverities = $ignoredSeverities;
     }
 

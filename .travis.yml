@@ -1,11 +1,13 @@
 sudo: required
 jobs:
   include:
-    - language: php
+    - name: 'Tests'
+      language: php
       php:
         - '7.3'
       script: ./.travis/tests
-    - language: php
+    - name: 'Standards'
+      language: php
       php:
         - '7.3'
       script: ./.travis/standards

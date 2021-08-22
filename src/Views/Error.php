@@ -15,7 +15,7 @@ class Error implements DisplayInterface
     private $throwable;
 
     /**
-     * @var bool;
+     * @var bool
      */
     private $verbose;
 
