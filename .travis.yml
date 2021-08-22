@@ -1,11 +1,11 @@
 sudo: required
-language: bash
 jobs:
   include:
-    - stage: test
-      name: "PR Checks"
-      language: php
+    - language: php
       php:
         - '7.3'
       script: ./.travis/tests
-    - script: ./.travis/standards
+    - language: php
+      php:
+        - '7.3'
+      script: ./.travis/standards
