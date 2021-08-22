@@ -18,7 +18,9 @@ class Problems extends \SplHeap
         $this->inspectionConfiguration = $inspectionConfiguration;
     }
 
-    /** @param array $jsonProblems */
+    /**
+     * @param array<string|int, mixed> $jsonProblems
+     */
     public function addProblems(array $jsonProblems): void
     {
         /** @var array<string, mixed> $jsonProblem */

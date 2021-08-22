@@ -67,16 +67,17 @@ class FeatureContext implements Context
 
     /**
      * @Given I create a new project
+     * @throws \Exception
      */
     public function iCreateANewProject(): void
     {
         $this->projectName = 'testProject' . random_int(0, 9999);
 
-        if (!mkdir($this->projectName) && !is_dir($this->projectName)) {
+        if (!mkdir($this->projectName) || !is_dir($this->projectName)) {
             throw new \RuntimeException(sprintf('Directory "%s" could not be created', $this->projectName));
         }
 
-        $this->projectPath = realpath($this->projectName);
+        $this->projectPath = $this->getRealPath($this->projectName);
     }
 
     private function getProjectPath(): string
@@ -178,7 +179,7 @@ class FeatureContext implements Context
     {
         switch ($valid) {
             case 'valid':
-                $xmlContents = file_get_contents('tests/data/exampleStandards.xml');
+                $xmlContents = $this->readFromFile('tests/data/exampleStandards.xml');
 
                 $this->inspectionsPath = 'exampleStandards.xml';
 
@@ -195,13 +196,18 @@ class FeatureContext implements Context
                 );
         }
 
-        $file = fopen($this->getProjectPath() . '/' . $this->inspectionsPath, 'wb');
+        $this->writeToFile($this->getProjectPath() . '/' . $this->inspectionsPath, $xmlContents);
+    }
 
-        if (!fwrite($file, $xmlContents)) {
-            throw new \RuntimeException($this->inspectionsPath . ' could not be created');
+    private function readFromFile(string $path): string
+    {
+        $contents = file_get_contents($path);
+
+        if (false === $contents) {
+            throw new \RuntimeException('Could not get contents of ' . $path);
         }
 
-        fclose($file);
+        return $contents;
     }
 
     /**
@@ -220,23 +226,44 @@ class FeatureContext implements Context
                 throw new \LogicException('This method can only be called "with" or "without" problems');
         }
 
-        $phpContents = file_get_contents('tests/data/' . $filename);
+        $phpContents = $this->readFromFile('tests/data/' . $filename);
 
-        $path = $this->getProjectPath() . '/' . $filename;
+        $this->phpFilePath = $this->writeToFile($this->getProjectPath() . '/' . $filename, $phpContents);
+    }
 
+    private function writeToFile(string $path, string $contents): string
+    {
         $file = fopen($path, 'wb');
 
-        if (!fwrite($file, $phpContents)) {
-            throw new \RuntimeException($path . ' could not be created');
+        if (false === $file) {
+            throw new \RuntimeException('Failed to create file at path: "' . $path . '".');
         }
 
-        fclose($file);
+        if (false === fwrite($file, $contents)) {
+            throw new \RuntimeException('Failed to write to file at path: "' . $path . '".');
+        }
 
-        $this->phpFilePath = realpath($path);
+        if (false === fclose($file)) {
+            throw new \RuntimeException('Failed to close file at path: "' . $path . '".');
+        }
+
+        return $this->getRealPath($path);
+    }
+
+    private function getRealPath(string $path): string
+    {
+        $realPath = realpath($path);
+
+        if (false === $realPath) {
+            throw new \RuntimeException('Failed to find real path of : "' . $path . '".');
+        }
+
+        return $realPath;
     }
 
     /**
      * @When I run inspections
+     * @psalm-suppress MixedPropertyTypeCoercion - We know $output will be an array of strings
      */
     public function iRunInspections(): void
     {
@@ -253,7 +280,6 @@ class FeatureContext implements Context
 
         $this->inspectionExitCode = $code;
 
-        /* @psalm-var array<array-key, string>|null $output */
         $this->inspectionOutput = $output;
     }
 
@@ -354,7 +380,12 @@ class FeatureContext implements Context
             throw new \RuntimeException('Could not stage the php file in ' . $this->getProjectPath());
         }
 
-        chdir($currentPath);
+        if (
+            false === $currentPath ||
+            !chdir($currentPath)
+        ) {
+            throw new \RuntimeException('Could not change directory back to original location');
+        }
     }
 
     /**
@@ -379,13 +410,7 @@ class FeatureContext implements Context
     {
         $this->configurationPath = $this->getProjectPath() . '/travis-phpstorm-inspector.json';
 
-        $file = fopen($this->configurationPath, 'wb');
-
-        if (!fwrite($file, $string->getRaw())) {
-            throw new \RuntimeException($this->configurationPath . ' could not be created');
-        }
-
-        fclose($file);
+        $this->writeToFile($this->configurationPath, $string->getRaw());
     }
 
     /**
@@ -409,8 +434,14 @@ class FeatureContext implements Context
                 continue;
             }
 
+            $realPath = $info->getRealPath();
+
+            if (false === $realPath) {
+                throw new \RuntimeException('Could not get real path of ' . var_export($info, true));
+            }
+
             if ($info->isDir()) {
-                self::removeDirectory(new \DirectoryIterator($info->getRealPath()));
+                self::removeDirectory(new \DirectoryIterator($realPath));
                 continue;
             }
 

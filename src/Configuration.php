@@ -24,9 +24,9 @@ class Configuration
     private $ignoredSeverities = [];
 
     /**
-     * @param array $ignoredSeverities
+     * @param array<string|int, mixed> $ignoredSeverities
      * @throws ConfigurationException
-     * @psalm-suppress MixedPropertyTypeCoercion - We know this will be an array of strings after array_diff
+     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */
     public function setIgnoredSeverities(array $ignoredSeverities): void
     {
