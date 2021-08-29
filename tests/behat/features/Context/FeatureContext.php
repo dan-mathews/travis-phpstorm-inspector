@@ -364,12 +364,11 @@ class FeatureContext implements Context
             }
 
             if ($info->isFile()) {
-                //TODO fix in docker context - maybe if the project cleaned up after itself this wouldn't be an issue?
-//                passthru('docker exec travis-phpstorm-inspector-behat-container rm /app/' . $info->getRealPath() );
-//                unlink($info->getRealPath());
+                // if running behat locally, run it with sudo for now to enable files to be deleted
+                unlink($info->getRealPath());
             }
         }
 
-//        rmdir($directoryIterator->getPath());
+        rmdir($directoryIterator->getPath());
     }
 }
