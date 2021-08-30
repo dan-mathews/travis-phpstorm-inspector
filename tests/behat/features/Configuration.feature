@@ -1,6 +1,6 @@
 Feature: Run inspections with a configuration file
 
-  @createsProject @issue-8
+  @issue-8 #@createsProject see issue-4
   Scenario: Run inspections on a project with severities ignored in the configuration file
     Given I create a new project
     And I initialise git
@@ -50,7 +50,7 @@ Feature: Run inspections with a configuration file
       line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
     """
 
-  @createsProject @issue-8
+  @issue-8 #@createsProject see issue-4
   Scenario Outline: Run inspections on a project with invalid ignored severities
     Given I create a new project
     And I initialise git
@@ -77,7 +77,7 @@ Feature: Run inspections with a configuration file
       | 5       | Ignored severities must be an array.                                                                               |
       | null    | Ignored severities must be an array.                                                                               |
 
-  @createsProject @issue-8
+  @issue-8 #@createsProject see issue-4
   Scenario: Run inspections on a project with invalid configuration file
     Given I create a new project
     And I initialise git

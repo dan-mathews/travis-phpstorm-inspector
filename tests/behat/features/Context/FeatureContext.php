@@ -18,6 +18,8 @@ class FeatureContext implements Context
     private $dockerImage;
 
     /**
+     * This is relative to the project root
+     *
      * @var null|string
      */
     private $projectPath;
@@ -446,12 +448,10 @@ class FeatureContext implements Context
             }
 
             if ($info->isFile()) {
-                //TODO fix in docker context - maybe if the project cleaned up after itself this wouldn't be an issue?
-//                passthru('docker exec travis-phpstorm-inspector-behat-container rm /app/' . $info->getRealPath() );
-//                unlink($info->getRealPath());
+                unlink($info->getRealPath());
             }
         }
 
-//        rmdir($directoryIterator->getPath());
+        rmdir($directoryIterator->getPath());
     }
 }
