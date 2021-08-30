@@ -78,4 +78,13 @@ Scenario: Run inspections on a project with problems
       And I am expecting an error
       And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
       When I run inspections
-      Then the error message should contain 'does not have an xml extension'
+      Then the last lines of the output should be:
+      """
+      InvalidArgumentException: The inspections profile at /app/invalid.txt does not have an xml extension in /inspector/src/IdeaDirectory/Files/InspectionsXml.php:81
+      Stack trace:
+      #0 /inspector/src/IdeaDirectory/Files/InspectionsXml.php(28): TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml->validateInspectionsXml('/app/invalid.tx...')
+      #1 /inspector/src/IdeaDirectory/SimpleIdeaFactory.php(21): TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml->__construct('/app/invalid.tx...')
+      #2 /inspector/src/App.php(40): TravisPhpstormInspector\IdeaDirectory\SimpleIdeaFactory->create(Object(TravisPhpstormInspector\Project), '/app/invalid.tx...')
+      #3 /inspector/inspect.php(35): TravisPhpstormInspector\App->__construct('/app', '/app/invalid.tx...')
+      #4 {main}
+      """
