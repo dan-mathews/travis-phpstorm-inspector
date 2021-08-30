@@ -1,6 +1,6 @@
 Feature: Run inspections
 
-@createsProject
+# @createsProject see issue-4
 Scenario: Run inspections on a project with no problems
     Given I create a new project
     And I initialise git
@@ -15,7 +15,7 @@ Scenario: Run inspections on a project with no problems
     No problems to report.
     """
 
-@createsProject
+# @createsProject see issue-4
 Scenario: Run inspections on a project with problems
   Given I create a new project
   And I initialise git
@@ -68,7 +68,7 @@ Scenario: Run inspections on a project with problems
     line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
   """
 
-  @createsProject
+  # @createsProject see issue-4
   Scenario: Use an inspections file with the wrong extension
       Given I create a new project
       And I initialise git
