@@ -7,7 +7,7 @@ namespace TravisPhpstormInspector;
 use TravisPhpstormInspector\Configuration\ConfigurationParser;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\SimpleIdeaFactory;
+use TravisPhpstormInspector\IdeaDirectory\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -40,17 +40,17 @@ class Inspection
 
         $this->resultsDirectory->create($project->getPath());
 
-        $inspectionConfigurationParser = new ConfigurationParser($project);
+        $configurationParser = new ConfigurationParser();
 
-        $inspectionConfiguration = $inspectionConfigurationParser->parse();
+        $configuration = $configurationParser->parse($project->getPath() . '/' . Configuration::FILENAME);
 
-        $simpleIdeaFactory = new SimpleIdeaFactory();
+        $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
 
-        $ideaDirectory = $simpleIdeaFactory->create($project, $inspectionsXmlPath);
+        $ideaDirectory = $ideaDirectoryBuilder->build($project, $inspectionsXmlPath);
 
         $this->inspectionCommand = new InspectionCommand($project, $ideaDirectory, $this->resultsDirectory);
 
-        $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory, $inspectionConfiguration);
+        $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory, $configuration);
     }
 
     /**

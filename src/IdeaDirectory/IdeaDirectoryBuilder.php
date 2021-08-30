@@ -15,7 +15,7 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 use TravisPhpstormInspector\Project;
 
-class SimpleIdeaFactory
+class IdeaDirectoryBuilder
 {
     /**
      * @param Project $project
@@ -24,7 +24,7 @@ class SimpleIdeaFactory
      * @throws \InvalidArgumentException
      * @throws InspectionsProfileException
      */
-    public function create(Project $project, string $inspectionsXmlPath): Idea
+    public function build(Project $project, string $inspectionsXmlPath): Idea
     {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());

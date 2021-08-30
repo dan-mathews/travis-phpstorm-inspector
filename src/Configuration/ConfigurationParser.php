@@ -6,34 +6,19 @@ namespace TravisPhpstormInspector\Configuration;
 
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Project;
 
 class ConfigurationParser
 {
-    //todo move this to constructor of configuration
-    private const FILENAME = 'travis-phpstorm-inspector.json';
-
     private const KEY_IGNORED_SEVERITIES = 'ignored_severities';
 
     /**
-     * @var Project
-     */
-    private $project;
-
-    public function __construct(Project $project)
-    {
-        $this->project = $project;
-    }
-
-    /**
+     * @param string $path
      * @return Configuration
      * @throws ConfigurationException
      */
-    public function parse(): Configuration
+    public function parse(string $path): Configuration
     {
         $inspectionConfiguration = new Configuration();
-
-        $path = $this->project->getPath() . '/' . self::FILENAME;
 
         if (!file_exists($path)) {
             return $inspectionConfiguration;
