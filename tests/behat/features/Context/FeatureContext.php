@@ -221,6 +221,7 @@ class FeatureContext implements Context
 
     /**
      * @When I run inspections
+     * @psalm-suppress MixedPropertyTypeCoercion - We know $output will be an array of strings
      */
     public function iRunInspections(): void
     {
@@ -229,7 +230,7 @@ class FeatureContext implements Context
         $output = null;
 
         exec(
-            'docker run -v ' . $this->projectPath . ':/app -v $(pwd):/inspector ' . $this->getDockerImage() . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
+            'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage() . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
             $output,
             $code
         );
