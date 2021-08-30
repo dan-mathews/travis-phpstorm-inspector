@@ -439,7 +439,7 @@ class FeatureContext implements Context
             }
 
             if ($info->isFile()) {
-                unlink($info->getRealPath());
+                unlink($realPath);
             }
         }
 
