@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+composer install
+
+vendor/bin/psalm
+vendor/bin/phpcs src tests/behat/features/Context --standard=PSR12
+vendor/bin/phpstan analyse src tests/behat/features/Context -l 8

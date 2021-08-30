@@ -18,6 +18,8 @@ class FeatureContext implements Context
     private $dockerImage;
 
     /**
+     * This is relative to the project root
+     *
      * @var null|string
      */
     private $projectPath;
@@ -33,6 +35,11 @@ class FeatureContext implements Context
      * @var null|string
      */
     private $projectName;
+
+    /**
+     * @var null|string
+     */
+    private $configurationPath;
 
     /**
      * @var null|string
@@ -62,16 +69,17 @@ class FeatureContext implements Context
 
     /**
      * @Given I create a new project
+     * @throws \Exception
      */
     public function iCreateANewProject(): void
     {
         $this->projectName = 'testProject' . random_int(0, 9999);
 
-        if (!mkdir($this->projectName) && !is_dir($this->projectName)) {
+        if (!mkdir($this->projectName) || !is_dir($this->projectName)) {
             throw new \RuntimeException(sprintf('Directory "%s" could not be created', $this->projectName));
         }
 
-        $this->projectPath = realpath($this->projectName);
+        $this->projectPath = $this->getRealPath($this->projectName);
     }
 
     private function getProjectPath(): string
@@ -121,6 +129,17 @@ class FeatureContext implements Context
         return $this->dockerImage;
     }
 
+    private function getConfigurationPath(): string
+    {
+        if (null === $this->configurationPath) {
+            throw new LogicException(
+                'Configuration path must be defined before it is retrieved'
+            );
+        }
+
+        return $this->configurationPath;
+    }
+
     private function getErrorMessage(): string
     {
         if (null === $this->errorMessage) {
@@ -162,7 +181,7 @@ class FeatureContext implements Context
     {
         switch ($valid) {
             case 'valid':
-                $xmlContents = file_get_contents('tests/data/exampleStandards.xml');
+                $xmlContents = $this->readFromFile('tests/data/exampleStandards.xml');
 
                 $this->inspectionsPath = 'exampleStandards.xml';
 
@@ -179,13 +198,18 @@ class FeatureContext implements Context
                 );
         }
 
-        $file = fopen($this->getProjectPath() . '/' . $this->inspectionsPath, 'wb');
+        $this->writeToFile($this->getProjectPath() . '/' . $this->inspectionsPath, $xmlContents);
+    }
 
-        if(!fwrite($file, $xmlContents)) {
-            throw new \RuntimeException($this->inspectionsPath . ' could not be created');
+    private function readFromFile(string $path): string
+    {
+        $contents = file_get_contents($path);
+
+        if (false === $contents) {
+            throw new \RuntimeException('Could not get contents of ' . $path);
         }
 
-        fclose($file);
+        return $contents;
     }
 
     /**
@@ -204,19 +228,39 @@ class FeatureContext implements Context
                 throw new \LogicException('This method can only be called "with" or "without" problems');
         }
 
-        $phpContents = file_get_contents('tests/data/' . $filename);
+        $phpContents = $this->readFromFile('tests/data/' . $filename);
 
-        $path = $this->getProjectPath() . '/' . $filename;
+        $this->phpFilePath = $this->writeToFile($this->getProjectPath() . '/' . $filename, $phpContents);
+    }
 
+    private function writeToFile(string $path, string $contents): string
+    {
         $file = fopen($path, 'wb');
 
-        if(!fwrite($file, $phpContents)) {
-            throw new \RuntimeException($path . ' could not be created');
+        if (false === $file) {
+            throw new \RuntimeException('Failed to create file at path: "' . $path . '".');
         }
 
-        fclose($file);
+        if (false === fwrite($file, $contents)) {
+            throw new \RuntimeException('Failed to write to file at path: "' . $path . '".');
+        }
 
-        $this->phpFilePath = realpath($path);
+        if (false === fclose($file)) {
+            throw new \RuntimeException('Failed to close file at path: "' . $path . '".');
+        }
+
+        return $this->getRealPath($path);
+    }
+
+    private function getRealPath(string $path): string
+    {
+        $realPath = realpath($path);
+
+        if (false === $realPath) {
+            throw new \RuntimeException('Failed to find real path of : "' . $path . '".');
+        }
+
+        return $realPath;
     }
 
     /**
@@ -225,19 +269,12 @@ class FeatureContext implements Context
      */
     public function iRunInspections(): void
     {
-        //TODO can you just put property directly into exec function for it to assign?
-        $code = null;
-        $output = null;
-
         exec(
-            'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage() . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
-            $output,
-            $code
+            'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage()
+            . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
+            $this->inspectionOutput,
+            $this->inspectionExitCode
         );
-
-        $this->inspectionExitCode = $code;
-
-        $this->inspectionOutput = $output;
     }
 
     /**
@@ -255,6 +292,24 @@ class FeatureContext implements Context
             throw new \RuntimeException('Could not pull docker image');
         }
     }
+
+    /**
+     * @Then the last :arg1 lines of the output should contain :string
+     */
+    public function theLastLinesOfTheOutputShouldContain(int $arg1, string $string): void
+    {
+        $outputSnippet = array_slice($this->getInspectionOutput(), $arg1 * -1);
+
+        foreach ($outputSnippet as $line) {
+            if (false !== strpos($line, $string)) {
+                Assert::assertStringContainsString($string, $line);
+                return;
+            }
+        }
+
+        Assert::fail("The last $arg1 lines were:\n" . implode("\n", $outputSnippet));
+    }
+
 
 
     /**
@@ -278,10 +333,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * TODO rename this to output not outcome. Remove references to outcome
-     * @Then the outcome exit code should be :exitCode
+     * @Then the exit code should be :exitCode
      */
-    public function theOutcomeExitCodeShouldBe(string $exitCode): void
+    public function theExitCodeShouldBe(string $exitCode): void
     {
         Assert::assertSame((int) $exitCode, $this->getInspectionExitCode());
     }
@@ -307,7 +361,7 @@ class FeatureContext implements Context
     {
         $currentPath = getcwd();
 
-        if(!chdir($this->getProjectPath())) {
+        if (!chdir($this->getProjectPath())) {
             throw new \RuntimeException('Could not change directory into the project');
         }
 
@@ -319,7 +373,12 @@ class FeatureContext implements Context
             throw new \RuntimeException('Could not stage the php file in ' . $this->getProjectPath());
         }
 
-        chdir($currentPath);
+        if (
+            false === $currentPath ||
+            !chdir($currentPath)
+        ) {
+            throw new \RuntimeException('Could not change directory back to original location');
+        }
     }
 
     /**
@@ -338,35 +397,49 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given I create a configuration file with:
+     */
+    public function iCreateAConfigurationFileWith(PyStringNode $string): void
+    {
+        $this->configurationPath = $this->getProjectPath() . '/travis-phpstorm-inspector.json';
+
+        $this->writeToFile($this->configurationPath, $string->getRaw());
+    }
+
+    /**
       * @AfterScenario @createsProject
       *
       * @return void
       */
-     public function cleanProject()
-     {
-         if (!is_dir($this->getProjectPath())) {
+    public function cleanProject()
+    {
+        if (!is_dir($this->getProjectPath())) {
             return;
         }
 
         $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
     }
 
-     private function removeDirectory(\DirectoryIterator $directoryIterator): void
+    private function removeDirectory(\DirectoryIterator $directoryIterator): void
     {
         foreach ($directoryIterator as $info) {
-
             if ($info->isDot()) {
                 continue;
             }
 
+            $realPath = $info->getRealPath();
+
+            if (false === $realPath) {
+                throw new \RuntimeException('Could not get real path of ' . var_export($info, true));
+            }
+
             if ($info->isDir()) {
-                self::removeDirectory(new \DirectoryIterator($info->getRealPath()));
+                self::removeDirectory(new \DirectoryIterator($realPath));
                 continue;
             }
 
             if ($info->isFile()) {
-                // if running behat locally, run it with sudo for now to enable files to be deleted
-                unlink($info->getRealPath());
+                unlink($realPath);
             }
         }
 

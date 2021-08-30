@@ -21,6 +21,11 @@ class Project
         return $this->path;
     }
 
+    /**
+     * @param string $path
+     * @return string
+     * @throws \InvalidArgumentException
+     */
     private function validatePath(string $path): string
     {
         $fullPath = realpath($path);

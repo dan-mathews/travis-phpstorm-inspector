@@ -4,62 +4,35 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\ResultProcessing;
 
+use TravisPhpstormInspector\Configuration;
+
 class Problems extends \SplHeap
 {
-    private const IGNORED_SEVERITIES = [
-        'TYPO',
-    ];
+    /**
+     * @var Configuration
+     */
+    private $inspectionConfiguration;
 
-    /** @param array<mixed> $jsonProblems */
+    public function __construct(Configuration $inspectionConfiguration)
+    {
+        $this->inspectionConfiguration = $inspectionConfiguration;
+    }
+
+    /**
+     * @param array<string|int, mixed> $jsonProblems
+     */
     public function addProblems(array $jsonProblems): void
     {
         /** @var array<string, mixed> $jsonProblem */
         foreach ($jsonProblems as $jsonProblem) {
             $problem = new Problem($jsonProblem);
 
-            if (in_array($problem->getSeverity(), self::IGNORED_SEVERITIES, true)) {
+            if (in_array($problem->getSeverity(), $this->inspectionConfiguration->getIgnoredSeverities(), true)) {
                 continue;
             }
 
             $this->insert($problem);
         }
-    }
-
-    public function problemsToReport(): bool
-    {
-        return !$this->isEmpty();
-    }
-
-    public function getInspectionMessage(): string
-    {
-        if (!$this->problemsToReport()) {
-            return "No problems to report.\n";
-        }
-
-        $count = $this->count();
-
-        $output = $count . " problems were found during phpStorm inspection.\n";
-
-        $currentFilename = '';
-
-        $this->top();
-
-        for ($i = 0; $i < $count; $i++) {
-            /** @var Problem $problem */
-            $problem = $this->current();
-
-            if ($problem->getFilename() !== $currentFilename) {
-                $output .= "\nProblems in " . $problem->getFilename() . ":\n";
-                $currentFilename = $problem->getFilename();
-            }
-
-            $output .= "  line " . str_pad($problem->getLine(), 3) . '  ' . str_pad($problem->getSeverity(), 13) . ' ('
-            . $problem->getProblemName() . '): ' . $problem->getDescription() . "\n";
-
-            $this->next();
-        }
-
-        return $output;
     }
 
     /**
@@ -93,8 +66,6 @@ class Problems extends \SplHeap
             return $problemComparison;
         }
 
-        $descriptionComparison = strcmp(strtoupper($value2->getDescription()), strtoupper($value1->getDescription()));
-
-        return $descriptionComparison;
+        return strcmp(strtoupper($value2->getDescription()), strtoupper($value1->getDescription()));
     }
 }

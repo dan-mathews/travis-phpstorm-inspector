@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\IdeaDirectory;
 
 use TravisPhpstormInspector\App;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfiles;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
@@ -14,9 +15,16 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 use TravisPhpstormInspector\Project;
 
-class SimpleIdeaFactory
+class IdeaDirectoryBuilder
 {
-    public function create(Project $project, string $inspectionsXmlPath): Idea
+    /**
+     * @param Project $project
+     * @param string $inspectionsXmlPath
+     * @return Idea
+     * @throws \InvalidArgumentException
+     * @throws InspectionsProfileException
+     */
+    public function build(Project $project, string $inspectionsXmlPath): Idea
     {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());

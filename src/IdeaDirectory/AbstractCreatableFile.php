@@ -6,6 +6,11 @@ namespace TravisPhpstormInspector\IdeaDirectory;
 
 abstract class AbstractCreatableFile extends AbstractCreatableFileSystemElement
 {
+    /**
+     * @param string $location
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     */
     public function create(string $location): void
     {
         parent::create($location);
