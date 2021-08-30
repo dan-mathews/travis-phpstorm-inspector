@@ -18,7 +18,7 @@ Feature: Run inspections with a configuration file
     """
     And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
-    Then the outcome exit code should be 1
+    Then the exit code should be 1
     And the last lines of the output should be:
     """
     24 problems were found during phpStorm inspection.
@@ -65,7 +65,7 @@ Feature: Run inspections with a configuration file
     """
     And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
-    Then the outcome exit code should be 1
+    Then the exit code should be 1
     And the last lines of the output should be:
     """
     <message>
@@ -90,7 +90,7 @@ Feature: Run inspections with a configuration file
     """
     And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
-    Then the outcome exit code should be 1
+    Then the exit code should be 1
     And the last lines of the output should be:
     """
     Could not process the configuration file as json.

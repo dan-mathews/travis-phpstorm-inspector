@@ -269,20 +269,12 @@ class FeatureContext implements Context
      */
     public function iRunInspections(): void
     {
-        //TODO can you just put property directly into exec function for it to assign?
-        $code = null;
-        $output = null;
-
         exec(
             'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage()
             . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
-            $output,
-            $code
+            $this->inspectionOutput,
+            $this->inspectionExitCode
         );
-
-        $this->inspectionExitCode = $code;
-
-        $this->inspectionOutput = $output;
     }
 
     /**
@@ -341,10 +333,9 @@ class FeatureContext implements Context
     }
 
     /**
-     * TODO rename this to output not outcome. Remove references to outcome
-     * @Then the outcome exit code should be :exitCode
+     * @Then the exit code should be :exitCode
      */
-    public function theOutcomeExitCodeShouldBe(string $exitCode): void
+    public function theExitCodeShouldBe(string $exitCode): void
     {
         Assert::assertSame((int) $exitCode, $this->getInspectionExitCode());
     }

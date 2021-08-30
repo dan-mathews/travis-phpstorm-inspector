@@ -9,7 +9,7 @@ Feature: Run inspections
     And I stage the php file in git
     And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
-    Then the outcome exit code should be 0
+    Then the exit code should be 0
     And the last lines of the output should be:
     """
     No problems to report.
@@ -24,7 +24,7 @@ Feature: Run inspections
     And I stage the php file in git
     And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
-    Then the outcome exit code should be 1
+    Then the exit code should be 1
     And the last lines of the output should be:
     """
     39 problems were found during phpStorm inspection.
@@ -81,7 +81,7 @@ Feature: Run inspections
     And I am expecting an error
     And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
     When I run inspections
-    Then the outcome exit code should be 1
+    Then the exit code should be 1
     And the last lines of the output should be:
     """
     The inspections profile at /app/invalid.txt does not have an xml extension.
