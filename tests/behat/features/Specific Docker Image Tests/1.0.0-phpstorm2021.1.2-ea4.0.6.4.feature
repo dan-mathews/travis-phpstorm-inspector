@@ -7,7 +7,7 @@ Feature: Run inspections
     And I create a valid inspections xml file
     And I create a php file without problems
     And I stage the php file in git
-    And I pull docker image '1.0.0-php7.3-phpstorm2021.1.2'
+    And I pull docker image '1.0.0-phpstorm2021.1.2-ea4.0.6.4'
     When I run inspections
     Then the exit code should be 0
     And the last lines of the output should be:
