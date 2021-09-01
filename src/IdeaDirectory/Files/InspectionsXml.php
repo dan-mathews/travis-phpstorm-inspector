@@ -87,7 +87,9 @@ class InspectionsXml extends AbstractCreatableFile
     private function validateInspectionsXml(string $inspectionsXmlPath): \SplFileInfo
     {
         if (!file_exists($inspectionsXmlPath)) {
-            throw new InspectionsProfileException('The inspections profile at ' . $inspectionsXmlPath . ' does not exist.');
+            throw new InspectionsProfileException(
+                'The inspections profile at ' . $inspectionsXmlPath . ' does not exist.'
+            );
         }
 
         $inspectionsXmlInfo = new \SplFileInfo($inspectionsXmlPath);
