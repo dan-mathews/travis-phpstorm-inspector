@@ -337,6 +337,11 @@ class FeatureContext implements Context
      */
     public function theExitCodeShouldBe(string $exitCode): void
     {
+        //todo - put this into a behat failure post hook?
+        if ((int) $exitCode !== $this->getInspectionExitCode()) {
+            echo "The last 10 lines of the output were:\n" . $this->getLastLinesOfOutput(10);
+        }
+
         Assert::assertSame((int) $exitCode, $this->getInspectionExitCode());
     }
 
@@ -381,6 +386,14 @@ class FeatureContext implements Context
         }
     }
 
+    private function getLastLinesOfOutput(int $lineCount): string
+    {
+        return implode(
+            "\n",
+            array_slice($this->getInspectionOutput(), $lineCount * -1)
+        );
+    }
+
     /**
      * @Then the last lines of the output should be:
      */
@@ -388,10 +401,7 @@ class FeatureContext implements Context
     {
         $assertedOutputLineCount = count($string->getStrings());
 
-        $actualOutputLinesForComparison = implode(
-            "\n",
-            array_slice($this->getInspectionOutput(), $assertedOutputLineCount * -1)
-        );
+        $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
 
         Assert::assertEquals($string->getRaw(), $actualOutputLinesForComparison);
     }

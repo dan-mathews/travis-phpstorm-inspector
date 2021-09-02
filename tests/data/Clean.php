@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-class Clean
+function add(int $digitOne, int $digitTwo): int
 {
-    /** @noinspection PhpUnused */
-    public function add(int $digitOne, int $digitTwo): int
-    {
-        return $digitOne + $digitTwo;
-    }
+    return $digitOne + $digitTwo;
 }
+
+echo add(1, 2);
