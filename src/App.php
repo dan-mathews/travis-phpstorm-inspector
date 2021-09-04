@@ -42,23 +42,23 @@ class App
         try {
             $problems = $this->inspection->run();
 
-            if (!$problems->isEmpty()) {
+            if ($problems->isEmpty()) {
+                $view = new Pass();
+
+                $exitCode = 0;
+            } else {
                 $view = new Fail($problems);
 
-                $view->display();
-
-                exit(1);
+                $exitCode = 1;
             }
-
-            $view = new Pass();
-
-            $view->display();
         } catch (\Throwable $e) {
             $view = new Error($e, $this->verbose);
 
-            $view->display();
-
-            exit(1);
+            $exitCode = 1;
         }
+
+        $view->display();
+
+        exit($exitCode);
     }
 }

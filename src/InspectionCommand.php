@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
+use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
 class InspectionCommand
 {
     /**
-     * @var Project
+     * @var ProjectDirectory
      */
-    private $project;
+    private $projectDirectory;
 
     /**
-     * @var Idea
+     * @var IdeaDirectory
      */
     private $ideaDirectory;
 
@@ -29,9 +29,18 @@ class InspectionCommand
      */
     private $inspectionsXml;
 
-    public function __construct(Project $project, Idea $ideaDirectory, ResultsDirectory $resultsDirectory)
-    {
-        $this->project = $project;
+    /**
+     * @var DockerImage
+     */
+    private $dockerImage;
+
+    public function __construct(
+        ProjectDirectory $project,
+        IdeaDirectory $ideaDirectory,
+        ResultsDirectory $resultsDirectory,
+        DockerImage $dockerImage
+    ) {
+        $this->projectDirectory = $project;
 
         /** @noinspection UnusedConstructorDependenciesInspection this is not dead code, it's a dependency of the class
          * because experience shows the inspection command doesn't run properly without a valid idea directory.
@@ -41,6 +50,8 @@ class InspectionCommand
         $this->resultsDirectory = $resultsDirectory;
 
         $this->inspectionsXml = $this->ideaDirectory->getInspectionsXml();
+
+        $this->dockerImage = $dockerImage;
     }
 
     /**
@@ -48,9 +59,12 @@ class InspectionCommand
      */
     public function run(): void
     {
-        $command = 'PhpStorm/bin/phpstorm.sh inspect ' . $this->project->getPath()
-        . ' ' . $this->inspectionsXml->getPath() . ' ' . $this->resultsDirectory->getPath()
-        . ' -changes -format json -v2';
+        $command = implode(' ', [
+            'docker run',
+            '-v ' . $this->projectDirectory->getPath() . ':/app',
+            $this->dockerImage->getReference(),
+            $this->getPhpstormCommand(),
+        ]);
 
         echo 'Running command: ' . $command . "\n";
 
@@ -61,5 +75,18 @@ class InspectionCommand
         if ($code !== 0) {
             throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");
         }
+    }
+
+    private function getPhpstormCommand(): string
+    {
+        return implode(' ', [
+            'PhpStorm/bin/phpstorm.sh inspect',
+            '/app',
+            '/app/.idea/inspectionProfiles/' . $this->inspectionsXml->getName(),
+            '/app/' . $this->resultsDirectory->getName(),
+            '-changes',
+            '-format json',
+            '-v2',
+        ]);
     }
 }
