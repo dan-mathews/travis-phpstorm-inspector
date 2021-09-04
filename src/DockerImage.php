@@ -24,10 +24,14 @@ class DockerImage
 
         $output = [];
 
-        $verboseOutput = $verbose ? '' : ' 2>&1';
+        $command = 'docker pull ' . $this->reference;
 
         try {
-            exec('docker pull ' . $this->reference . $verboseOutput, $output, $code);
+            if ($verbose) {
+                passthru($command, $code);
+            } else {
+                exec($command . ' 2>&1', $output, $code);
+            }
         } catch (\Throwable $e) {
             throw new ConfigurationException('Could not pull docker image ' . $this->reference, 1, $e);
         }

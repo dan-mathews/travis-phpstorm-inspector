@@ -16,7 +16,8 @@ class Configuration
         'WEAK WARNING',
         'WARNING',
         'ERROR',
-        'SERVER PROBLEM'
+        'SERVER PROBLEM',
+        'INFORMATION',
     ];
 
     /**

@@ -67,22 +67,25 @@ class InspectionCommand
      */
     public function run(): void
     {
-        $verboseOutput = $this->verbose ? '' : ' 2>&1';
-
         $command = implode(' ', [
             'docker run',
             '-v ' . $this->projectDirectory->getPath() . ':/app',
             $this->dockerImage->getReference(),
             $this->getPhpstormCommand(),
-        ]) . $verboseOutput;
+        ]);
 
+        //todo replace with verbose-aware outputter
         echo 'Running command: ' . $command . "\n";
 
         $code = 1;
 
         $output = [];
 
-        exec($command, $output, $code);
+        if ($this->verbose) {
+            passthru($command, $code);
+        } else {
+            exec($command . ' 2>&1', $output, $code);
+        }
 
         if ($code !== 0) {
             throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");
