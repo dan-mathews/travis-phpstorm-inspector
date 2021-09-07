@@ -95,7 +95,7 @@ class InspectionCommand
     private function getPhpstormCommand(): string
     {
         return implode(' ', [
-            'PhpStorm/bin/phpstorm.sh inspect',
+            '/bin/bash phpstorm.sh inspect',
             '/app',
             '/app/.idea/inspectionProfiles/' . $this->inspectionsXml->getName(),
             '/app/' . $this->resultsDirectory->getName(),
