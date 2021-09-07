@@ -8,7 +8,9 @@ use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableDirectory;
 
 class ResultsDirectory extends AbstractCreatableDirectory
 {
-    private const NAME = 'InspectionResults';
+    private const NAME = 'travis-phpstorm-inspector-results';
+
+    protected $overwrite = true;
 
     public function getName(): string
     {

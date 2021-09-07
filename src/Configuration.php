@@ -36,13 +36,23 @@ class Configuration
     private $dockerTag;
 
     /**
+     * @var bool
+     */
+    private $overwriteIdeaDir;
+
+    /**
      * @throws ConfigurationException
      */
-    public function __construct(array $ignoredSeverities, ?string $dockerRepository, string $dockerTag)
-    {
+    public function __construct(
+        array $ignoredSeverities,
+        ?string $dockerRepository,
+        string $dockerTag,
+        bool $overwriteIdeaDir
+    ) {
         $this->setIgnoredSeverities($ignoredSeverities);
         $this->dockerRepository = $dockerRepository ?? self::DEFAULT_DOCKER_REPOSITORY;
         $this->dockerTag = $dockerTag;
+        $this->overwriteIdeaDir = $overwriteIdeaDir;
     }
 
     /**
@@ -78,5 +88,10 @@ class Configuration
     public function getDockerTag(): string
     {
         return $this->dockerTag;
+    }
+
+    public function getOverwriteIdeaDir(): bool
+    {
+        return $this->overwriteIdeaDir;
     }
 }

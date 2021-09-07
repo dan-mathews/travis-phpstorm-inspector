@@ -12,6 +12,7 @@ class ConfigurationParser
     private const KEY_IGNORED_SEVERITIES = 'ignored_severities';
     private const KEY_DOCKER_REPOSITORY = 'docker_repository';
     private const KEY_DOCKER_TAG = 'docker_tag';
+    private const KEY_OVERWRITE_IDEA_DIR = 'overwrite_idea_dir';
 
     /**
      * @param string $path
@@ -47,11 +48,13 @@ class ConfigurationParser
         $ignoredSeverities = $this->parseIgnoredSeverities($parsedConfiguration);
         $dockerRepository = $this->parseDockerRepository($parsedConfiguration);
         $dockerTag = $this->parseDockerTag($parsedConfiguration);
+        $overwriteIdeaDir = $this->parseOverwriteIdeaDir($parsedConfiguration);
 
         return new Configuration(
             $ignoredSeverities,
             $dockerRepository,
-            $dockerTag
+            $dockerTag,
+            $overwriteIdeaDir
         );
     }
 
@@ -101,5 +104,21 @@ class ConfigurationParser
         }
 
         return $parsedConfiguration[self::KEY_DOCKER_TAG];
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private function parseOverwriteIdeaDir(array $parsedConfiguration): bool
+    {
+        if (!array_key_exists(self::KEY_OVERWRITE_IDEA_DIR, $parsedConfiguration)) {
+            return false;
+        }
+
+        if (!is_bool($parsedConfiguration[self::KEY_OVERWRITE_IDEA_DIR])) {
+            throw new ConfigurationException(self::KEY_OVERWRITE_IDEA_DIR . ' must be a boolean.');
+        }
+
+        return $parsedConfiguration[self::KEY_OVERWRITE_IDEA_DIR];
     }
 }

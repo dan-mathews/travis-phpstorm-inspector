@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\IdeaDirectory;
 
 use TravisPhpstormInspector\App;
+use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
@@ -24,7 +25,7 @@ class IdeaDirectoryBuilder
      * @throws \InvalidArgumentException
      * @throws InspectionsProfileException
      */
-    public function build(ProjectDirectory $project, string $inspectionsXmlPath): IdeaDirectory
+    public function build(ProjectDirectory $project, string $inspectionsXmlPath, Configuration $configuration): IdeaDirectory
     {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
@@ -46,6 +47,8 @@ class IdeaDirectoryBuilder
             $projectIml,
             $inspectionProfilesDirectory
         );
+
+        $ideaDirectory->setOverwrite($configuration->getOverwriteIdeaDir());
 
         $ideaDirectory->create($project->getPath());
 
