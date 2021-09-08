@@ -59,6 +59,8 @@ class ConfigurationParser
     }
 
     /**
+     * @param array<mixed> $parsedConfiguration
+     * @return array<mixed>
      * @throws ConfigurationException
      */
     private function parseIgnoredSeverities(array $parsedConfiguration): array
@@ -75,6 +77,8 @@ class ConfigurationParser
     }
 
     /**
+     * @param array<mixed> $parsedConfiguration
+     * @return string|null
      * @throws ConfigurationException
      */
     private function parseDockerRepository(array $parsedConfiguration): ?string
@@ -91,6 +95,8 @@ class ConfigurationParser
     }
 
     /**
+     * @param array<mixed> $parsedConfiguration
+     * @return string|null
      * @throws ConfigurationException
      */
     private function parseDockerTag(array $parsedConfiguration): ?string
@@ -107,6 +113,8 @@ class ConfigurationParser
     }
 
     /**
+     * @param array<mixed> $parsedConfiguration
+     * @return bool
      * @throws ConfigurationException
      */
     private function parseOverwriteIdeaDir(array $parsedConfiguration): bool

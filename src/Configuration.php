@@ -42,6 +42,10 @@ class Configuration
     private $overwriteIdeaDir;
 
     /**
+     * @param array<mixed> $ignoredSeverities
+     * @param string|null $dockerRepository
+     * @param string|null $dockerTag
+     * @param bool $overwriteIdeaDir
      * @throws ConfigurationException
      */
     public function __construct(
@@ -57,7 +61,7 @@ class Configuration
     }
 
     /**
-     * @param array<string|int, mixed> $ignoredSeverities
+     * @param array<mixed> $ignoredSeverities
      * @throws ConfigurationException
      * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */

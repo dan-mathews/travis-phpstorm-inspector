@@ -19,7 +19,7 @@ class Problems extends \SplHeap
     }
 
     /**
-     * @param array<string|int, mixed> $jsonProblems
+     * @param array<mixed> $jsonProblems
      */
     public function addProblems(array $jsonProblems): void
     {
