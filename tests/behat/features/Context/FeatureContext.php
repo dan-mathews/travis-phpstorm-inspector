@@ -254,7 +254,10 @@ class FeatureContext implements Context
     public function iRunInspections(): void
     {
         exec(
-            'php inspect.php ' . $this->getProjectPath() . ' ' . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
+            'php inspect.php '
+            . $this->getProjectPath() . ' '
+            . $this->getProjectPath() . '/'
+            . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
@@ -370,7 +373,7 @@ class FeatureContext implements Context
 
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
 
-        Assert::assertEquals($string->getRaw(), $actualOutputLinesForComparison);
+        Assert::assertSame($string->getRaw(), $actualOutputLinesForComparison);
     }
 
     /**

@@ -73,5 +73,5 @@ Feature: Run inspections with certain severities ignored
     Examples:
       | payload | message                                                                                                                         |
       | ["CAT"] | Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, SERVER PROBLEM, INFORMATION. |
-      | 5       | Ignored severities must be an array.                                                                                            |
-      | null    | Ignored severities must be an array.                                                                                            |
+      | 5       | ignored_severities must be an array.                                                                                            |
+      | null    | ignored_severities must be an array.                                                                                            |

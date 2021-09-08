@@ -18,5 +18,5 @@ Feature: Run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    The inspections profile at testProject6268/invalid.txt does not have an xml extension.
+    The inspections profile at invalid.txt does not have an xml extension.
     """
