@@ -13,11 +13,6 @@ use PHPUnit\Framework\Assert;
 class FeatureContext implements Context
 {
     /**
-     * @var null|string
-     */
-    private $dockerImage;
-
-    /**
      * This is relative to the project root
      *
      * @var null|string
@@ -116,17 +111,6 @@ class FeatureContext implements Context
         }
 
         return $this->inspectionOutput;
-    }
-
-    private function getDockerImage(): string
-    {
-        if (null === $this->dockerImage) {
-            throw new LogicException(
-                'Docker image must be defined before it is retrieved'
-            );
-        }
-
-        return $this->dockerImage;
     }
 
     private function getConfigurationPath(): string
@@ -270,27 +254,10 @@ class FeatureContext implements Context
     public function iRunInspections(): void
     {
         exec(
-            'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage()
-            . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
+            'php inspect.php ' . $this->getProjectPath() . ' ' . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
-    }
-
-    /**
-     * @Given I pull docker image :imageTag
-     */
-    public function iPullDockerImage(string $imageTag): void
-    {
-        $this->dockerImage = 'danmathews1/phpstorm-images:' . $imageTag;
-
-        $code = 1;
-
-        exec('docker pull ' . $this->dockerImage, $output, $code);
-
-        if ($code !== 0) {
-            throw new \RuntimeException('Could not pull docker image');
-        }
     }
 
     /**

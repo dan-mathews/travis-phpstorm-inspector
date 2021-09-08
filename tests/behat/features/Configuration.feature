@@ -13,10 +13,10 @@ Feature: Run inspections with a configuration file
       "ignored_severities": [
         "TYPO",
         "ERROR"
-      ]
+      ],
+      "docker_tag": "1.0.0-phpstorm2021.1.2"
     }
     """
-    And I pull docker image '1.0.0-phpstorm2021.1.2'
     When I run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
@@ -60,10 +60,10 @@ Feature: Run inspections with a configuration file
     And I create a configuration file with:
     """
     {
-      "ignored_severities": <payload>
+      "ignored_severities": <payload>,
+      "docker_tag": "1.0.0-phpstorm2021.1.2"
     }
     """
-    And I pull docker image '1.0.0-phpstorm2021.1.2'
     When I run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
@@ -88,10 +88,35 @@ Feature: Run inspections with a configuration file
     """
     'cat'
     """
-    And I pull docker image '1.0.0-phpstorm2021.1.2'
     When I run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
     Could not process the configuration file as json.
     """
+
+  @issue-14
+  Scenario Outline: Use an invalid docker configuration
+    Given I create a new project
+    And I initialise git
+    And I create a valid inspections xml file
+    And I create a php file with problems
+    And I stage the php file in git
+    And I create a configuration file with:
+    """
+    {
+      <dockerConfig>
+    }
+    """
+    When I run inspections
+    Then the exit code should be 1
+    And the last lines of the output should be:
+    """
+    <message>
+    """
+
+    Examples:
+      | dockerConfig                                                       | message                                                     |
+      |                                                                    | docker_tag must be specified in the configuration file.     |
+      | "docker_tag": "cat"                                                | Could not pull docker image danmathews1/phpstorm-images:cat |
+      | "docker_tag": "1.0.0-phpstorm2021.1.2", "docker_repository": "cat" | Could not pull docker image cat:1.0.0-phpstorm2021.1.2      |

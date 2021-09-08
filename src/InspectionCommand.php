@@ -34,11 +34,17 @@ class InspectionCommand
      */
     private $dockerImage;
 
+    /**
+     * @var bool
+     */
+    private $verbose;
+
     public function __construct(
         ProjectDirectory $project,
         IdeaDirectory $ideaDirectory,
         ResultsDirectory $resultsDirectory,
-        DockerImage $dockerImage
+        DockerImage $dockerImage,
+        bool $verbose
     ) {
         $this->projectDirectory = $project;
 
@@ -52,6 +58,8 @@ class InspectionCommand
         $this->inspectionsXml = $this->ideaDirectory->getInspectionsXml();
 
         $this->dockerImage = $dockerImage;
+
+        $this->verbose = $verbose;
     }
 
     /**
@@ -59,18 +67,22 @@ class InspectionCommand
      */
     public function run(): void
     {
+        $verboseOutput = $this->verbose ? '' : ' 2>&1';
+
         $command = implode(' ', [
             'docker run',
             '-v ' . $this->projectDirectory->getPath() . ':/app',
             $this->dockerImage->getReference(),
             $this->getPhpstormCommand(),
-        ]);
+        ]) . $verboseOutput;
 
         echo 'Running command: ' . $command . "\n";
 
         $code = 1;
 
-        passthru($command, $code);
+        $output = [];
+
+        exec($command, $output, $code);
 
         if ($code !== 0) {
             throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");

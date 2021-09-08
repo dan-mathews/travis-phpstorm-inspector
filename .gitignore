@@ -4,4 +4,5 @@ PhpStorm.tar.gz
 PhpStorm/
 java.tar.gz
 java/
-inspectionResults/
+InspectionResults/
+error.log

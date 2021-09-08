@@ -27,7 +27,7 @@ class Inspection
      * @throws ConfigurationException
      * @throws InspectionsProfileException
      */
-    public function __construct(string $projectPath, string $inspectionsXmlPath)
+    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose)
     {
         $projectDirectory = new ProjectDirectory($projectPath);
 
@@ -43,13 +43,14 @@ class Inspection
 
         $ideaDirectory = $ideaDirectoryBuilder->build($projectDirectory, $inspectionsXmlPath);
 
-        $dockerImage = new DockerImage('danmathews1/phpstorm-images', '1.0.0-phpstorm2021.1.2-ea4.0.6.4');
+        $dockerImage = new DockerImage($configuration, $verbose);
 
         $this->inspectionCommand = new InspectionCommand(
             $projectDirectory,
             $ideaDirectory,
             $resultsDirectory,
-            $dockerImage
+            $dockerImage,
+            $verbose
         );
 
         $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);

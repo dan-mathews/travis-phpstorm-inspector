@@ -27,7 +27,7 @@ class App
         $this->verbose = $verbose;
 
         try {
-            $this->inspection = new Inspection($projectPath, $inspectionsXmlPath);
+            $this->inspection = new Inspection($projectPath, $inspectionsXmlPath, $this->verbose);
         } catch (\Throwable $e) {
             $view = new Error($e, $this->verbose);
 

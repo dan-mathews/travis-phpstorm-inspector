@@ -16,14 +16,24 @@ class DockerImage
     /**
      * @throws ConfigurationException
      */
-    public function __construct(string $dockerRepository, string $dockerTag)
+    public function __construct(Configuration $configuration, bool $verbose)
     {
-        $this->reference = $dockerRepository . ':' . $dockerTag;
+        $this->reference = $configuration->getDockerRepository() . ':' . $configuration->getDockerTag();
+
+        $code = 1;
+
+        $output = [];
+
+        $verboseOutput = $verbose ? '' : ' 2>&1';
 
         try {
-            passthru('docker pull ' . $this->reference);
+            exec('docker pull ' . $this->reference . $verboseOutput, $output, $code);
         } catch (\Throwable $e) {
             throw new ConfigurationException('Could not pull docker image ' . $this->reference, 1, $e);
+        }
+
+        if ($code !== 0) {
+            throw new ConfigurationException('Could not pull docker image ' . $this->reference);
         }
     }
 
