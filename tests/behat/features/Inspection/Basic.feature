@@ -1,6 +1,6 @@
 Feature: Run inspections
 
-  @issue-1 #@createsProject see issue-4
+  @issue-1 @negative
   Scenario: Use an inspections file with the wrong extension
     Given I create a new project
     And I initialise git
@@ -11,12 +11,12 @@ Feature: Run inspections
     And I create a configuration file with:
     """
     {
-      "docker_tag": "1.0.0-phpstorm2021.1.2"
+      "docker_tag": "2021.1.2"
     }
     """
     When I run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    The inspections profile at /app/invalid.txt does not have an xml extension.
+    The inspections profile at testProject6268/invalid.txt does not have an xml extension.
     """

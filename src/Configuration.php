@@ -9,7 +9,8 @@ use TravisPhpstormInspector\Exceptions\ConfigurationException;
 class Configuration
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
-    private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm-images';
+    private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
+    private const DEFAULT_DOCKER_TAG = 'latest';
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',
@@ -46,12 +47,12 @@ class Configuration
     public function __construct(
         array $ignoredSeverities,
         ?string $dockerRepository,
-        string $dockerTag,
+        ?string $dockerTag,
         bool $overwriteIdeaDir
     ) {
         $this->setIgnoredSeverities($ignoredSeverities);
         $this->dockerRepository = $dockerRepository ?? self::DEFAULT_DOCKER_REPOSITORY;
-        $this->dockerTag = $dockerTag;
+        $this->dockerTag = $dockerTag ?? self::DEFAULT_DOCKER_TAG;
         $this->overwriteIdeaDir = $overwriteIdeaDir;
     }
 

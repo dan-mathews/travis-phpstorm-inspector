@@ -93,10 +93,10 @@ class ConfigurationParser
     /**
      * @throws ConfigurationException
      */
-    private function parseDockerTag(array $parsedConfiguration): string
+    private function parseDockerTag(array $parsedConfiguration): ?string
     {
         if (!array_key_exists(self::KEY_DOCKER_TAG, $parsedConfiguration)) {
-            throw new ConfigurationException(self::KEY_DOCKER_TAG . ' must be specified in the configuration file.');
+            return null;
         }
 
         if (!is_string($parsedConfiguration[self::KEY_DOCKER_TAG])) {
