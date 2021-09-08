@@ -1,6 +1,6 @@
-Feature: Run inspections with a configuration file
+Feature: Run inspections with certain severities ignored
 
-  @issue-8 #@createsProject see issue-4
+  @issue-8 @positive
   Scenario: Run inspections on a project with severities ignored in the configuration file
     Given I create a new project
     And I initialise git
@@ -14,7 +14,7 @@ Feature: Run inspections with a configuration file
         "TYPO",
         "ERROR"
       ],
-      "docker_tag": "1.0.0-phpstorm2021.1.2"
+      "docker_tag": "2021.1.2"
     }
     """
     When I run inspections
@@ -50,7 +50,7 @@ Feature: Run inspections with a configuration file
       line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
     """
 
-  @issue-8 #@createsProject see issue-4
+  @issue-8 @negative
   Scenario Outline: Run inspections on a project with invalid ignored severities
     Given I create a new project
     And I initialise git
@@ -60,8 +60,7 @@ Feature: Run inspections with a configuration file
     And I create a configuration file with:
     """
     {
-      "ignored_severities": <payload>,
-      "docker_tag": "1.0.0-phpstorm2021.1.2"
+      "ignored_severities": <payload>
     }
     """
     When I run inspections
@@ -72,51 +71,7 @@ Feature: Run inspections with a configuration file
     """
 
     Examples:
-      | payload | message                                                                                                            |
-      | ["CAT"] | Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, SERVER PROBLEM. |
-      | 5       | Ignored severities must be an array.                                                                               |
-      | null    | Ignored severities must be an array.                                                                               |
-
-  @issue-8 #@createsProject see issue-4
-  Scenario: Run inspections on a project with invalid configuration file
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
-    And I create a php file with problems
-    And I stage the php file in git
-    And I create a configuration file with:
-    """
-    'cat'
-    """
-    When I run inspections
-    Then the exit code should be 1
-    And the last lines of the output should be:
-    """
-    Could not process the configuration file as json.
-    """
-
-  @issue-14
-  Scenario Outline: Use an invalid docker configuration
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
-    And I create a php file with problems
-    And I stage the php file in git
-    And I create a configuration file with:
-    """
-    {
-      <dockerConfig>
-    }
-    """
-    When I run inspections
-    Then the exit code should be 1
-    And the last lines of the output should be:
-    """
-    <message>
-    """
-
-    Examples:
-      | dockerConfig                                                       | message                                                     |
-      |                                                                    | docker_tag must be specified in the configuration file.     |
-      | "docker_tag": "cat"                                                | Could not pull docker image danmathews1/phpstorm-images:cat |
-      | "docker_tag": "1.0.0-phpstorm2021.1.2", "docker_repository": "cat" | Could not pull docker image cat:1.0.0-phpstorm2021.1.2      |
+      | payload | message                                                                                                                         |
+      | ["CAT"] | Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, SERVER PROBLEM, INFORMATION. |
+      | 5       | Ignored severities must be an array.                                                                                            |
+      | null    | Ignored severities must be an array.                                                                                            |
