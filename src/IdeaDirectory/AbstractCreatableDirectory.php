@@ -53,11 +53,6 @@ abstract class AbstractCreatableDirectory extends AbstractCreatableFileSystemEle
         }
     }
 
-    public function setOverwrite(bool $overwrite): void
-    {
-        $this->overwrite = $overwrite;
-    }
-
     private function removeDirectory(\DirectoryIterator $directoryIterator): void
     {
         foreach ($directoryIterator as $info) {

@@ -64,17 +64,53 @@ class FeatureContext implements Context
 
     /**
      * @Given I create a new project
+     * @throws \RuntimeException
      * @throws \Exception
      */
     public function iCreateANewProject(): void
     {
         $this->projectName = 'testProject' . random_int(0, 9999);
 
-        if (!mkdir($this->projectName) || !is_dir($this->projectName)) {
-            throw new \RuntimeException(sprintf('Directory "%s" could not be created', $this->projectName));
-        }
+        $this->makeDirectory($this->projectName);
 
         $this->projectPath = $this->getRealPath($this->projectName);
+    }
+
+    /**
+     * @param string $path
+     * @throws \RuntimeException
+     */
+    private function makeDirectory(string $path): void
+    {
+        if (!mkdir($path) || !is_dir($path)) {
+            throw new \RuntimeException(sprintf('Directory "%s" could not be created', $path));
+        }
+    }
+
+    /**
+     * @Given I have local .idea directory with a file in it
+     * @throws \RuntimeException
+     */
+    public function iPutAFileInsideTheLocalIdeaDirectory(): void
+    {
+        $this->makeDirectory($this->getProjectPath() . '/.idea');
+
+        $this->writeToFile($this->getProjectPath() . '/.idea/vitalFile.txt', 'vitally important is not deleted');
+    }
+
+    /**
+     * @Then the local .idea directory should be unchanged
+     */
+    public function theLocalIdeaDirectoryShouldBeUnchanged(): void
+    {
+        Assert::assertEquals(
+            [
+                0 => '.',
+                1 => '..',
+                2 => 'vitalFile.txt'
+            ],
+            scandir($this->getProjectPath() . '/.idea')
+        );
     }
 
     private function getProjectPath(): string
@@ -257,7 +293,7 @@ class FeatureContext implements Context
             'php inspect.php '
             . $this->getProjectPath() . ' '
             . $this->getProjectPath() . '/'
-            . $this->getInspectionsPath(),
+            . $this->getInspectionsPath() . ' -v',
             $this->inspectionOutput,
             $this->inspectionExitCode
         );

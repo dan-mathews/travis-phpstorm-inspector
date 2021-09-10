@@ -51,8 +51,6 @@ class IdeaDirectoryBuilder
             $inspectionProfilesDirectory
         );
 
-        $ideaDirectory->setOverwrite($configuration->getOverwriteIdeaDir());
-
         $ideaDirectory->create($project->getPath());
 
         return $ideaDirectory;

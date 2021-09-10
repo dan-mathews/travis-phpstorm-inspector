@@ -62,14 +62,30 @@ class InspectionCommand
         $this->verbose = $verbose;
     }
 
+    private function mountCommand(string $source, string $target, bool $readOnly = false): string
+    {
+        // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
+        // there is the potential to overwrite their .idea directory locally if we're not careful.
+        // Here we explicitly state private bind-propagation to prevent this possibility.
+        return '--mount '
+            . 'type=bind'
+            . ',source=' . $source
+            . ',target=' . $target
+            . ',bind-propagation=private'
+            . ($readOnly ? ',readonly' : '');
+    }
+
     /**
      * @throws \RuntimeException
      */
     public function run(): void
     {
         $command = implode(' ', [
-            'docker run',
-            '-v ' . $this->projectDirectory->getPath() . ':/app',
+            'docker run ',
+            //TODO place the results directory outside of their project so this can be readonly
+            $this->mountCommand($this->projectDirectory->getPath(), '/app'),
+            // this must not be readonly as phpstorm attempts to create file '/app/.idea/.gitignore'
+            $this->mountCommand($this->ideaDirectory->getPath(), '/app/.idea', false),
             $this->dockerImage->getReference(),
             $this->getPhpstormCommand(),
         ]);
