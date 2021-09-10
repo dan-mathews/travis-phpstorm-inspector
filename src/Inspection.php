@@ -41,7 +41,7 @@ class Inspection
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
 
-        $ideaDirectory = $ideaDirectoryBuilder->build($projectDirectory, $inspectionsXmlPath, $configuration);
+        $ideaDirectory = $ideaDirectoryBuilder->build($projectDirectory, $inspectionsXmlPath);
 
         $dockerImage = new DockerImage($configuration, $verbose);
 

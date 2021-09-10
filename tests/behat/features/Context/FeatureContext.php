@@ -287,8 +287,7 @@ class FeatureContext implements Context
         exec(
             'php inspect.php '
             . $this->getProjectPath() . ' '
-            . $this->getProjectPath() . '/'
-            . $this->getInspectionsPath(),
+            . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );

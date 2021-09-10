@@ -21,14 +21,12 @@ class IdeaDirectoryBuilder
     /**
      * @param ProjectDirectory $project
      * @param string $inspectionsXmlPath
-     * @param Configuration $configuration
      * @return IdeaDirectory
      * @throws InspectionsProfileException
      */
     public function build(
         ProjectDirectory $project,
-        string $inspectionsXmlPath,
-        Configuration $configuration
+        string $inspectionsXmlPath
     ): IdeaDirectory {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
