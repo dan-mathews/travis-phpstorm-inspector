@@ -29,11 +29,6 @@ class FeatureContext implements Context
     /**
      * @var null|string
      */
-    private $projectName;
-
-    /**
-     * @var null|string
-     */
     private $configurationPath;
 
     /**
@@ -69,11 +64,11 @@ class FeatureContext implements Context
      */
     public function iCreateANewProject(): void
     {
-        $this->projectName = 'testProject' . random_int(0, 9999);
+        $projectName = 'testProject' . random_int(0, 9999);
 
-        $this->makeDirectory($this->projectName);
+        $this->makeDirectory($projectName);
 
-        $this->projectPath = $this->getRealPath($this->projectName);
+        $this->projectPath = $this->getRealPath($projectName);
     }
 
     /**
@@ -293,7 +288,7 @@ class FeatureContext implements Context
             'php inspect.php '
             . $this->getProjectPath() . ' '
             . $this->getProjectPath() . '/'
-            . $this->getInspectionsPath() . ' -v',
+            . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
