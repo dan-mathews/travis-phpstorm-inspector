@@ -9,13 +9,16 @@ use TravisPhpstormInspector\Exceptions\ConfigurationException;
 class Configuration
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
+    private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
+    private const DEFAULT_DOCKER_TAG = 'latest';
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',
         'WEAK WARNING',
         'WARNING',
         'ERROR',
-        'SERVER PROBLEM' //todo test this
+        'SERVER PROBLEM',
+        'INFORMATION',
     ];
 
     /**
@@ -24,11 +27,37 @@ class Configuration
     private $ignoredSeverities = [];
 
     /**
-     * @param array<string|int, mixed> $ignoredSeverities
+     * @var string
+     */
+    private $dockerRepository;
+
+    /**
+     * @var string
+     */
+    private $dockerTag;
+
+    /**
+     * @param array<mixed> $ignoredSeverities
+     * @param string|null $dockerRepository
+     * @param string|null $dockerTag
+     * @throws ConfigurationException
+     */
+    public function __construct(
+        array $ignoredSeverities,
+        ?string $dockerRepository,
+        ?string $dockerTag
+    ) {
+        $this->setIgnoredSeverities($ignoredSeverities);
+        $this->dockerRepository = $dockerRepository ?? self::DEFAULT_DOCKER_REPOSITORY;
+        $this->dockerTag = $dockerTag ?? self::DEFAULT_DOCKER_TAG;
+    }
+
+    /**
+     * @param array<mixed> $ignoredSeverities
      * @throws ConfigurationException
      * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */
-    public function setIgnoredSeverities(array $ignoredSeverities): void
+    private function setIgnoredSeverities(array $ignoredSeverities): void
     {
         if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
             throw new ConfigurationException(
@@ -46,5 +75,15 @@ class Configuration
     public function getIgnoredSeverities(): array
     {
         return $this->ignoredSeverities;
+    }
+
+    public function getDockerRepository(): string
+    {
+        return $this->dockerRepository;
+    }
+
+    public function getDockerTag(): string
+    {
+        return $this->dockerTag;
     }
 }

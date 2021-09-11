@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-class Project
+class ProjectDirectory
 {
     /**
      * @var string

@@ -5,31 +5,33 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\IdeaDirectory;
 
 use TravisPhpstormInspector\App;
+use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\Directories\Idea;
-use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfiles;
+use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
+use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
-use TravisPhpstormInspector\Project;
+use TravisPhpstormInspector\ProjectDirectory;
 
 class IdeaDirectoryBuilder
 {
     /**
-     * @param Project $project
+     * @param ProjectDirectory $project
      * @param string $inspectionsXmlPath
-     * @return Idea
-     * @throws \InvalidArgumentException
+     * @return IdeaDirectory
      * @throws InspectionsProfileException
      */
-    public function build(Project $project, string $inspectionsXmlPath): Idea
-    {
+    public function build(
+        ProjectDirectory $project,
+        string $inspectionsXmlPath
+    ): IdeaDirectory {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
 
-        $inspectionProfilesDirectory = new InspectionProfiles(
+        $inspectionProfilesDirectory = new InspectionProfilesDirectory(
             $profileSettingsXml,
             $inspectionsXml
         );
@@ -40,7 +42,7 @@ class IdeaDirectoryBuilder
         $phpXml = new PhpXml('7.3');
         $projectIml = new ProjectIml(App::NAME);
 
-        $ideaDirectory = new Idea(
+        $ideaDirectory = new IdeaDirectory(
             $modulesXml,
             $phpXml,
             $projectIml,

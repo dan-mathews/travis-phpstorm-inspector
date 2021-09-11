@@ -8,7 +8,7 @@ use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 
-class InspectionProfiles extends AbstractCreatableDirectory
+class InspectionProfilesDirectory extends AbstractCreatableDirectory
 {
     private const NAME = 'inspectionProfiles';
 

@@ -95,12 +95,14 @@ class InspectionsXml extends AbstractCreatableFile
         $inspectionsXmlInfo = new \SplFileInfo($inspectionsXmlPath);
 
         if (!$inspectionsXmlInfo->isReadable()) {
-            throw new InspectionsProfileException('Could not read the inspections profile at ' . $inspectionsXmlPath);
+            throw new InspectionsProfileException(
+                'Could not read the inspections profile ' . $inspectionsXmlInfo->getFilename()
+            );
         }
 
         if ('xml' !== $inspectionsXmlInfo->getExtension()) {
             throw new InspectionsProfileException(
-                'The inspections profile at ' . $inspectionsXmlPath . ' does not have an xml extension.'
+                'The inspections profile ' . $inspectionsXmlInfo->getFilename() . ' does not have an xml extension.'
             );
         }
 
@@ -115,14 +117,16 @@ class InspectionsXml extends AbstractCreatableFile
     private function getInspectionsXmlContents(\SplFileInfo $inspectionsXmlInfo): string
     {
         if (false === $inspectionsXmlInfo->getRealPath()) {
-            throw new InspectionsProfileException('Could not read the path of inspections profile');
+            throw new InspectionsProfileException(
+                'Could not read the path of inspections profile ' . $inspectionsXmlInfo->getFilename()
+            );
         }
 
         $contents = file_get_contents($inspectionsXmlInfo->getRealPath());
 
         if (false === $contents) {
             throw new InspectionsProfileException(
-                'Could not read the contents of inspections profile ' . $inspectionsXmlInfo->getRealPath()
+                'Could not read the contents of inspections profile ' . $inspectionsXmlInfo->getFilename()
             );
         }
 

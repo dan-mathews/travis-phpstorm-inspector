@@ -14,11 +14,6 @@ use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 class Inspection
 {
     /**
-     * @var ResultsDirectory
-     */
-    private $resultsDirectory;
-
-    /**
      * @var InspectionCommand
      */
     private $inspectionCommand;
@@ -32,25 +27,33 @@ class Inspection
      * @throws ConfigurationException
      * @throws InspectionsProfileException
      */
-    public function __construct(string $projectPath, string $inspectionsXmlPath)
+    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose)
     {
-        $project = new Project($projectPath);
+        $projectDirectory = new ProjectDirectory($projectPath);
 
-        $this->resultsDirectory = new ResultsDirectory();
+        $resultsDirectory = new ResultsDirectory();
 
-        $this->resultsDirectory->create($project->getPath());
+        $resultsDirectory->create($projectDirectory->getPath());
 
         $configurationParser = new ConfigurationParser();
 
-        $configuration = $configurationParser->parse($project->getPath() . '/' . Configuration::FILENAME);
+        $configuration = $configurationParser->parse($projectDirectory->getPath() . '/' . Configuration::FILENAME);
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
 
-        $ideaDirectory = $ideaDirectoryBuilder->build($project, $inspectionsXmlPath);
+        $ideaDirectory = $ideaDirectoryBuilder->build($projectDirectory, $inspectionsXmlPath);
 
-        $this->inspectionCommand = new InspectionCommand($project, $ideaDirectory, $this->resultsDirectory);
+        $dockerImage = new DockerImage($configuration, $verbose);
 
-        $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory, $configuration);
+        $this->inspectionCommand = new InspectionCommand(
+            $projectDirectory,
+            $ideaDirectory,
+            $resultsDirectory,
+            $dockerImage,
+            $verbose
+        );
+
+        $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);
     }
 
     /**

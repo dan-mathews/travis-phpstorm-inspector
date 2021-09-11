@@ -13,11 +13,6 @@ use PHPUnit\Framework\Assert;
 class FeatureContext implements Context
 {
     /**
-     * @var null|string
-     */
-    private $dockerImage;
-
-    /**
      * This is relative to the project root
      *
      * @var null|string
@@ -30,11 +25,6 @@ class FeatureContext implements Context
      * @var null|string
      */
     private $inspectionsPath;
-
-    /**
-     * @var null|string
-     */
-    private $projectName;
 
     /**
      * @var null|string
@@ -69,17 +59,53 @@ class FeatureContext implements Context
 
     /**
      * @Given I create a new project
+     * @throws \RuntimeException
      * @throws \Exception
      */
     public function iCreateANewProject(): void
     {
-        $this->projectName = 'testProject' . random_int(0, 9999);
+        $projectName = 'testProject' . random_int(0, 9999);
 
-        if (!mkdir($this->projectName) || !is_dir($this->projectName)) {
-            throw new \RuntimeException(sprintf('Directory "%s" could not be created', $this->projectName));
+        $this->makeDirectory($projectName);
+
+        $this->projectPath = $this->getRealPath($projectName);
+    }
+
+    /**
+     * @param string $path
+     * @throws \RuntimeException
+     */
+    private function makeDirectory(string $path): void
+    {
+        if (!mkdir($path) || !is_dir($path)) {
+            throw new \RuntimeException(sprintf('Directory "%s" could not be created', $path));
         }
+    }
 
-        $this->projectPath = $this->getRealPath($this->projectName);
+    /**
+     * @Given I have local .idea directory with a file in it
+     * @throws \RuntimeException
+     */
+    public function iPutAFileInsideTheLocalIdeaDirectory(): void
+    {
+        $this->makeDirectory($this->getProjectPath() . '/.idea');
+
+        $this->writeToFile($this->getProjectPath() . '/.idea/vitalFile.txt', 'vitally important is not deleted');
+    }
+
+    /**
+     * @Then the local .idea directory should be unchanged
+     */
+    public function theLocalIdeaDirectoryShouldBeUnchanged(): void
+    {
+        Assert::assertEquals(
+            [
+                0 => '.',
+                1 => '..',
+                2 => 'vitalFile.txt'
+            ],
+            scandir($this->getProjectPath() . '/.idea')
+        );
     }
 
     private function getProjectPath(): string
@@ -116,17 +142,6 @@ class FeatureContext implements Context
         }
 
         return $this->inspectionOutput;
-    }
-
-    private function getDockerImage(): string
-    {
-        if (null === $this->dockerImage) {
-            throw new LogicException(
-                'Docker image must be defined before it is retrieved'
-            );
-        }
-
-        return $this->dockerImage;
     }
 
     private function getConfigurationPath(): string
@@ -270,27 +285,12 @@ class FeatureContext implements Context
     public function iRunInspections(): void
     {
         exec(
-            'docker run -v ' . $this->getProjectPath() . ':/app -v $(pwd):/inspector ' . $this->getDockerImage()
-            . ' php /inspector/inspect.php /app /app/' . $this->getInspectionsPath(),
+            'php inspect.php '
+            . $this->getProjectPath() . ' '
+            . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
-    }
-
-    /**
-     * @Given I pull docker image :imageTag
-     */
-    public function iPullDockerImage(string $imageTag): void
-    {
-        $this->dockerImage = 'danmathews1/phpstorm-images:' . $imageTag;
-
-        $code = 1;
-
-        exec('docker pull ' . $this->dockerImage, $output, $code);
-
-        if ($code !== 0) {
-            throw new \RuntimeException('Could not pull docker image');
-        }
     }
 
     /**
@@ -403,7 +403,7 @@ class FeatureContext implements Context
 
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
 
-        Assert::assertEquals($string->getRaw(), $actualOutputLinesForComparison);
+        Assert::assertSame($string->getRaw(), $actualOutputLinesForComparison);
     }
 
     /**

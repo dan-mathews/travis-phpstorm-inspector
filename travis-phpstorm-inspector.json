@@ -1,0 +1,8 @@
+{
+  "docker_repository": "danmathews1/phpstorm_ea-extended",
+  "docker_tag": "2021.1.2_4.0.6.4",
+  "ignored_severities": [
+    "INFORMATION",
+    "TYPO"
+  ]
+}

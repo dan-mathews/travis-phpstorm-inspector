@@ -2,7 +2,22 @@
 
 declare(strict_types=1);
 
-include __DIR__ . '/vendor/autoload.php';
+function includeIfExists(string $filePath): bool
+{
+    if (file_exists($filePath)) {
+        include $filePath;
+        return true;
+    }
+
+    return false;
+}
+
+if (
+    !includeIfExists(__DIR__ . '/../../autoload.php') &&
+    !includeIfExists(__DIR__ . '/vendor/autoload.php')
+) {
+    throw new RuntimeException('Could not find autoloaded classes as vendor or main project.');
+}
 
 use TravisPhpstormInspector\App;
 

@@ -10,28 +10,28 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
-class Idea extends AbstractCreatableDirectory
+class IdeaDirectory extends AbstractCreatableDirectory
 {
-    private const NAME = '.idea';
+    private const NAME = 'travis-phpstorm-inspector.idea';
 
     /**
-     * @var InspectionProfiles
+     * @var InspectionProfilesDirectory
      */
-    private $inspectionProfiles;
+    private $inspectionProfilesDirectory;
 
     public function __construct(
         ModulesXml $modulesXml,
         PhpXml $phpXml,
         ProjectIml $projectIml,
-        InspectionProfiles $inspectionProfiles
+        InspectionProfilesDirectory $inspectionProfilesDirectory
     ) {
         $this->files[] = $modulesXml;
         $this->files[] = $phpXml;
         $this->files[] = $projectIml;
 
-        $this->inspectionProfiles = $inspectionProfiles;
+        $this->inspectionProfilesDirectory = $inspectionProfilesDirectory;
 
-        $this->directories[] = $inspectionProfiles;
+        $this->directories[] = $inspectionProfilesDirectory;
     }
 
     public function getName(): string
@@ -41,6 +41,6 @@ class Idea extends AbstractCreatableDirectory
 
     public function getInspectionsXml(): InspectionsXml
     {
-        return $this->inspectionProfiles->getInspectionsXml();
+        return $this->inspectionProfilesDirectory->getInspectionsXml();
     }
 }

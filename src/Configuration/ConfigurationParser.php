@@ -10,6 +10,8 @@ use TravisPhpstormInspector\Exceptions\ConfigurationException;
 class ConfigurationParser
 {
     private const KEY_IGNORED_SEVERITIES = 'ignored_severities';
+    private const KEY_DOCKER_REPOSITORY = 'docker_repository';
+    private const KEY_DOCKER_TAG = 'docker_tag';
 
     /**
      * @param string $path
@@ -18,10 +20,8 @@ class ConfigurationParser
      */
     public function parse(string $path): Configuration
     {
-        $inspectionConfiguration = new Configuration();
-
         if (!file_exists($path)) {
-            return $inspectionConfiguration;
+            throw new ConfigurationException('Could not find the configuration file at ' . $path);
         }
 
         $configurationContents = file_get_contents($path);
@@ -44,14 +44,68 @@ class ConfigurationParser
             throw new ConfigurationException('Configuration should be written as a json object.');
         }
 
-        if (array_key_exists(self::KEY_IGNORED_SEVERITIES, $parsedConfiguration)) {
-            if (!is_array($parsedConfiguration[self::KEY_IGNORED_SEVERITIES])) {
-                throw new ConfigurationException('Ignored severities must be an array.');
-            }
+        $ignoredSeverities = $this->parseIgnoredSeverities($parsedConfiguration);
+        $dockerRepository = $this->parseDockerRepository($parsedConfiguration);
+        $dockerTag = $this->parseDockerTag($parsedConfiguration);
 
-            $inspectionConfiguration->setIgnoredSeverities($parsedConfiguration[self::KEY_IGNORED_SEVERITIES]);
+        return new Configuration(
+            $ignoredSeverities,
+            $dockerRepository,
+            $dockerTag
+        );
+    }
+
+    /**
+     * @param array<mixed> $parsedConfiguration
+     * @return array<mixed>
+     * @throws ConfigurationException
+     */
+    private function parseIgnoredSeverities(array $parsedConfiguration): array
+    {
+        if (!array_key_exists(self::KEY_IGNORED_SEVERITIES, $parsedConfiguration)) {
+            return [];
         }
 
-        return $inspectionConfiguration;
+        if (!is_array($parsedConfiguration[self::KEY_IGNORED_SEVERITIES])) {
+            throw new ConfigurationException(self::KEY_IGNORED_SEVERITIES . ' must be an array.');
+        }
+
+        return $parsedConfiguration[self::KEY_IGNORED_SEVERITIES];
+    }
+
+    /**
+     * @param array<mixed> $parsedConfiguration
+     * @return string|null
+     * @throws ConfigurationException
+     */
+    private function parseDockerRepository(array $parsedConfiguration): ?string
+    {
+        if (!array_key_exists(self::KEY_DOCKER_REPOSITORY, $parsedConfiguration)) {
+            return null;
+        }
+
+        if (!is_string($parsedConfiguration[self::KEY_DOCKER_REPOSITORY])) {
+            throw new ConfigurationException(self::KEY_DOCKER_REPOSITORY . ' must be a string.');
+        }
+
+        return $parsedConfiguration[self::KEY_DOCKER_REPOSITORY];
+    }
+
+    /**
+     * @param array<mixed> $parsedConfiguration
+     * @return string|null
+     * @throws ConfigurationException
+     */
+    private function parseDockerTag(array $parsedConfiguration): ?string
+    {
+        if (!array_key_exists(self::KEY_DOCKER_TAG, $parsedConfiguration)) {
+            return null;
+        }
+
+        if (!is_string($parsedConfiguration[self::KEY_DOCKER_TAG])) {
+            throw new ConfigurationException(self::KEY_DOCKER_TAG . ' must be a string.');
+        }
+
+        return $parsedConfiguration[self::KEY_DOCKER_TAG];
     }
 }
