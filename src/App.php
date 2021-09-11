@@ -26,8 +26,10 @@ class App
     {
         $this->verbose = $verbose;
 
+        $inspectorRoot = realpath(__DIR__ . '/../');
+
         try {
-            $this->inspection = new Inspection($projectPath, $inspectionsXmlPath, $this->verbose);
+            $this->inspection = new Inspection($projectPath, $inspectionsXmlPath, $this->verbose, $inspectorRoot);
         } catch (\Throwable $e) {
             $view = new Error($e, $this->verbose);
 

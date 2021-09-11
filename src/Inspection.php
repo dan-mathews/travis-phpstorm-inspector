@@ -27,13 +27,13 @@ class Inspection
      * @throws ConfigurationException
      * @throws InspectionsProfileException
      */
-    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose)
+    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose, string $inspectorPath)
     {
         $projectDirectory = new ProjectDirectory($projectPath);
 
         $resultsDirectory = new ResultsDirectory();
 
-        $resultsDirectory->create($projectDirectory->getPath());
+        $resultsDirectory->create($inspectorPath);
 
         $configurationParser = new ConfigurationParser();
 
