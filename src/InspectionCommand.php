@@ -82,13 +82,13 @@ class InspectionCommand
     {
         $command = implode(' ', [
             'docker run ',
-            // this cannot be readonly - it stops us mounting the following .idea directory'
+            // these can't be readonly: phpstorm modifies files such as /app/.idea/shelf/* and /app/.idea/.gitignore
             $this->mountCommand($this->projectDirectory->getPath(), '/app', false),
-            // this cannot be readonly - phpstorm attempts to create file '/app/.idea/.gitignore'
             $this->mountCommand($this->ideaDirectory->getPath(), '/app/.idea', false),
             $this->mountCommand($this->resultsDirectory->getPath(), '/results', false),
             $this->dockerImage->getReference(),
-            $this->getPhpstormCommand(),
+            $this->getMultipleBashCommands([$this->getPhpstormCommand(), $this->getChmodCommand()])
+
         ]);
 
         //todo replace with verbose-aware outputter
@@ -107,6 +107,20 @@ class InspectionCommand
         if ($code !== 0) {
             throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");
         }
+    }
+
+    /**
+     * @param string[] $commands
+     * @return string
+     */
+    private function getMultipleBashCommands(array $commands): string
+    {
+        return '/bin/bash -c "' . implode('; ', $commands) . '"';
+    }
+
+    private function getChmodCommand(): string
+    {
+        return 'chmod -R 777 /app/.idea';
     }
 
     private function getPhpstormCommand(): string

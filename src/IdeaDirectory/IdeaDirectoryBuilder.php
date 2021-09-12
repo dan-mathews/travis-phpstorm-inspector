@@ -14,18 +14,17 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
-use TravisPhpstormInspector\ProjectDirectory;
 
 class IdeaDirectoryBuilder
 {
     /**
-     * @param ProjectDirectory $project
+     * @param string $inspectorPath
      * @param string $inspectionsXmlPath
      * @return IdeaDirectory
      * @throws InspectionsProfileException
      */
     public function build(
-        ProjectDirectory $project,
+        string $inspectorPath,
         string $inspectionsXmlPath
     ): IdeaDirectory {
         $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
@@ -49,7 +48,7 @@ class IdeaDirectoryBuilder
             $inspectionProfilesDirectory
         );
 
-        $ideaDirectory->create($project->getPath());
+        $ideaDirectory->create($inspectorPath);
 
         return $ideaDirectory;
     }
