@@ -89,7 +89,12 @@ class ConfigurationBuilder
         $configurationPath = $this->projectPath . '/' . self::FILENAME;
 
         if (!file_exists($configurationPath)) {
-            throw new ConfigurationException('Could not find the configuration file at ' . $configurationPath);
+            echo 'Could not find the configuration file at ' . $configurationPath . ', assuming that command line '
+            . 'arguments or defaults are being used.';
+
+            $this->parsedConfigurationFile = [];
+
+            return $this->parsedConfigurationFile;
         }
 
         $configurationContents = file_get_contents($configurationPath);
