@@ -285,7 +285,7 @@ class FeatureContext implements Context
     public function iRunInspections(): void
     {
         exec(
-            'php inspect.php '
+            'bin/inspector '
             . $this->getProjectPath() . ' '
             . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
