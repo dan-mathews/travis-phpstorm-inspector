@@ -9,7 +9,7 @@
     <projectFiles>
         <directory name="src" />
         <directory name="tests/behat" />
-        <file name="inspect.php" />
+        <file name="bin/inspector" />
         <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
