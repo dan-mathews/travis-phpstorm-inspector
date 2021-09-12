@@ -8,9 +8,11 @@ use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
 class Configuration
 {
-    public const FILENAME = 'travis-phpstorm-inspector.json';
     private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     private const DEFAULT_DOCKER_TAG = 'latest';
+    private const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    private const DEFAULT_VERBOSE = false;
+    private const DEFAULT_IGNORED_SEVERITIES = [];
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',
@@ -24,7 +26,7 @@ class Configuration
     /**
      * @var string[]
      */
-    private $ignoredSeverities = [];
+    private $ignoredSeverities;
 
     /**
      * @var string
@@ -37,19 +39,60 @@ class Configuration
     private $dockerTag;
 
     /**
+     * @var string
+     */
+    private $appRootPath;
+
+    /**
+     * @var bool
+     */
+    private $verbose;
+
+    /**
+     * @var string
+     */
+    private $projectPath;
+
+    /**
+     * @var string
+     */
+    private $inspectionProfile;
+
+    /**
      * @param array<mixed> $ignoredSeverities
      * @param string|null $dockerRepository
      * @param string|null $dockerTag
+     * @param string $appRootPath
+     * @param bool|null $verbose
+     * @param string $projectPath
+     * @param string|null $inspectionProfile
      * @throws ConfigurationException
      */
     public function __construct(
-        array $ignoredSeverities,
+        ?array $ignoredSeverities,
         ?string $dockerRepository,
-        ?string $dockerTag
+        ?string $dockerTag,
+        string $appRootPath,
+        ?bool $verbose,
+        string $projectPath,
+        ?string $inspectionProfile
     ) {
-        $this->setIgnoredSeverities($ignoredSeverities);
+        $this->ignoredSeverities = ($ignoredSeverities !== null)
+            ? $this->validateIgnoredSeverities($ignoredSeverities)
+            : self::DEFAULT_IGNORED_SEVERITIES;
+
         $this->dockerRepository = $dockerRepository ?? self::DEFAULT_DOCKER_REPOSITORY;
+
         $this->dockerTag = $dockerTag ?? self::DEFAULT_DOCKER_TAG;
+
+        $this->appRootPath = $appRootPath;
+
+        $this->verbose = $verbose ?? self::DEFAULT_VERBOSE;
+
+        $this->projectPath = $projectPath;
+
+        $this->inspectionProfile = $inspectionProfile ?? $this->getAppRootPath()
+            . self::DEFAULT_INSPECTION_PROFILE_PATH;
     }
 
     /**
@@ -57,7 +100,7 @@ class Configuration
      * @throws ConfigurationException
      * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */
-    private function setIgnoredSeverities(array $ignoredSeverities): void
+    private function validateIgnoredSeverities(array $ignoredSeverities): array
     {
         if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
             throw new ConfigurationException(
@@ -66,7 +109,7 @@ class Configuration
             );
         }
 
-        $this->ignoredSeverities = $ignoredSeverities;
+        return $ignoredSeverities;
     }
 
     /**
@@ -85,5 +128,25 @@ class Configuration
     public function getDockerTag(): string
     {
         return $this->dockerTag;
+    }
+
+    public function getAppRootPath(): string
+    {
+        return $this->appRootPath;
+    }
+
+    public function getProjectPath(): string
+    {
+        return $this->projectPath;
+    }
+
+    public function getVerbose(): bool
+    {
+        return $this->verbose;
+    }
+
+    public function getInspectionProfile(): string
+    {
+        return $this->inspectionProfile;
     }
 }

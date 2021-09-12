@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\Configuration\ConfigurationParser;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -27,30 +26,35 @@ class Inspection
      * @throws ConfigurationException
      * @throws InspectionsProfileException
      */
-    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose, string $inspectorPath)
+    public function __construct(Configuration $configuration)
     {
-        $projectDirectory = new ProjectDirectory($projectPath);
+        $projectDirectory = new ProjectDirectory($configuration->getProjectPath());
 
         $resultsDirectory = new ResultsDirectory();
 
-        $resultsDirectory->create($inspectorPath);
+        $resultsDirectory->create($configuration->getAppRootPath());
 
-        $configurationParser = new ConfigurationParser();
-
-        $configuration = $configurationParser->parse($projectDirectory->getPath() . '/' . Configuration::FILENAME);
-
+        // this should have configuration as a dependency as the paths etc. it requires must have been validated already
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
 
-        $ideaDirectory = $ideaDirectoryBuilder->build($inspectorPath, $inspectionsXmlPath);
+        // remove args from here and have config passed in in constructor
+        $ideaDirectory = $ideaDirectoryBuilder->build(
+            $configuration->getAppRootPath(),
+            $configuration->getInspectionProfile()
+        );
 
-        $dockerImage = new DockerImage($configuration, $verbose);
+        $dockerImage = new DockerImage(
+            $configuration->getDockerRepository(),
+            $configuration->getDockerTag(),
+            $configuration->getVerbose()
+        );
 
         $this->inspectionCommand = new InspectionCommand(
             $projectDirectory,
             $ideaDirectory,
             $resultsDirectory,
             $dockerImage,
-            $verbose
+            $configuration->getVerbose()
         );
 
         $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);

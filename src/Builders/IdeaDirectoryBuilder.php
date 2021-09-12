@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory;
+namespace TravisPhpstormInspector\Builders;
 
 use TravisPhpstormInspector\App;
-use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
