@@ -26,73 +26,59 @@ class Configuration
     /**
      * @var string[]
      */
-    private $ignoredSeverities;
+    private $ignoredSeverities = self::DEFAULT_IGNORED_SEVERITIES;
 
     /**
      * @var string
      */
-    private $dockerRepository;
+    private $dockerRepository = self::DEFAULT_DOCKER_REPOSITORY;
 
     /**
      * @var string
      */
-    private $dockerTag;
+    private $dockerTag = self::DEFAULT_DOCKER_TAG;
 
     /**
-     * @var string
+     * @var Directory
      */
-    private $appRootPath;
+    private $appDirectory;
 
     /**
      * @var bool
      */
-    private $verbose;
+    private $verbose = self::DEFAULT_VERBOSE;
 
     /**
-     * @var string
+     * @var Directory
      */
-    private $projectPath;
+    private $projectDirectory;
 
     /**
-     * @var string
+     * @var File
      */
     private $inspectionProfile;
 
     /**
-     * @param array<mixed> $ignoredSeverities
-     * @param string|null $dockerRepository
-     * @param string|null $dockerTag
      * @param string $appRootPath
-     * @param bool|null $verbose
      * @param string $projectPath
-     * @param string|null $inspectionProfile
-     * @throws ConfigurationException
      */
     public function __construct(
-        ?array $ignoredSeverities,
-        ?string $dockerRepository,
-        ?string $dockerTag,
-        string $appRootPath,
-        ?bool $verbose,
         string $projectPath,
-        ?string $inspectionProfile
+        string $appRootPath
     ) {
-        $this->ignoredSeverities = ($ignoredSeverities !== null)
-            ? $this->validateIgnoredSeverities($ignoredSeverities)
-            : self::DEFAULT_IGNORED_SEVERITIES;
+        //todo try catch
+        $this->projectDirectory = new Directory($projectPath);
 
-        $this->dockerRepository = $dockerRepository ?? self::DEFAULT_DOCKER_REPOSITORY;
+        //todo try catch
+        $this->appDirectory = new Directory($appRootPath);
 
-        $this->dockerTag = $dockerTag ?? self::DEFAULT_DOCKER_TAG;
+        //todo make xml file class?
+        $this->inspectionProfile = new File($this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH);
+    }
 
-        $this->appRootPath = $appRootPath;
-
-        $this->verbose = $verbose ?? self::DEFAULT_VERBOSE;
-
-        $this->projectPath = $projectPath;
-
-        $this->inspectionProfile = $inspectionProfile ?? $this->getAppRootPath()
-            . self::DEFAULT_INSPECTION_PROFILE_PATH;
+    public function setVerbose(bool $verbose): void
+    {
+        $this->verbose = $verbose;
     }
 
     /**
@@ -100,7 +86,7 @@ class Configuration
      * @throws ConfigurationException
      * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */
-    private function validateIgnoredSeverities(array $ignoredSeverities): array
+    public function setIgnoredSeverities(array $ignoredSeverities): void
     {
         if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
             throw new ConfigurationException(
@@ -109,7 +95,7 @@ class Configuration
             );
         }
 
-        return $ignoredSeverities;
+        $this->ignoredSeverities = $ignoredSeverities;
     }
 
     /**
@@ -130,14 +116,14 @@ class Configuration
         return $this->dockerTag;
     }
 
-    public function getAppRootPath(): string
+    public function getAppDirectory(): Directory
     {
-        return $this->appRootPath;
+        return $this->appDirectory;
     }
 
-    public function getProjectPath(): string
+    public function getProjectDirectory(): Directory
     {
-        return $this->projectPath;
+        return $this->projectDirectory;
     }
 
     public function getVerbose(): bool
@@ -145,8 +131,24 @@ class Configuration
         return $this->verbose;
     }
 
-    public function getInspectionProfile(): string
+    public function getInspectionProfile(): File
     {
         return $this->inspectionProfile;
+    }
+
+    public function setDockerRepository(string $dockerRepository): void
+    {
+        $this->dockerRepository = $dockerRepository;
+    }
+
+    public function setDockerTag(string $dockerTag): void
+    {
+        $this->dockerTag = $dockerTag;
+    }
+
+    public function setInspectionProfile(string $inspectionProfile): void
+    {
+        //todo try catch
+        $this->inspectionProfile = new File($inspectionProfile);
     }
 }

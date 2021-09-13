@@ -28,19 +28,19 @@ class Inspection
      */
     public function __construct(Configuration $configuration)
     {
-        $projectDirectory = new ProjectDirectory($configuration->getProjectPath());
+        $projectDirectory = new ProjectDirectory($configuration->getProjectDirectory()->getPath());
 
         $resultsDirectory = new ResultsDirectory();
 
-        $resultsDirectory->create($configuration->getAppRootPath());
+        $resultsDirectory->create($configuration->getAppDirectory()->getPath());
 
         // this should have configuration as a dependency as the paths etc. it requires must have been validated already
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
 
         // remove args from here and have config passed in in constructor
         $ideaDirectory = $ideaDirectoryBuilder->build(
-            $configuration->getAppRootPath(),
-            $configuration->getInspectionProfile()
+            $configuration->getAppDirectory()->getPath(),
+            $configuration->getInspectionProfile()->getPath()
         );
 
         $dockerImage = new DockerImage(

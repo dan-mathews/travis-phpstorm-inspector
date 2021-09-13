@@ -12,13 +12,15 @@ class ConfigurationBuilder
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
 
+    private const KEY_PROJECT_PATH = 'projectPath';
+    private const KEY_INSPECTION_PROFILE = 'inspectionProfile';
     private const KEY_IGNORED_SEVERITIES = 'ignored_severities';
     private const KEY_DOCKER_REPOSITORY = 'docker_repository';
     private const KEY_DOCKER_TAG = 'docker_tag';
     private const KEY_VERBOSE = 'verbose';
-    private const KEY_INSPECTION_PROFILE = 'inspectionProfile';
 
-    private const KEYS = [
+
+    public const KEYS = [
         self::KEY_IGNORED_SEVERITIES,
         self::KEY_DOCKER_REPOSITORY,
         self::KEY_DOCKER_TAG,
@@ -27,24 +29,19 @@ class ConfigurationBuilder
     ];
 
     /**
-     * @var string
-     */
-    private $projectPath;
-
-    /**
-     * @var array<mixed>|null
+     * @var ConfigurationFileArray
      */
     private $parsedConfigurationFile;
 
     /**
-     * @var mixed
+     * @var string[]
      */
     private $arguments;
 
     /**
-     * @var string
+     * @var Configuration
      */
-    private $appRootPath;
+    private $configuration;
 
     /**
      * @throws ConfigurationException
@@ -55,7 +52,7 @@ class ConfigurationBuilder
         $this->arguments = $this->extractArguments($arguments);
 
         //project path can be specified in the commandline arguments or we assume it's the working directory
-        $projectPath = $this->arguments['projectPath'] ?? $workingDirectory;
+        $projectPath = $this->arguments[self::KEY_PROJECT_PATH] ?? $workingDirectory;
 
         if (!is_string($projectPath)) {
             throw new ConfigurationException(
@@ -63,155 +60,100 @@ class ConfigurationBuilder
             );
         }
 
-        $this->projectPath = $projectPath;
+        $this->configuration = new Configuration($projectPath, $appRootPath);
 
-        $appRootPath = realpath($appRootPath);
+        // built first to allow control over verbosity asap
+        $this->setVerbose();
 
-        if (false === $appRootPath) {
-            throw new \LogicException(
-                'Could not establish the path to ' . App::NAME . ' app.'
-            );
-        }
-
-        $this->appRootPath = $appRootPath;
+        $this->parsedConfigurationFile = new ConfigurationFileArray($projectPath . '/' . self::FILENAME);
     }
 
     /**
      * @throws ConfigurationException
      */
-    public function getParsedConfigurationFile(): array
+    public function build(): Configuration
     {
-        //TODO make own class
-        if (null !== $this->parsedConfigurationFile) {
-            return $this->parsedConfigurationFile;
-        }
+        $this->setIgnoredSeverities();
+        $this->setDockerRepository();
+        $this->setDockerTag();
+        $this->setInspectionProfile();
 
-        $configurationPath = $this->projectPath . '/' . self::FILENAME;
+        return $this->configuration;
+    }
 
-        if (!file_exists($configurationPath)) {
-            echo 'Could not find the configuration file at ' . $configurationPath . ', assuming that command line '
-            . 'arguments or defaults are being used.';
-
-            $this->parsedConfigurationFile = [];
-
-            return $this->parsedConfigurationFile;
-        }
-
-        $configurationContents = file_get_contents($configurationPath);
-
-        if (false === $configurationContents) {
-            throw new ConfigurationException('Could not read the configuration file.');
+    /**
+     * @throws ConfigurationException
+     */
+    private function setIgnoredSeverities(): void
+    {
+        if (
+            !isset($this->arguments[self::KEY_IGNORED_SEVERITIES]) &&
+            !isset($this->parsedConfigurationFile[self::KEY_IGNORED_SEVERITIES])
+        ) {
+            return;
         }
 
         try {
-            $parsedConfiguration = json_decode($configurationContents, true, 512, JSON_THROW_ON_ERROR);
+            if (isset($this->arguments[self::KEY_IGNORED_SEVERITIES])) {
+                $value = json_decode($this->arguments[self::KEY_IGNORED_SEVERITIES], false, 512, JSON_THROW_ON_ERROR);
+            } else {
+                $value = $this->parsedConfigurationFile[self::KEY_IGNORED_SEVERITIES];
+            }
         } catch (\JsonException $e) {
             throw new ConfigurationException(
-                'Could not process the configuration file as json.',
+                self::KEY_IGNORED_SEVERITIES . ' could not be json decoded from the command arguments.',
                 1,
                 $e
             );
         }
 
-        if (!is_array($parsedConfiguration)) {
-            throw new ConfigurationException('Configuration should be written as a json object.');
-        }
-
-        $invalidKeys = array_diff(array_keys($parsedConfiguration), self::KEYS);
-
-        if ([] !== $invalidKeys) {
-            throw new ConfigurationException(
-                'Configuration file contains invalid keys: "' . implode('", "', $invalidKeys) . '"'
-            );
-        }
-
-        $this->parsedConfigurationFile = $parsedConfiguration;
-
-        return $parsedConfiguration;
-    }
-
-    /**
-     * @return Configuration
-     * @throws ConfigurationException
-     */
-    public function build(): Configuration
-    {
-        $ignoredSeverities = $this->parseIgnoredSeverities();
-        $dockerRepository = $this->parseDockerRepository();
-        $dockerTag = $this->parseDockerTag();
-        $verbose = $this->parseVerbose();
-        $inspectionProfile = $this->parseInspectionProfile();
-
-        return new Configuration(
-            $ignoredSeverities,
-            $dockerRepository,
-            $dockerTag,
-            $this->appRootPath,
-            $verbose,
-            $this->projectPath,
-            $inspectionProfile
-        );
-    }
-
-    /**
-     * @return array<mixed>
-     * @throws ConfigurationException
-     */
-    private function parseIgnoredSeverities(): ?array
-    {
-        $value = $this->getValueFromArgsOrConfig(self::KEY_IGNORED_SEVERITIES);
-
-        if (null === $value) {
-            return null;
-        }
-
-        if (is_string($value)) {
-            $value = json_decode($value, false, 512, JSON_THROW_ON_ERROR);
-        }
-
         if (!is_array($value)) {
             throw new ConfigurationException(
-                self::KEY_IGNORED_SEVERITIES . ' must be an array or json encoded string which can parsed as an array.'
+                self::KEY_IGNORED_SEVERITIES . ' must be an array.'
             );
         }
 
-        return $value;
+        $this->configuration->setIgnoredSeverities($value);
     }
 
     /**
-     * @return string|null
      * @throws ConfigurationException
      */
-    private function parseDockerRepository(): ?string
+    private function setDockerRepository(): void
     {
-        $value = $this->getValueFromArgsOrConfig(self::KEY_DOCKER_REPOSITORY);
+        $value = $this->arguments[self::KEY_DOCKER_REPOSITORY]
+            ?? $this->parsedConfigurationFile[self::KEY_DOCKER_REPOSITORY]
+            ?? null;
 
-        if (
-            null !== $value &&
-            !is_string($value)
-        ) {
+        if (null === $value) {
+            return;
+        }
+
+        if (!is_string($value)) {
             throw new ConfigurationException(self::KEY_DOCKER_REPOSITORY . ' must be a string.');
         }
 
-        return $value;
+        $this->configuration->setDockerRepository($value);
     }
 
     /**
-     * @return string|null
      * @throws ConfigurationException
      */
-    private function parseDockerTag(): ?string
+    private function setDockerTag(): void
     {
-        $value = $this->getValueFromArgsOrConfig(self::KEY_DOCKER_TAG);
+        $value = $this->arguments[self::KEY_DOCKER_TAG]
+            ?? $this->parsedConfigurationFile[self::KEY_DOCKER_TAG]
+            ?? null;
 
-        if (
-            null !== $value &&
-            !is_string($value)
-        ) {
+        if (null === $value) {
+            return;
+        }
+
+        if (!is_string($value)) {
             throw new ConfigurationException(self::KEY_DOCKER_TAG . ' must be a string.');
         }
 
-        return $value;
+        $this->configuration->setDockerTag($value);
     }
 
     /**
@@ -221,7 +163,7 @@ class ConfigurationBuilder
     {
         $output = [];
 
-        $output['projectPath'] = $arguments[1] ?? null;
+        $output[self::KEY_PROJECT_PATH] = $arguments[1] ?? null;
 
         $output[self::KEY_INSPECTION_PROFILE] = $arguments[2] ?? null;
 
@@ -253,38 +195,41 @@ class ConfigurationBuilder
     /**
      * @throws ConfigurationException
      */
-    private function getValueFromArgsOrConfig(string $key)
+    private function setVerbose(): void
     {
-        return $this->arguments[$key] ?? $this->getParsedConfigurationFile()[$key] ?? null;
-    }
-
-    private function parseVerbose(): ?bool
-    {
-        $value = $this->getValueFromArgsOrConfig(self::KEY_VERBOSE);
-
-        if (null === $value) {
-            return null;
+        if (!isset($this->arguments[self::KEY_VERBOSE])) {
+            return;
         }
 
-        if (!is_bool((bool) $value)) {
-            throw new ConfigurationException(self::KEY_VERBOSE . ' must be a boolean (true or false).');
+        switch ($this->arguments[self::KEY_VERBOSE]) {
+            case 'true':
+                $this->configuration->setVerbose(true);
+                break;
+            case 'false':
+                $this->configuration->setVerbose(false);
+                break;
+            default:
+                throw new ConfigurationException(self::KEY_VERBOSE . ' must be true or false.');
         }
-
-        return (bool) $value;
     }
 
-    private function parseInspectionProfile(): ?string
+    /**
+     * @throws ConfigurationException
+     */
+    private function setInspectionProfile(): void
     {
-        $value = $this->getValueFromArgsOrConfig(self::KEY_INSPECTION_PROFILE);
+        $value = $this->arguments[self::KEY_INSPECTION_PROFILE]
+            ?? $this->parsedConfigurationFile[self::KEY_INSPECTION_PROFILE]
+            ?? null;
 
         if (null === $value) {
-            return null;
+            return;
         }
 
         if (!is_string($value)) {
             throw new ConfigurationException(self::KEY_INSPECTION_PROFILE . ' must be a string.');
         }
 
-        return $value;
+        $this->configuration->setInspectionProfile($value);
     }
 }
