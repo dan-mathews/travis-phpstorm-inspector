@@ -31,7 +31,11 @@ final class ConfigurationTest extends TestCase
             1 => $name,
         ];
 
-        $configurationBuilder = new ConfigurationBuilder($arguments);
+        $configurationBuilder = new ConfigurationBuilder(
+            $arguments,
+            __DIR__ . '/../../',
+            __DIR__ . '/../../'
+        );
 
         $configuration = $configurationBuilder->build();
 
@@ -64,13 +68,17 @@ final class ConfigurationTest extends TestCase
         $arguments = [
             0 => '',
             1 => $name,
-            2 => '',
+            2 => __DIR__ . '/../data/exampleStandards.xml',
             3 => 'docker_tag=docker_tag_from_arg',
             4 => 'docker_repository=docker_repository_from_arg',
             5 => 'ignored_severities=["TYPO", "WEAK WARNING", "WARNING"]'
         ];
 
-        $configurationBuilder = new ConfigurationBuilder($arguments);
+        $configurationBuilder = new ConfigurationBuilder(
+            $arguments,
+            __DIR__ . '/../../',
+            __DIR__ . '/../../'
+        );
 
         $configuration = $configurationBuilder->build();
 
