@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Builders;
 
-use TravisPhpstormInspector\App;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
@@ -66,6 +65,11 @@ class ConfigurationBuilder
         $this->setVerbose();
 
         $this->parsedConfigurationFile = new ConfigurationFileArray($projectPath . '/' . self::FILENAME);
+    }
+
+    public function getConfiguration(): Configuration
+    {
+        return $this->configuration;
     }
 
     /**
@@ -198,19 +202,18 @@ class ConfigurationBuilder
     private function setVerbose(): void
     {
         if (!isset($this->arguments[self::KEY_VERBOSE])) {
+            $this->configuration->setVerbose(false);
             return;
         }
 
-        switch ($this->arguments[self::KEY_VERBOSE]) {
-            case 'true':
-                $this->configuration->setVerbose(true);
-                break;
-            case 'false':
-                $this->configuration->setVerbose(false);
-                break;
-            default:
-                throw new ConfigurationException(self::KEY_VERBOSE . ' must be true or false.');
+        if (
+            'true' !== $this->arguments[self::KEY_VERBOSE] &&
+            'false' !== $this->arguments[self::KEY_VERBOSE]
+        ) {
+            throw new ConfigurationException(self::KEY_VERBOSE . ' must be true or false.');
         }
+
+        $this->configuration->setVerbose((bool) $this->arguments[self::KEY_VERBOSE]);
     }
 
     /**

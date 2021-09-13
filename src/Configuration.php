@@ -11,7 +11,7 @@ class Configuration
     private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     private const DEFAULT_DOCKER_TAG = 'latest';
     private const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
-    private const DEFAULT_VERBOSE = false;
+    private const DEFAULT_VERBOSE = true;
     private const DEFAULT_IGNORED_SEVERITIES = [];
 
     public const VALID_IGNORED_SEVERITIES = [

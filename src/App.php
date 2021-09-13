@@ -19,9 +19,9 @@ class App
     private $inspection;
 
     /**
-     * @var Configuration
+     * @var ConfigurationBuilder
      */
-    private $configuration;
+    private $configurationBuilder;
 
     public function __construct()
     {
@@ -32,11 +32,11 @@ class App
 
             $workingDirectory = $this->getWorkingDirectory();
 
-            $configurationBuilder = new ConfigurationBuilder($arguments, $appRootPath, $workingDirectory);
+            $this->configurationBuilder = new ConfigurationBuilder($arguments, $appRootPath, $workingDirectory);
 
-            $this->configuration = $configurationBuilder->build();
+            $configuration = $this->configurationBuilder->build();
 
-            $this->inspection = new Inspection($this->configuration);
+            $this->inspection = new Inspection($configuration);
         } catch (\Throwable $e) {
             $this->handleError($e);
         }
@@ -65,7 +65,9 @@ class App
 
     private function handleError(\Throwable $e): void
     {
-        $verbose = null === $this->configuration || $this->configuration->getVerbose();
+        $verbose = (null !== $this->configurationBuilder)
+            ? $this->configurationBuilder->getConfiguration()->getVerbose()
+            : true;
 
         $view = new Error($e, $verbose);
 
