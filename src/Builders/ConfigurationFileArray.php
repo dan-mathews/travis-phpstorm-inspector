@@ -11,14 +11,21 @@ class ConfigurationFileArray implements \ArrayAccess
     /**
      * @var array
      */
-    private $data;
+    private $data = [];
 
     /**
-     * @throws ConfigurationException
+     * @var string
      */
+    private $path;
+
     public function __construct(string $configurationPath)
     {
-        $this->data = $this->getParsedConfigurationFile($configurationPath);
+        $this->path = $configurationPath;
+    }
+
+    public function fill(): void
+    {
+        $this->data = $this->getParsedConfigurationFile($this->path);
     }
 
     /**

@@ -61,7 +61,7 @@ class ConfigurationBuilder
 
         $this->configuration = new Configuration($projectPath, $appRootPath);
 
-        // built first to allow control over verbosity asap
+        // set first to allow control over verbosity asap
         $this->setVerbose();
 
         $this->parsedConfigurationFile = new ConfigurationFileArray($projectPath . '/' . self::FILENAME);
@@ -77,6 +77,7 @@ class ConfigurationBuilder
      */
     public function build(): Configuration
     {
+        $this->parsedConfigurationFile->fill();
         $this->setIgnoredSeverities();
         $this->setDockerRepository();
         $this->setDockerTag();
