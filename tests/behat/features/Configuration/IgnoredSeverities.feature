@@ -1,6 +1,6 @@
 Feature: Run inspections with certain severities ignored
 
-  @issue-8 @positive
+  @issue-8 @positive @createsProject
   Scenario: Run inspections on a project with severities ignored in the configuration file
     Given I create a new project
     And I initialise git
@@ -50,7 +50,7 @@ Feature: Run inspections with certain severities ignored
       line 95   WEAK WARNING  (Multiple class declarations): Multiple definitions exist for class 'InspectionViolator'
     """
 
-  @issue-8 @negative
+  @issue-8 @negative @createsProject
   Scenario Outline: Run inspections on a project with invalid ignored severities
     Given I create a new project
     And I initialise git

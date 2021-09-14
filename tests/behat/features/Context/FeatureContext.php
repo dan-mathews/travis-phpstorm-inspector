@@ -287,7 +287,7 @@ class FeatureContext implements Context
         exec(
             'bin/inspector '
             . $this->getProjectPath() . ' '
-            . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
+            . 'inspectionProfile=' . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
@@ -426,7 +426,7 @@ class FeatureContext implements Context
       *
       * @return void
       */
-    public function cleanProject()
+    public function cleanProject(): void
     {
         if (!is_dir($this->getProjectPath())) {
             return;
