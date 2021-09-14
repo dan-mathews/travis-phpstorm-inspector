@@ -399,6 +399,7 @@ class FeatureContext implements Context
      */
     public function theLastLinesOfTheOutputShouldBe(PyStringNode $string): void
     {
+        /** @psalm-suppress MixedArgument, UndefinedMethod this returns array which feeds into count() just fine */
         $assertedOutputLineCount = count($string->getStrings());
 
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);

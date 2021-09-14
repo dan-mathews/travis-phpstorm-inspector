@@ -18,7 +18,9 @@ class File
             false === is_file($realPath) ||
             false === is_readable($realPath)
         ) {
-            throw new \RuntimeException('Could not find a readable file at ' . $path);
+            throw new \RuntimeException(
+                'Could not find a readable file at ' . (($realPath !== false) ? $realPath : $path)
+            );
         }
 
         $this->path = $realPath;

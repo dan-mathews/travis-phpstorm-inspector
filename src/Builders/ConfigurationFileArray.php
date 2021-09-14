@@ -6,10 +6,11 @@ namespace TravisPhpstormInspector\Builders;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
+/** @implements \ArrayAccess<string, mixed> */
 class ConfigurationFileArray implements \ArrayAccess
 {
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     private $data = [];
 
@@ -23,15 +24,20 @@ class ConfigurationFileArray implements \ArrayAccess
         $this->path = $configurationPath;
     }
 
+    /**
+     * @throws ConfigurationException
+     */
     public function fill(): void
     {
         $this->data = $this->getParsedConfigurationFile($this->path);
     }
 
     /**
+     * @param string $configurationPath
+     * @return array<string, mixed>
      * @throws ConfigurationException
      */
-    private function getParsedConfigurationFile($configurationPath): array
+    private function getParsedConfigurationFile(string $configurationPath): array
     {
         if (!file_exists($configurationPath)) {
             echo 'Could not find the configuration file at ' . $configurationPath . ', assuming that command line '
@@ -68,6 +74,7 @@ class ConfigurationFileArray implements \ArrayAccess
             );
         }
 
+        /** @psalm-var array<string, mixed> $parsedConfiguration */
         return $parsedConfiguration;
     }
 
@@ -76,6 +83,7 @@ class ConfigurationFileArray implements \ArrayAccess
         return isset($this->data[$offset]);
     }
 
+    /** @psalm-suppress MixedReturnStatement these \ArrayAccess methods can't be strictly typed */
     public function offsetGet($offset)
     {
         return $this->data[$offset];

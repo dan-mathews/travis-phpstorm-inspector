@@ -9,9 +9,17 @@
     <projectFiles>
         <directory name="src" />
         <directory name="tests/behat" />
+        <directory name="tests/phpunit" />
         <file name="bin/inspector" />
         <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <PropertyNotSetInConstructor>
+            <errorLevel type="suppress">
+                <directory name="tests/phpunit" />
+            </errorLevel>
+        </PropertyNotSetInConstructor>
+    </issueHandlers>
 </psalm>

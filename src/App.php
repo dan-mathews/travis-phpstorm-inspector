@@ -19,13 +19,14 @@ class App
     private $inspection;
 
     /**
-     * @var ConfigurationBuilder
+     * @var ConfigurationBuilder|null
      */
     private $configurationBuilder;
 
     public function __construct()
     {
         try {
+            /** @var string[] $arguments */
             $arguments = $_SERVER['argv'];
 
             $appRootPath = __DIR__ . '/../';
@@ -38,7 +39,9 @@ class App
 
             $this->inspection = new Inspection($configuration);
         } catch (\Throwable $e) {
-            $this->handleError($e);
+            $this->displayError($e);
+
+            exit(1);
         }
     }
 
@@ -47,7 +50,9 @@ class App
         try {
             $problems = $this->inspection->run();
         } catch (\Throwable $e) {
-            $this->handleError($e);
+            $this->displayError($e);
+
+            exit(1);
         }
 
         if (!$problems->isEmpty()) {
@@ -63,7 +68,10 @@ class App
         $view->display();
     }
 
-    private function handleError(\Throwable $e): void
+    /**
+     * @param \Throwable $e
+     */
+    private function displayError(\Throwable $e): void
     {
         $verbose = (null !== $this->configurationBuilder)
             ? $this->configurationBuilder->getConfiguration()->getVerbose()
@@ -72,8 +80,6 @@ class App
         $view = new Error($e, $verbose);
 
         $view->display();
-
-        exit(1);
     }
 
     /**

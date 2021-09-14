@@ -146,9 +146,27 @@ class Configuration
         $this->dockerTag = $dockerTag;
     }
 
+    /**
+     * @throws ConfigurationException
+     */
     public function setInspectionProfile(string $inspectionProfile): void
     {
-        //todo try catch
-        $this->inspectionProfile = new File($inspectionProfile);
+        try {
+            $this->inspectionProfile = new File($this->projectDirectory->getPath() . '/' . $inspectionProfile);
+            return;
+        } catch (\RuntimeException $firstException) {
+            //TODO: logging in a Travis context is pointless, but consider adding logging for local context
+        }
+
+        try {
+            $this->inspectionProfile = new File($inspectionProfile);
+        } catch (\RuntimeException $secondException) {
+            throw new ConfigurationException(
+                'Could not read inspection profile as a path relative to the project directory ('
+                    . $firstException->getMessage() . '), or an absolute path',
+                1,
+                $secondException
+            );
+        }
     }
 }

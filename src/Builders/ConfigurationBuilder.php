@@ -10,8 +10,8 @@ use TravisPhpstormInspector\Exceptions\ConfigurationException;
 class ConfigurationBuilder
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
+    private const PROJECT_PATH = 'projectPath';
 
-    private const KEY_PROJECT_PATH = 'projectPath';
     private const KEY_INSPECTION_PROFILE = 'inspectionProfile';
     private const KEY_IGNORED_SEVERITIES = 'ignored_severities';
     private const KEY_DOCKER_REPOSITORY = 'docker_repository';
@@ -43,21 +43,18 @@ class ConfigurationBuilder
     private $configuration;
 
     /**
+     * ConfigurationBuilder constructor.
+     * @param string[] $arguments
+     * @param string $appRootPath
+     * @param string $workingDirectory
      * @throws ConfigurationException
-     * @throws \LogicException
      */
     public function __construct(array $arguments, string $appRootPath, string $workingDirectory)
     {
-        $this->arguments = $this->extractArguments($arguments);
-
         //project path can be specified in the commandline arguments or we assume it's the working directory
-        $projectPath = $this->arguments[self::KEY_PROJECT_PATH] ?? $workingDirectory;
+        $projectPath = $arguments[1] ?? $workingDirectory;
 
-        if (!is_string($projectPath)) {
-            throw new ConfigurationException(
-                'Could not establish project path as string from argument 1 or current working directory.'
-            );
-        }
+        $this->arguments = $this->extractArgumentKeyValues($arguments);
 
         $this->configuration = new Configuration($projectPath, $appRootPath);
 
@@ -100,8 +97,9 @@ class ConfigurationBuilder
 
         try {
             if (isset($this->arguments[self::KEY_IGNORED_SEVERITIES])) {
-                $value = json_decode($this->arguments[self::KEY_IGNORED_SEVERITIES], false, 512, JSON_THROW_ON_ERROR);
+                $value = json_decode($this->arguments[self::KEY_IGNORED_SEVERITIES], true, 512, JSON_THROW_ON_ERROR);
             } else {
+                /** @psalm-var mixed $value */
                 $value = $this->parsedConfigurationFile[self::KEY_IGNORED_SEVERITIES];
             }
         } catch (\JsonException $e) {
@@ -162,19 +160,17 @@ class ConfigurationBuilder
     }
 
     /**
+     * @param string[] $arguments
+     * @return array<string, string>
      * @throws ConfigurationException
      */
-    private function extractArguments(array $arguments): array
+    private function extractArgumentKeyValues(array $arguments): array
     {
         $output = [];
 
-        $output[self::KEY_PROJECT_PATH] = $arguments[1] ?? null;
-
-        $output[self::KEY_INSPECTION_PROFILE] = $arguments[2] ?? null;
-
         $argvCount = count($arguments);
 
-        for ($i = 3; $i < $argvCount; $i++) {
+        for ($i = 2; $i < $argvCount; $i++) {
             $equalsPosition = strpos($arguments[$i], '=');
 
             if (false === $equalsPosition) {
@@ -190,6 +186,12 @@ class ConfigurationBuilder
             }
 
             $value = substr($arguments[$i], $equalsPosition + 1);
+
+            if (!is_string($value)) {
+                throw new ConfigurationException(
+                    'Could not divide this argument into key and value parts: ' . $arguments[$i]
+                );
+            }
 
             $output[$key] = $value;
         }

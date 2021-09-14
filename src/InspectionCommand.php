@@ -129,7 +129,7 @@ class InspectionCommand
         return implode(' ', [
             '/bin/bash phpstorm.sh inspect',
             '/app',
-            '/app/.idea/' . InspectionProfilesDirectory::NAME .'/' . $this->inspectionsXml->getName(),
+            '/app/.idea/' . InspectionProfilesDirectory::NAME . '/' . $this->inspectionsXml->getName(),
             '/results',
             '-changes',
             '-format json',
