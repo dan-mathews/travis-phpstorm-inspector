@@ -82,8 +82,8 @@ final class ConfigurationTest extends TestCase
             $configuration->getIgnoredSeverities()
         );
         self::assertSame(
-            realpath(self::TEST_INSPECTION_PROFILE_PATH),
-            $configuration->getInspectionProfile()->getPath()
+            'exampleStandards.xml',
+            $configuration->getInspectionProfile()->getName()
         );
     }
 
@@ -102,13 +102,9 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'inspectionProfile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'inspectionProfile' => realpath(self::DEFAULT_INSPECTION_PROFILE_PATH)
             ]
         );
-
-        $argumentProfilePath = $this->projectName . '/argumentProfile.xml';
-
-        $this->writeFile($argumentProfilePath, 'argumentProfile');
 
         $arguments = [
             0 => '',
@@ -116,7 +112,7 @@ final class ConfigurationTest extends TestCase
             2 => 'docker_tag=docker_tag_from_arg',
             3 => 'docker_repository=docker_repository_from_arg',
             4 => 'ignored_severities=["TYPO", "WEAK WARNING", "WARNING"]',
-            5 => 'inspectionProfile=argumentProfile.xml',
+            5 => 'inspectionProfile=' . self::TEST_INSPECTION_PROFILE_PATH,
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
@@ -130,7 +126,10 @@ final class ConfigurationTest extends TestCase
         self::assertSame('docker_tag_from_arg', $configuration->getDockerTag());
         self::assertSame('docker_repository_from_arg', $configuration->getDockerRepository());
         self::assertSame(["TYPO", "WEAK WARNING", "WARNING"], $configuration->getIgnoredSeverities());
-        self::assertSame(realpath($argumentProfilePath), $configuration->getInspectionProfile()->getPath());
+        self::assertSame(
+            'exampleStandards.xml',
+            $configuration->getInspectionProfile()->getName()
+        );
     }
 
     /**
@@ -160,8 +159,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('docker_repository_from_arg', $configuration->getDockerRepository());
         self::assertSame(["TYPO", "WEAK WARNING", "WARNING"], $configuration->getIgnoredSeverities());
         self::assertSame(
-            realpath(self::TEST_INSPECTION_PROFILE_PATH),
-            $configuration->getInspectionProfile()->getPath()
+            'exampleStandards.xml',
+            $configuration->getInspectionProfile()->getName()
         );
     }
 
@@ -183,8 +182,8 @@ final class ConfigurationTest extends TestCase
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
         self::assertSame([], $configuration->getIgnoredSeverities());
         self::assertSame(
-            realpath(self::DEFAULT_INSPECTION_PROFILE_PATH),
-            $configuration->getInspectionProfile()->getPath()
+            'default.xml',
+            $configuration->getInspectionProfile()->getName()
         );
     }
 

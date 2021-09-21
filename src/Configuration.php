@@ -155,7 +155,9 @@ class Configuration
     public function setInspectionProfile(string $inspectionProfile): void
     {
         try {
-            $this->inspectionProfile = new InspectionsXml($this->projectDirectory->getPath() . '/' . $inspectionProfile);
+            $this->inspectionProfile = new InspectionsXml(
+                $this->projectDirectory->getPath() . '/' . $inspectionProfile
+            );
             return;
         } catch (InspectionsProfileException $firstException) {
             //TODO: logging in a Travis context is pointless, but consider adding logging for local context
