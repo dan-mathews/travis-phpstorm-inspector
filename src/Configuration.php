@@ -151,27 +151,26 @@ class Configuration
 
     /**
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
     public function setInspectionProfile(string $inspectionProfile): void
     {
-        try {
+        if (file_exists($this->projectDirectory->getPath() . '/' . $inspectionProfile)) {
             $this->inspectionProfile = new InspectionsXml(
                 $this->projectDirectory->getPath() . '/' . $inspectionProfile
             );
             return;
-        } catch (InspectionsProfileException $firstException) {
-            //TODO: logging in a Travis context is pointless, but consider adding logging for local context
         }
 
-        try {
+        if (file_exists($inspectionProfile)) {
             $this->inspectionProfile = new InspectionsXml($inspectionProfile);
-        } catch (InspectionsProfileException $secondException) {
-            throw new ConfigurationException(
-                'Could not read inspection profile as a path relative to the project directory ('
-                    . $firstException->getMessage() . '), or an absolute path',
-                1,
-                $secondException
-            );
+            return;
         }
+
+        throw new ConfigurationException(
+            'Could not read inspection profile as a path relative to the project directory ('
+            . $this->projectDirectory->getPath() . '/' . $inspectionProfile . '), or an absolute path ('
+            . $inspectionProfile . ')'
+        );
     }
 }

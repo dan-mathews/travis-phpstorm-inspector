@@ -6,6 +6,7 @@ namespace TravisPhpstormInspector\Builders;
 
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
 class ConfigurationBuilder
 {
@@ -43,11 +44,12 @@ class ConfigurationBuilder
     private $configuration;
 
     /**
-     * ConfigurationBuilder constructor.
      * @param string[] $arguments
      * @param string $appRootPath
      * @param string $workingDirectory
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
+     * @throws \RuntimeException
      */
     public function __construct(array $arguments, string $appRootPath, string $workingDirectory)
     {
@@ -71,6 +73,7 @@ class ConfigurationBuilder
 
     /**
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
     public function build(): Configuration
     {
@@ -223,6 +226,7 @@ class ConfigurationBuilder
 
     /**
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
     private function setInspectionProfile(): void
     {
