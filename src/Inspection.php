@@ -24,23 +24,16 @@ class Inspection
 
     /**
      * @throws ConfigurationException
-     * @throws InspectionsProfileException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     public function __construct(Configuration $configuration)
     {
-        $projectDirectory = new ProjectDirectory($configuration->getProjectDirectory()->getPath());
-
-        $resultsDirectory = new ResultsDirectory();
-
-        $resultsDirectory->create($configuration->getAppDirectory()->getPath());
-
-        // this should have configuration as a dependency as the paths etc. it requires must have been validated already
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
 
-        // remove args from here and have config passed in in constructor
         $ideaDirectory = $ideaDirectoryBuilder->build(
             $configuration->getAppDirectory()->getPath(),
-            $configuration->getInspectionProfile()->getPath()
+            $configuration->getInspectionProfile()
         );
 
         $dockerImage = new DockerImage(
@@ -49,9 +42,14 @@ class Inspection
             $configuration->getVerbose()
         );
 
+        $resultsDirectory = new ResultsDirectory();
+
+        $resultsDirectory->create($configuration->getAppDirectory()->getPath());
+
         $this->inspectionCommand = new InspectionCommand(
-            $projectDirectory,
+            $configuration->getProjectDirectory(),
             $ideaDirectory,
+            $configuration->getInspectionProfile(),
             $resultsDirectory,
             $dockerImage,
             $configuration->getVerbose()

@@ -209,14 +209,16 @@ class ConfigurationBuilder
             return;
         }
 
-        if (
-            'true' !== $this->arguments[self::KEY_VERBOSE] &&
-            'false' !== $this->arguments[self::KEY_VERBOSE]
-        ) {
-            throw new ConfigurationException(self::KEY_VERBOSE . ' must be true or false.');
+        switch ($this->arguments[self::KEY_VERBOSE]) {
+            case 'true':
+                $this->configuration->setVerbose(true);
+                return;
+            case 'false':
+                $this->configuration->setVerbose(false);
+                return;
+            default:
+                throw new ConfigurationException(self::KEY_VERBOSE . ' must be true or false.');
         }
-
-        $this->configuration->setVerbose((bool) $this->arguments[self::KEY_VERBOSE]);
     }
 
     /**

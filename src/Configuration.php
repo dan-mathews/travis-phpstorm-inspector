@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
 class Configuration
 {
@@ -54,26 +56,27 @@ class Configuration
     private $projectDirectory;
 
     /**
-     * @var File
+     * @var InspectionsXml
      */
     private $inspectionProfile;
 
     /**
      * @param string $appRootPath
      * @param string $projectPath
+     * @throws Exceptions\InspectionsProfileException
+     * @throws \RuntimeException
      */
     public function __construct(
         string $projectPath,
         string $appRootPath
     ) {
-        //todo try catch
         $this->projectDirectory = new Directory($projectPath);
 
-        //todo try catch
         $this->appDirectory = new Directory($appRootPath);
 
-        //todo make xml file class?
-        $this->inspectionProfile = new File($this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH);
+        $this->inspectionProfile = new InspectionsXml(
+            $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH
+        );
     }
 
     public function setVerbose(bool $verbose): void
@@ -131,7 +134,7 @@ class Configuration
         return $this->verbose;
     }
 
-    public function getInspectionProfile(): File
+    public function getInspectionProfile(): InspectionsXml
     {
         return $this->inspectionProfile;
     }
@@ -152,15 +155,15 @@ class Configuration
     public function setInspectionProfile(string $inspectionProfile): void
     {
         try {
-            $this->inspectionProfile = new File($this->projectDirectory->getPath() . '/' . $inspectionProfile);
+            $this->inspectionProfile = new InspectionsXml($this->projectDirectory->getPath() . '/' . $inspectionProfile);
             return;
-        } catch (\RuntimeException $firstException) {
+        } catch (InspectionsProfileException $firstException) {
             //TODO: logging in a Travis context is pointless, but consider adding logging for local context
         }
 
         try {
-            $this->inspectionProfile = new File($inspectionProfile);
-        } catch (\RuntimeException $secondException) {
+            $this->inspectionProfile = new InspectionsXml($inspectionProfile);
+        } catch (InspectionsProfileException $secondException) {
             throw new ConfigurationException(
                 'Could not read inspection profile as a path relative to the project directory ('
                     . $firstException->getMessage() . '), or an absolute path',
