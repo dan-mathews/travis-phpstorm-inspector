@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Views\Fail;
 use TravisPhpstormInspector\Views\Error;
 use TravisPhpstormInspector\Views\Pass;
@@ -13,25 +14,32 @@ class App
     public const NAME = 'travis-phpstorm-inspector';
 
     /**
-     * @var bool
-     */
-    private $verbose;
-
-    /**
      * @var Inspection
      */
     private $inspection;
 
-    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose = false)
+    /**
+     * @var ConfigurationBuilder|null
+     */
+    private $configurationBuilder;
+
+    public function __construct()
     {
-        $this->verbose = $verbose;
-
         try {
-            $this->inspection = new Inspection($projectPath, $inspectionsXmlPath, $this->verbose);
-        } catch (\Throwable $e) {
-            $view = new Error($e, $this->verbose);
+            /** @var string[] $arguments */
+            $arguments = $_SERVER['argv'];
 
-            $view->display();
+            $appRootPath = __DIR__ . '/../';
+
+            $workingDirectory = $this->getWorkingDirectory();
+
+            $this->configurationBuilder = new ConfigurationBuilder($arguments, $appRootPath, $workingDirectory);
+
+            $configuration = $this->configurationBuilder->build();
+
+            $this->inspection = new Inspection($configuration);
+        } catch (\Throwable $e) {
+            $this->displayError($e);
 
             exit(1);
         }
@@ -41,24 +49,51 @@ class App
     {
         try {
             $problems = $this->inspection->run();
-
-            if ($problems->isEmpty()) {
-                $view = new Pass();
-
-                $exitCode = 0;
-            } else {
-                $view = new Fail($problems);
-
-                $exitCode = 1;
-            }
         } catch (\Throwable $e) {
-            $view = new Error($e, $this->verbose);
+            $this->displayError($e);
 
-            $exitCode = 1;
+            exit(1);
         }
 
-        $view->display();
+        if (!$problems->isEmpty()) {
+            $view = new Fail($problems);
 
-        exit($exitCode);
+            $view->display();
+
+            exit(1);
+        }
+
+        $view = new Pass();
+
+        $view->display();
+    }
+
+    /**
+     * @param \Throwable $e
+     */
+    private function displayError(\Throwable $e): void
+    {
+        $verbose = (null !== $this->configurationBuilder)
+            ? $this->configurationBuilder->getConfiguration()->getVerbose()
+            : true;
+
+        $view = new Error($e, $verbose);
+
+        $view->display();
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    private function getWorkingDirectory(): string
+    {
+        $workingDirectory = getcwd();
+
+        if (false === $workingDirectory) {
+            throw new \RuntimeException('Could not establish current working directory. Does the current, or any parent'
+                . ' directory, not have the readable or search mode set?');
+        }
+
+        return $workingDirectory;
     }
 }

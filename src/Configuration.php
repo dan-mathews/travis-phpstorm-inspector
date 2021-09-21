@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
 class Configuration
 {
-    public const FILENAME = 'travis-phpstorm-inspector.json';
     private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     private const DEFAULT_DOCKER_TAG = 'latest';
+    private const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    private const DEFAULT_VERBOSE = true;
+    private const DEFAULT_IGNORED_SEVERITIES = [];
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',
@@ -24,32 +28,60 @@ class Configuration
     /**
      * @var string[]
      */
-    private $ignoredSeverities = [];
+    private $ignoredSeverities = self::DEFAULT_IGNORED_SEVERITIES;
 
     /**
      * @var string
      */
-    private $dockerRepository;
+    private $dockerRepository = self::DEFAULT_DOCKER_REPOSITORY;
 
     /**
      * @var string
      */
-    private $dockerTag;
+    private $dockerTag = self::DEFAULT_DOCKER_TAG;
 
     /**
-     * @param array<mixed> $ignoredSeverities
-     * @param string|null $dockerRepository
-     * @param string|null $dockerTag
-     * @throws ConfigurationException
+     * @var Directory
+     */
+    private $appDirectory;
+
+    /**
+     * @var bool
+     */
+    private $verbose = self::DEFAULT_VERBOSE;
+
+    /**
+     * @var Directory
+     */
+    private $projectDirectory;
+
+    /**
+     * @var InspectionsXml
+     */
+    private $inspectionProfile;
+
+    /**
+     * @param string $appRootPath
+     * @param string $projectPath
+     * @throws Exceptions\InspectionsProfileException
+     * @throws \RuntimeException
      */
     public function __construct(
-        array $ignoredSeverities,
-        ?string $dockerRepository,
-        ?string $dockerTag
+        string $projectPath,
+        string $appRootPath
     ) {
-        $this->setIgnoredSeverities($ignoredSeverities);
-        $this->dockerRepository = $dockerRepository ?? self::DEFAULT_DOCKER_REPOSITORY;
-        $this->dockerTag = $dockerTag ?? self::DEFAULT_DOCKER_TAG;
+        $this->projectDirectory = new Directory($projectPath);
+
+        $this->appDirectory = new Directory($appRootPath);
+
+        $this->inspectionProfile = new InspectionsXml(
+            $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH
+        );
+    }
+
+    public function setVerbose(bool $verbose): void
+    {
+        $this->verbose = $verbose;
     }
 
     /**
@@ -57,7 +89,7 @@ class Configuration
      * @throws ConfigurationException
      * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */
-    private function setIgnoredSeverities(array $ignoredSeverities): void
+    public function setIgnoredSeverities(array $ignoredSeverities): void
     {
         if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
             throw new ConfigurationException(
@@ -85,5 +117,60 @@ class Configuration
     public function getDockerTag(): string
     {
         return $this->dockerTag;
+    }
+
+    public function getAppDirectory(): Directory
+    {
+        return $this->appDirectory;
+    }
+
+    public function getProjectDirectory(): Directory
+    {
+        return $this->projectDirectory;
+    }
+
+    public function getVerbose(): bool
+    {
+        return $this->verbose;
+    }
+
+    public function getInspectionProfile(): InspectionsXml
+    {
+        return $this->inspectionProfile;
+    }
+
+    public function setDockerRepository(string $dockerRepository): void
+    {
+        $this->dockerRepository = $dockerRepository;
+    }
+
+    public function setDockerTag(string $dockerTag): void
+    {
+        $this->dockerTag = $dockerTag;
+    }
+
+    /**
+     * @throws ConfigurationException
+     * @throws InspectionsProfileException
+     */
+    public function setInspectionProfile(string $inspectionProfile): void
+    {
+        if (file_exists($this->projectDirectory->getPath() . '/' . $inspectionProfile)) {
+            $this->inspectionProfile = new InspectionsXml(
+                $this->projectDirectory->getPath() . '/' . $inspectionProfile
+            );
+            return;
+        }
+
+        if (file_exists($inspectionProfile)) {
+            $this->inspectionProfile = new InspectionsXml($inspectionProfile);
+            return;
+        }
+
+        throw new ConfigurationException(
+            'Could not read inspection profile as a path relative to the project directory ('
+            . $this->projectDirectory->getPath() . '/' . $inspectionProfile . '), or an absolute path ('
+            . $inspectionProfile . ')'
+        );
     }
 }

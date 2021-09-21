@@ -1,6 +1,6 @@
 Feature: Run inspections
 
-  @issue-12 #@createsProject see issue-4
+  @issue-12 @positive @createsProject
   Scenario: Run inspections on a project with no problems
     Given I create a new project
     And I initialise git
@@ -21,7 +21,7 @@ Feature: Run inspections
     No problems to report.
     """
 
-  @issue-12 #@createsProject see issue-4
+  @issue-12 @positive @createsProject
   Scenario: Run inspections on a project with problems
     Given I create a new project
     And I initialise git

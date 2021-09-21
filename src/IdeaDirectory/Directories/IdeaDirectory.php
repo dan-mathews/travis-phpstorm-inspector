@@ -12,7 +12,12 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
 class IdeaDirectory extends AbstractCreatableDirectory
 {
-    private const NAME = 'travis-phpstorm-inspector.idea';
+    private const NAME = 'travis-phpstorm-inspector-.idea';
+
+    /**
+     * @var bool
+     */
+    protected $overwrite = true;
 
     /**
      * @var InspectionProfilesDirectory

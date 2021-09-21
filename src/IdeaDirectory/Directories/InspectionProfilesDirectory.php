@@ -10,7 +10,7 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 
 class InspectionProfilesDirectory extends AbstractCreatableDirectory
 {
-    private const NAME = 'inspectionProfiles';
+    public const NAME = 'inspectionProfiles';
 
     /**
      * @var InspectionsXml

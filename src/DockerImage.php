@@ -16,9 +16,9 @@ class DockerImage
     /**
      * @throws ConfigurationException
      */
-    public function __construct(Configuration $configuration, bool $verbose)
+    public function __construct(string $repository, string $tag, bool $verbose)
     {
-        $this->reference = $configuration->getDockerRepository() . ':' . $configuration->getDockerTag();
+        $this->reference = $repository . ':' . $tag;
 
         $code = 1;
 

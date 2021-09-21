@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory;
+namespace TravisPhpstormInspector\Builders;
 
 use TravisPhpstormInspector\App;
-use TravisPhpstormInspector\Configuration;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
@@ -14,21 +12,20 @@ use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
-use TravisPhpstormInspector\ProjectDirectory;
 
 class IdeaDirectoryBuilder
 {
     /**
-     * @param ProjectDirectory $project
-     * @param string $inspectionsXmlPath
+     * @param string $inspectorPath
+     * @param InspectionsXml $inspectionsXml
      * @return IdeaDirectory
-     * @throws InspectionsProfileException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
     public function build(
-        ProjectDirectory $project,
-        string $inspectionsXmlPath
+        string $inspectorPath,
+        InspectionsXml $inspectionsXml
     ): IdeaDirectory {
-        $inspectionsXml = new InspectionsXml($inspectionsXmlPath);
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
 
         $inspectionProfilesDirectory = new InspectionProfilesDirectory(
@@ -49,7 +46,7 @@ class IdeaDirectoryBuilder
             $inspectionProfilesDirectory
         );
 
-        $ideaDirectory->create($project->getPath());
+        $ideaDirectory->create($inspectorPath);
 
         return $ideaDirectory;
     }

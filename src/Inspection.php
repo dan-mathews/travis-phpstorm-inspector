@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\Configuration\ConfigurationParser;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -25,32 +24,35 @@ class Inspection
 
     /**
      * @throws ConfigurationException
-     * @throws InspectionsProfileException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
      */
-    public function __construct(string $projectPath, string $inspectionsXmlPath, bool $verbose)
+    public function __construct(Configuration $configuration)
     {
-        $projectDirectory = new ProjectDirectory($projectPath);
+        $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
+
+        $ideaDirectory = $ideaDirectoryBuilder->build(
+            $configuration->getAppDirectory()->getPath(),
+            $configuration->getInspectionProfile()
+        );
+
+        $dockerImage = new DockerImage(
+            $configuration->getDockerRepository(),
+            $configuration->getDockerTag(),
+            $configuration->getVerbose()
+        );
 
         $resultsDirectory = new ResultsDirectory();
 
-        $resultsDirectory->create($projectDirectory->getPath());
-
-        $configurationParser = new ConfigurationParser();
-
-        $configuration = $configurationParser->parse($projectDirectory->getPath() . '/' . Configuration::FILENAME);
-
-        $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
-
-        $ideaDirectory = $ideaDirectoryBuilder->build($projectDirectory, $inspectionsXmlPath);
-
-        $dockerImage = new DockerImage($configuration, $verbose);
+        $resultsDirectory->create($configuration->getAppDirectory()->getPath());
 
         $this->inspectionCommand = new InspectionCommand(
-            $projectDirectory,
+            $configuration->getProjectDirectory(),
             $ideaDirectory,
+            $configuration->getInspectionProfile(),
             $resultsDirectory,
             $dockerImage,
-            $verbose
+            $configuration->getVerbose()
         );
 
         $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);

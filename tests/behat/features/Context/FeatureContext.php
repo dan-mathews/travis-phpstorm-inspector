@@ -285,9 +285,9 @@ class FeatureContext implements Context
     public function iRunInspections(): void
     {
         exec(
-            'php inspect.php '
+            'bin/inspector '
             . $this->getProjectPath() . ' '
-            . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
+            . 'inspectionProfile=' . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
@@ -399,9 +399,14 @@ class FeatureContext implements Context
      */
     public function theLastLinesOfTheOutputShouldBe(PyStringNode $string): void
     {
+        /** @psalm-suppress MixedArgument, UndefinedMethod this returns array which feeds into count() just fine */
         $assertedOutputLineCount = count($string->getStrings());
 
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
+
+        if ($string->getRaw() !== $actualOutputLinesForComparison) {
+            echo "For debugging, the last 10 lines of output were:\n" . $this->getLastLinesOfOutput(10);
+        }
 
         Assert::assertSame($string->getRaw(), $actualOutputLinesForComparison);
     }
@@ -421,7 +426,7 @@ class FeatureContext implements Context
       *
       * @return void
       */
-    public function cleanProject()
+    public function cleanProject(): void
     {
         if (!is_dir($this->getProjectPath())) {
             return;

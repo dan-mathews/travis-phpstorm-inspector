@@ -1,6 +1,6 @@
 Feature: Specify docker images in configuration
 
-  @issue-14 @negative
+  @issue-14 @negative @createsProject
   Scenario Outline: Use configuration and defaults to specify images which don't exist on dockerhub
     Given I create a new project
     And I initialise git

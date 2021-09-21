@@ -1,6 +1,6 @@
 Feature: Run inspections with a configuration file
 
-  @issue-8 @negative
+  @issue-8 @negative @createsProject
   Scenario: Run inspections on a project with invalid configuration file
     Given I create a new project
     And I initialise git

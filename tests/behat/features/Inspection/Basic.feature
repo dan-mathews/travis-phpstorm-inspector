@@ -1,6 +1,6 @@
 Feature: Run inspections
 
-  @issue-1 @negative
+  @issue-1 @negative @createsProject
   Scenario: Use an inspections file with the wrong extension
     Given I create a new project
     And I initialise git
@@ -21,7 +21,7 @@ Feature: Run inspections
     The inspections profile invalid.txt does not have an xml extension.
     """
 
-  @issue-14
+  @issue-14 @positive @createsProject
   Scenario: Run inspections without local .idea directory being changed
     Given I create a new project
     And I initialise git

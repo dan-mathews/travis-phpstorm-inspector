@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
+use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
 class InspectionCommand
 {
     /**
-     * @var ProjectDirectory
+     * @var Directory
      */
     private $projectDirectory;
 
@@ -40,54 +41,53 @@ class InspectionCommand
     private $verbose;
 
     public function __construct(
-        ProjectDirectory $project,
+        Directory $project,
         IdeaDirectory $ideaDirectory,
+        InspectionsXml $inspectionsProfile,
         ResultsDirectory $resultsDirectory,
         DockerImage $dockerImage,
         bool $verbose
     ) {
         $this->projectDirectory = $project;
 
-        /** @noinspection UnusedConstructorDependenciesInspection this is not dead code, it's a dependency of the class
-         * because experience shows the inspection command doesn't run properly without a valid idea directory.
-         */
         $this->ideaDirectory = $ideaDirectory;
 
         $this->resultsDirectory = $resultsDirectory;
 
-        $this->inspectionsXml = $this->ideaDirectory->getInspectionsXml();
+        $this->inspectionsXml = $inspectionsProfile;
 
         $this->dockerImage = $dockerImage;
 
         $this->verbose = $verbose;
     }
 
-    private function mountCommand(string $source, string $target, bool $readOnly = false): string
+    private function mountCommand(string $source, string $target): string
     {
         // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
         // there is the potential to overwrite their .idea directory locally if we're not careful.
-        // Here we explicitly state private bind-propagation to prevent this possibility.
+        // The mounted directories can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
+        // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
+
         return '--mount '
             . 'type=bind'
             . ',source=' . $source
             . ',target=' . $target
-            . ',bind-propagation=private'
-            . ($readOnly ? ',readonly' : '');
+            . ',bind-propagation=private';
     }
 
     /**
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     public function run(): void
     {
         $command = implode(' ', [
             'docker run ',
-            //TODO place the results directory outside of their project so this can be readonly
             $this->mountCommand($this->projectDirectory->getPath(), '/app'),
-            // this must not be readonly as phpstorm attempts to create file '/app/.idea/.gitignore'
-            $this->mountCommand($this->ideaDirectory->getPath(), '/app/.idea', false),
+            $this->mountCommand($this->ideaDirectory->getPath(), '/app/.idea'),
+            $this->mountCommand($this->resultsDirectory->getPath(), '/results'),
             $this->dockerImage->getReference(),
-            $this->getPhpstormCommand(),
+            $this->getMultipleBashCommands([$this->getPhpstormCommand(), $this->getChmodCommand()])
         ]);
 
         //todo replace with verbose-aware outputter
@@ -108,13 +108,27 @@ class InspectionCommand
         }
     }
 
+    /**
+     * @param string[] $commands
+     * @return string
+     */
+    private function getMultipleBashCommands(array $commands): string
+    {
+        return '/bin/bash -c "' . implode('; ', $commands) . '"';
+    }
+
+    private function getChmodCommand(): string
+    {
+        return 'chmod -R 777 /app/.idea';
+    }
+
     private function getPhpstormCommand(): string
     {
         return implode(' ', [
             '/bin/bash phpstorm.sh inspect',
             '/app',
-            '/app/.idea/inspectionProfiles/' . $this->inspectionsXml->getName(),
-            '/app/' . $this->resultsDirectory->getName(),
+            '/app/.idea/' . InspectionProfilesDirectory::NAME . '/' . $this->inspectionsXml->getName(),
+            '/results',
             '-changes',
             '-format json',
             '-v2',
