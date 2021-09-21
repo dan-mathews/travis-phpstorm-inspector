@@ -10,7 +10,7 @@ Feature: Run inspections with certain severities ignored
     And I create a configuration file with:
     """
     {
-      "ignored_severities": [
+      "ignore_severities": [
         "TYPO",
         "ERROR"
       ],

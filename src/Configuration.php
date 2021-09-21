@@ -10,11 +10,11 @@ use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
 class Configuration
 {
-    private const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
-    private const DEFAULT_DOCKER_TAG = 'latest';
-    private const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
-    private const DEFAULT_VERBOSE = true;
-    private const DEFAULT_IGNORED_SEVERITIES = [];
+    public const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
+    public const DEFAULT_DOCKER_TAG = 'latest';
+    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    public const DEFAULT_VERBOSE = true;
+    public const DEFAULT_IGNORED_SEVERITIES = [];
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',

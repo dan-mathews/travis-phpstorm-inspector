@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Builders;
 
+use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
 /** @implements \ArrayAccess<string, mixed> */
@@ -66,7 +67,8 @@ class ConfigurationFileArray implements \ArrayAccess
             throw new ConfigurationException('Configuration should be written as a json object.');
         }
 
-        $invalidKeys = array_diff(array_keys($parsedConfiguration), ConfigurationBuilder::KEYS);
+        //TODO pass ::KEYS in and make the whole thing a service
+        $invalidKeys = array_diff(array_keys($parsedConfiguration), InspectCommand::OPTIONS);
 
         if ([] !== $invalidKeys) {
             throw new ConfigurationException(
