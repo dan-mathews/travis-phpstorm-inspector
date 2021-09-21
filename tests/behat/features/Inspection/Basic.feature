@@ -11,11 +11,11 @@ Feature: Run inspections
     And I create a configuration file with:
     """
     {
-      "docker_tag": "2021.1.2"
+      "docker-tag": "2021.1.2"
     }
     """
     When I run inspections
-    Then the exit code should be 1
+    Then the exit code should be 2
     And the last lines of the output should be:
     """
     The inspections profile invalid.txt does not have an xml extension.
@@ -31,8 +31,8 @@ Feature: Run inspections
     And I create a configuration file with:
     """
     {
-      "docker_repository": "danmathews1/phpstorm",
-      "docker_tag": "2021.1.2"
+      "docker-repository": "danmathews1/phpstorm",
+      "docker-tag": "2021.1.2"
     }
     """
     And I have local .idea directory with a file in it

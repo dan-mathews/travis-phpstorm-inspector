@@ -10,11 +10,11 @@ Feature: Run inspections with certain severities ignored
     And I create a configuration file with:
     """
     {
-      "ignore_severities": [
+      "ignore-severities": [
         "TYPO",
         "ERROR"
       ],
-      "docker_tag": "2021.1.2"
+      "docker-tag": "2021.1.2"
     }
     """
     When I run inspections
@@ -60,11 +60,11 @@ Feature: Run inspections with certain severities ignored
     And I create a configuration file with:
     """
     {
-      "ignored_severities": <payload>
+      "ignore-severities": <payload>
     }
     """
     When I run inspections
-    Then the exit code should be 1
+    Then the exit code should be 2
     And the last lines of the output should be:
     """
     <message>
@@ -73,4 +73,4 @@ Feature: Run inspections with certain severities ignored
     Examples:
       | payload | message                                                                                                                         |
       | ["CAT"] | Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, SERVER PROBLEM, INFORMATION. |
-      | 5       | ignored_severities must be an array.                                                                                            |
+      | 5       | ignore-severities in the configuration file must be an array.                                                                   |

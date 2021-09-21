@@ -12,7 +12,7 @@ Feature: Run inspections with a configuration file
     'cat'
     """
     When I run inspections
-    Then the exit code should be 1
+    Then the exit code should be 2
     And the last lines of the output should be:
     """
     Could not process the configuration file as json.

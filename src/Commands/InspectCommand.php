@@ -36,6 +36,9 @@ class InspectCommand extends Command
         self::OPTION_INSPECTION_PROFILE
     ];
 
+    /**
+     * @var string|null The default command name
+     */
     protected static $defaultName = 'inspect';
 
     protected function configure(): void
@@ -87,7 +90,12 @@ class InspectCommand extends Command
 
             $workingDirectory = $this->getWorkingDirectory();
 
-            $configurationBuilder = new ConfigurationBuilder($input, $appRootPath, $workingDirectory);
+            $configurationBuilder = new ConfigurationBuilder(
+                $input->getArguments(),
+                $input->getOptions(),
+                $appRootPath,
+                $workingDirectory
+            );
 
             $configuration = $configurationBuilder->build();
 
@@ -100,13 +108,21 @@ class InspectCommand extends Command
 
                 $view->display();
 
-                return Command::INVALID;
+                /**
+                 * @var int
+                 * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
+                 */
+                return Command::FAILURE;
             }
 
             $view = new Pass();
 
             $view->display();
 
+            /**
+             * @var int
+             * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
+             */
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             // We default to verbose if the ConfigurationBuilder wasn't successfully constructed.
@@ -116,6 +132,10 @@ class InspectCommand extends Command
 
             $view->display();
 
+            /**
+             * @var int
+             * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
+             */
             return Command::INVALID;
         }
     }

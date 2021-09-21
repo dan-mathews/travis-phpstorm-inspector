@@ -21,7 +21,7 @@ class ConfigurationBuilder
     private $parsedConfigurationFile;
 
     /**
-     * @var array<array-key, array<array-key, mixed>|null|scalar>
+     * @var array<array-key, mixed>
      */
     private $options;
 
@@ -31,7 +31,8 @@ class ConfigurationBuilder
     private $configuration;
 
     /**
-     * @param InputInterface $arguments
+     * @param array<array-key, mixed> $arguments
+     * @param array<array-key, mixed> $options
      * @param string $appRootPath
      * @param string $workingDirectory
      * @throws ConfigurationException
@@ -39,18 +40,19 @@ class ConfigurationBuilder
      * @throws \RuntimeException
      * @throws InvalidArgumentException
      */
-    public function __construct(InputInterface $input, string $appRootPath, string $workingDirectory)
+    public function __construct(array $arguments, array $options, string $appRootPath, string $workingDirectory)
     {
-        $projectPathArgument = $input->getArgument(InspectCommand::ARGUMENT_PROJECT_PATH);
-
-        if ((null !== $projectPathArgument) && !is_string($projectPathArgument)) {
+        if (
+            isset($arguments[InspectCommand::ARGUMENT_PROJECT_PATH]) &&
+            !is_string($arguments[InspectCommand::ARGUMENT_PROJECT_PATH])
+        ) {
             throw new ConfigurationException(InspectCommand::ARGUMENT_PROJECT_PATH . ' must be a string.');
         }
 
         // The project path can be specified in the command arguments or we assume it's the working directory.
-        $projectPath = $projectPathArgument ?? $workingDirectory;
+        $projectPath = $arguments[InspectCommand::ARGUMENT_PROJECT_PATH] ?? $workingDirectory;
 
-        $this->options = $input->getOptions();
+        $this->options = $options;
 
         $this->configuration = new Configuration($projectPath, $appRootPath);
 
@@ -72,7 +74,7 @@ class ConfigurationBuilder
     public function build(): Configuration
     {
         $this->parsedConfigurationFile->fill();
-        $this->setIgnoredSeverities();
+        $this->setIgnoreSeverities();
         $this->setDockerRepository();
         $this->setDockerTag();
         $this->setInspectionProfile();
@@ -83,21 +85,33 @@ class ConfigurationBuilder
     /**
      * @throws ConfigurationException
      */
-    private function setIgnoredSeverities(): void
+    private function setIgnoreSeverities(): void
     {
-        $ignoreSeveritiesArgument = $this->options[InspectCommand::OPTION_IGNORE_SEVERITIES]
-            ?? $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_SEVERITIES]
-            ?? null;
+        if (isset($this->options[InspectCommand::OPTION_IGNORE_SEVERITIES])) {
+            if (!is_string($this->options[InspectCommand::OPTION_IGNORE_SEVERITIES])) {
+                throw new ConfigurationException(
+                    'The ' . InspectCommand::OPTION_IGNORE_SEVERITIES . ' command line option must be a string.'
+                );
+            }
 
-        if (null === $ignoreSeveritiesArgument) {
+            $this->configuration->setIgnoredSeverities(
+                explode(',', $this->options[InspectCommand::OPTION_IGNORE_SEVERITIES])
+            );
+
             return;
         }
 
-        if (!is_string($ignoreSeveritiesArgument)) {
-            throw new ConfigurationException(InspectCommand::OPTION_IGNORE_SEVERITIES . ' must be a string.');
-        }
+        if (isset($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_SEVERITIES])) {
+            if (!is_array($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_SEVERITIES])) {
+                throw new ConfigurationException(
+                    InspectCommand::OPTION_IGNORE_SEVERITIES . ' in the configuration file must be an array.'
+                );
+            }
 
-        $this->configuration->setIgnoredSeverities(explode(',', $ignoreSeveritiesArgument));
+            $this->configuration->setIgnoredSeverities(
+                $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_SEVERITIES]
+            );
+        }
     }
 
     /**

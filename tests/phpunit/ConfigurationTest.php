@@ -7,6 +7,7 @@ namespace PhpUnitTests;
 use PHPUnit\Framework\TestCase;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
 final class ConfigurationTest extends TestCase
 {
@@ -47,32 +48,34 @@ final class ConfigurationTest extends TestCase
     /**
      * @throws ConfigurationException
      * @throws \JsonException
+     * @throws InspectionsProfileException
      */
     public function testReadFromConfigFileOnly(): void
     {
         $this->writeConfigurationFile(
             [
-                'docker_tag' => 'docker_tag_from_config',
-                'docker_repository' => 'docker_repository_from_config',
-                'ignored_severities' => [
+                'docker-tag' => 'docker-tag-from-config',
+                'docker-repository' => 'docker-repository-from-config',
+                'ignore-severities' => [
                     'ERROR',
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'inspectionProfile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
             ]
         );
 
         $configurationBuilder = new ConfigurationBuilder(
             [],
+            ['verbose' => false],
             self::APP_ROOT_PATH,
             $this->projectPath
         );
 
         $configuration = $configurationBuilder->build();
 
-        self::assertSame('docker_tag_from_config', $configuration->getDockerTag());
-        self::assertSame('docker_repository_from_config', $configuration->getDockerRepository());
+        self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
+        self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
         self::assertSame(
             [
                 'ERROR',
@@ -90,74 +93,75 @@ final class ConfigurationTest extends TestCase
     /**
      * @throws \JsonException
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
-    public function testArgumentsOverrideConfigFile(): void
+    public function testCommandLineOverridesConfigFile(): void
     {
         $this->writeConfigurationFile(
             [
-                'docker_tag' => 'docker_tag_from_config',
-                'docker_repository' => 'docker_repository_from_config',
-                'ignored_severities' => [
+                'docker-tag' => 'docker-tag-from-config',
+                'docker-repository' => 'docker-repository-from-config',
+                'ignore-severities' => [
                     'ERROR',
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'inspectionProfile' => realpath(self::DEFAULT_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
             ]
         );
 
-        $arguments = [
-            0 => '',
-            1 => $this->projectName,
-            2 => 'docker_tag=docker_tag_from_arg',
-            3 => 'docker_repository=docker_repository_from_arg',
-            4 => 'ignored_severities=["TYPO", "WEAK WARNING", "WARNING"]',
-            5 => 'inspectionProfile=' . self::TEST_INSPECTION_PROFILE_PATH,
+        $options = [
+            'docker-tag' => 'docker-tag-from-arg',
+            'docker-repository' => 'docker-repository-from-arg',
+            'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
+            'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
+            'verbose' => false,
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
-            $arguments,
+            [$this->projectName],
+            $options,
             self::APP_ROOT_PATH,
             $this->projectPath
         );
 
         $configuration = $configurationBuilder->build();
 
-        self::assertSame('docker_tag_from_arg', $configuration->getDockerTag());
-        self::assertSame('docker_repository_from_arg', $configuration->getDockerRepository());
-        self::assertSame(["TYPO", "WEAK WARNING", "WARNING"], $configuration->getIgnoredSeverities());
+        self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
+        self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
+        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
         self::assertSame(
-            'exampleStandards.xml',
+            'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
     }
 
     /**
-     * @throws \JsonException
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
-    public function testReadFromArgumentsOnly(): void
+    public function testReadFromCommandLineOnly(): void
     {
-        $arguments = [
-            0 => '',
-            1 => $this->projectName,
-            2 => 'docker_tag=docker_tag_from_arg',
-            3 => 'docker_repository=docker_repository_from_arg',
-            4 => 'ignored_severities=["TYPO", "WEAK WARNING", "WARNING"]',
-            5 => 'inspectionProfile=' . realpath(self::TEST_INSPECTION_PROFILE_PATH),
+        $options = [
+            'docker-tag' => 'docker-tag-from-arg',
+            'docker-repository' => 'docker-repository-from-arg',
+            'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
+            'profile' => self::TEST_INSPECTION_PROFILE_PATH,
+            'verbose' => false,
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
-            $arguments,
+            [$this->projectName],
+            $options,
             self::APP_ROOT_PATH,
             $this->projectPath
         );
 
         $configuration = $configurationBuilder->build();
 
-        self::assertSame('docker_tag_from_arg', $configuration->getDockerTag());
-        self::assertSame('docker_repository_from_arg', $configuration->getDockerRepository());
-        self::assertSame(["TYPO", "WEAK WARNING", "WARNING"], $configuration->getIgnoredSeverities());
+        self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
+        self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
+        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
         self::assertSame(
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
@@ -165,13 +169,14 @@ final class ConfigurationTest extends TestCase
     }
 
     /**
-     * @throws \JsonException
      * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
     public function testDefaults(): void
     {
         $configurationBuilder = new ConfigurationBuilder(
-            [],
+            [$this->projectName],
+            ['verbose' => false],
             self::APP_ROOT_PATH,
             $this->projectPath
         );
