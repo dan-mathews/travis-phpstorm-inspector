@@ -294,6 +294,15 @@ class FeatureContext implements Context
     }
 
     /**
+     * @When I run inspections with help option
+     * @psalm-suppress MixedPropertyTypeCoercion - We know $output will be an array of strings
+     */
+    public function iRunInspectionsWithHelpOption(): void
+    {
+        exec('bin/inspector inspect -h', $this->inspectionOutput, $this->inspectionExitCode);
+    }
+
+    /**
      * @Then the last :arg1 lines of the output should contain :string
      */
     public function theLastLinesOfTheOutputShouldContain(int $arg1, string $string): void
