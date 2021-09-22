@@ -14,7 +14,7 @@ Feature: Specify docker images in configuration
     }
     """
     When I run inspections
-    Then the exit code should be 1
+    Then the exit code should be 2
     And the last lines of the output should be:
     """
     <message>
@@ -22,6 +22,6 @@ Feature: Specify docker images in configuration
 
     Examples:
       | dockerConfig                                      | message                                              |
-      | "docker_tag": "cat"                               | Could not pull docker image danmathews1/phpstorm:cat |
-      | "docker_repository": "cat"                        | Could not pull docker image cat:latest               |
-      | "docker_tag": "1.0.0", "docker_repository": "cat" | Could not pull docker image cat:1.0.0                |
+      | "docker-tag": "cat"                               | Could not pull docker image danmathews1/phpstorm:cat |
+      | "docker-repository": "cat"                        | Could not pull docker image cat:latest               |
+      | "docker-tag": "1.0.0", "docker-repository": "cat" | Could not pull docker image cat:1.0.0                |

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Builders;
 
-use TravisPhpstormInspector\App;
+use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
@@ -37,7 +37,7 @@ class IdeaDirectoryBuilder
         $modulesXml = new ModulesXml();
         //TODO read the language level from config
         $phpXml = new PhpXml('7.3');
-        $projectIml = new ProjectIml(App::NAME);
+        $projectIml = new ProjectIml(InspectCommand::NAME);
 
         $ideaDirectory = new IdeaDirectory(
             $modulesXml,

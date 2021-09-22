@@ -14,11 +14,17 @@ function includeIfExists(string $filePath): bool
 }
 
 if (
-    !includeIfExists(__DIR__ . '/../../../autoload.php') &&
-    !includeIfExists(__DIR__ . '/../vendor/autoload.php')
+    !includeIfExists(__DIR__ . '/../vendor/autoload.php') &&
+    !includeIfExists(__DIR__ . '/../../../vendor/autoload.php')
 ) {
     throw new RuntimeException('Could not find autoloaded classes as vendor or main project.');
 }
 
-$app = new TravisPhpstormInspector\App();
-$app->run();
+use Symfony\Component\Console\Application;
+use TravisPhpstormInspector\Commands\InspectCommand;
+
+$application = new Application();
+
+$application->add(new InspectCommand());
+
+$application->run();

@@ -285,12 +285,21 @@ class FeatureContext implements Context
     public function iRunInspections(): void
     {
         exec(
-            'bin/inspector '
+            'bin/inspector inspect '
             . $this->getProjectPath() . ' '
-            . 'inspectionProfile=' . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
+            . '--profile ' . $this->getProjectPath() . '/' . $this->getInspectionsPath(),
             $this->inspectionOutput,
             $this->inspectionExitCode
         );
+    }
+
+    /**
+     * @When I run inspections with help option
+     * @psalm-suppress MixedPropertyTypeCoercion - We know $output will be an array of strings
+     */
+    public function iRunInspectionsWithHelpOption(): void
+    {
+        exec('bin/inspector inspect -h', $this->inspectionOutput, $this->inspectionExitCode);
     }
 
     /**

@@ -22,9 +22,11 @@
   "require": {
     "php": "~7.3",
     "ext-json": "*",
-    "ext-xmlreader": "*"
+    "ext-xmlreader": "*",
+    "symfony/console": "^5.3"
   },
   "require-dev": {
+    "roave/security-advisories": "dev-latest",
     "behat/behat": "^3.8",
     "phpunit/phpunit": "^9.5",
     "vimeo/psalm": "^4.7",

@@ -10,8 +10,8 @@ Feature: Run inspections
     And I create a configuration file with:
     """
     {
-      "docker_repository": "danmathews1/phpstorm",
-      "docker_tag": "2021.1.2"
+      "docker-repository": "danmathews1/phpstorm",
+      "docker-tag": "2021.1.2"
     }
     """
     When I run inspections
@@ -31,8 +31,8 @@ Feature: Run inspections
     And I create a configuration file with:
     """
     {
-      "docker_repository": "danmathews1/phpstorm",
-      "docker_tag": "2021.1.2"
+      "docker-repository": "danmathews1/phpstorm",
+      "docker-tag": "2021.1.2"
     }
     """
     When I run inspections
