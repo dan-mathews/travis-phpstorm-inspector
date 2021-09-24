@@ -84,12 +84,12 @@ class DockerFacade
         string $bindPropagation = 'private'
     ): self {
         if (!in_array($type, self::OPTIONS_TYPE, true)) {
-            throw new DockerException('Mount type must be one of: ' . implode(', ', self::OPTIONS_TYPE));
+            throw new DockerException('Docker mount type must be one of: ' . implode(', ', self::OPTIONS_TYPE));
         }
 
         if (!in_array($bindPropagation, self::OPTIONS_BIND_PROPAGATION, true)) {
             throw new DockerException(
-                'Mount bind propagation must be one of: ' . implode(', ', self::OPTIONS_BIND_PROPAGATION)
+                'Docker mount bind propagation must be one of: ' . implode(', ', self::OPTIONS_BIND_PROPAGATION)
             );
         }
 
@@ -109,6 +109,9 @@ class DockerFacade
         return $this;
     }
 
+    /**
+     * @throws DockerException
+     */
     public function run(): int
     {
         $bashWrapperCommand = '/bin/bash -c "' . implode('; ', $this->commands) . '"';
@@ -119,12 +122,18 @@ class DockerFacade
             [$this->imageName, $bashWrapperCommand]
         );
 
-        echo 'Running command: ' . implode(', ', $command);
+        $commandAsString = implode(', ', $command);
+
+        echo 'Running command: ' . $commandAsString;
 
         $process = new Process($command, null, null, null, $this->timeout);
 
         // add callable to print to output if verbose
         $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new DockerException('Docker run command was not successful: ' . $commandAsString);
+        }
 
         return $process->getExitCode();
     }
