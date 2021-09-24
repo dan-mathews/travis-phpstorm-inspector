@@ -18,7 +18,8 @@ use TravisPhpstormInspector\Views\Pass;
 
 class InspectCommand extends Command
 {
-    public const NAME = 'travis-phpstorm-inspector';
+    public const APP_NAME = 'travis-phpstorm-inspector';
+    private const APP_ROOT_PATH = __DIR__ . '/../../../travis-phpstorm-inspector/';
 
     public const ARGUMENT_PROJECT_PATH = 'project-path';
 
@@ -86,15 +87,11 @@ class InspectCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $appRootPath = __DIR__ . '/../../../travis-phpstorm-inspector/';
-
-            $workingDirectory = $this->getWorkingDirectory();
-
             $configurationBuilder = new ConfigurationBuilder(
                 $input->getArguments(),
                 $input->getOptions(),
-                $appRootPath,
-                $workingDirectory
+                self::APP_ROOT_PATH,
+                $this->getWorkingDirectory()
             );
 
             $configuration = $configurationBuilder->build();
@@ -102,28 +99,6 @@ class InspectCommand extends Command
             $inspection = new Inspection($configuration);
 
             $problems = $inspection->run();
-
-            if (!$problems->isEmpty()) {
-                $view = new Fail($problems);
-
-                $view->display();
-
-                /**
-                 * @var int
-                 * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
-                 */
-                return Command::FAILURE;
-            }
-
-            $view = new Pass();
-
-            $view->display();
-
-            /**
-             * @var int
-             * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
-             */
-            return Command::SUCCESS;
         } catch (\Throwable $e) {
             // We default to verbose if the ConfigurationBuilder wasn't successfully constructed.
             $verbose = !isset($configurationBuilder) || $configurationBuilder->getConfiguration()->getVerbose();
@@ -138,6 +113,28 @@ class InspectCommand extends Command
              */
             return Command::INVALID;
         }
+
+        if (!$problems->isEmpty()) {
+            $view = new Fail($problems);
+
+            $view->display();
+
+            /**
+             * @var int
+             * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
+             */
+            return Command::FAILURE;
+        }
+
+        $view = new Pass();
+
+        $view->display();
+
+        /**
+         * @var int
+         * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
+         */
+        return Command::SUCCESS;
     }
 
     /**

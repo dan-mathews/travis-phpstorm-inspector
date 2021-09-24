@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
-class InspectionCommand
+class InspectionRunner
 {
     /**
      * @var Directory
@@ -31,9 +32,9 @@ class InspectionCommand
     private $inspectionsXml;
 
     /**
-     * @var DockerImage
+     * @var DockerFacade
      */
-    private $dockerImage;
+    private $dockerFacade;
 
     /**
      * @var bool
@@ -45,7 +46,7 @@ class InspectionCommand
         IdeaDirectory $ideaDirectory,
         InspectionsXml $inspectionsProfile,
         ResultsDirectory $resultsDirectory,
-        DockerImage $dockerImage,
+        DockerFacade $dockerFacade,
         bool $verbose
     ) {
         $this->projectDirectory = $project;
@@ -56,52 +57,35 @@ class InspectionCommand
 
         $this->inspectionsXml = $inspectionsProfile;
 
-        $this->dockerImage = $dockerImage;
+        $this->dockerFacade = $dockerFacade;
 
         $this->verbose = $verbose;
     }
 
-    private function mountCommand(string $source, string $target): string
+    // shouldn't chmod, should chown back to user? Or copy whole project to new location? Or run as $USER
+    // --mount type=bind,source=/etc/passwd,target=/etc/passwd
+    // --mount type=bind,source=/etc/group,target=/etc/group
+
+    /**
+     * @throws \RuntimeException
+     * @throws \LogicException
+     * @throws DockerException
+     */
+    public function run(): void
     {
         // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
         // there is the potential to overwrite their .idea directory locally if we're not careful.
         // The mounted directories can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
         // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
+        $this->dockerFacade
+            ->mount($this->projectDirectory->getPath(), '/app')
+            ->mount($this->ideaDirectory->getPath(), '/app/.idea')
+            ->mount($this->resultsDirectory->getPath(), '/results')
+            ->addCommand($this->getPhpstormCommand())
+            ->addCommand($this->getChmodCommand())
+            ->setTimeout(300);
 
-        return '--mount '
-            . 'type=bind'
-            . ',source=' . $source
-            . ',target=' . $target
-            . ',bind-propagation=private';
-    }
-
-    /**
-     * @throws \RuntimeException
-     * @throws \LogicException
-     */
-    public function run(): void
-    {
-        $command = implode(' ', [
-            'docker run ',
-            $this->mountCommand($this->projectDirectory->getPath(), '/app'),
-            $this->mountCommand($this->ideaDirectory->getPath(), '/app/.idea'),
-            $this->mountCommand($this->resultsDirectory->getPath(), '/results'),
-            $this->dockerImage->getReference(),
-            $this->getMultipleBashCommands([$this->getPhpstormCommand(), $this->getChmodCommand()])
-        ]);
-
-        //todo replace with verbose-aware outputter
-        echo 'Running command: ' . $command . "\n";
-
-        $code = 1;
-
-        $output = [];
-
-        if ($this->verbose) {
-            passthru($command, $code);
-        } else {
-            exec($command . ' 2>&1', $output, $code);
-        }
+        $code = $this->dockerFacade->run();
 
         if ($code !== 0) {
             throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");

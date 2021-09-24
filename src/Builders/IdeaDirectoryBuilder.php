@@ -37,7 +37,7 @@ class IdeaDirectoryBuilder
         $modulesXml = new ModulesXml();
         //TODO read the language level from config
         $phpXml = new PhpXml('7.3');
-        $projectIml = new ProjectIml(InspectCommand::NAME);
+        $projectIml = new ProjectIml(InspectCommand::APP_NAME);
 
         $ideaDirectory = new IdeaDirectory(
             $modulesXml,
