@@ -125,7 +125,6 @@ class DockerFacade
 
         // add callable to print to output if verbose
         $process->run();
-        $process->enableOutput();
 
         return $process->getExitCode();
     }
