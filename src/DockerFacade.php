@@ -80,8 +80,9 @@ class DockerFacade
     public function mount(
         string $source,
         string $target,
-        string $type = 'bind',
-        string $bindPropagation = 'private'
+        bool $readonly = false,
+        string $bindPropagation = 'private',
+        string $type = 'bind'
     ): self {
         if (!in_array($type, self::OPTIONS_TYPE, true)) {
             throw new DockerException('Docker mount type must be one of: ' . implode(', ', self::OPTIONS_TYPE));
@@ -93,11 +94,13 @@ class DockerFacade
             );
         }
 
-        $this->mounts[] = '--mount '
-            . 'type=' . $type
+        $this->mounts[] = '--mount';
+
+        $this->mounts[] = 'type=' . $type
             . ',source=' . $source
             . ',target=' . $target
-            . ',bind-propagation=' . $bindPropagation;
+            . ',bind-propagation=' . $bindPropagation
+            . ($readonly) ? ',readonly' : '';
 
         return $this;
     }
@@ -114,22 +117,42 @@ class DockerFacade
      */
     public function run(): int
     {
-        $bashWrapperCommand = '/bin/bash -c "' . implode('; ', $this->commands) . '"';
+//        $commands = [];
+//
+//        $count = count($this->commands);
+//
+//        for ($i = 0; $i < $count; $i++) {
+//            $commands[] = $this->commands[$i];
+//
+//            if ($i < $count - 1) {
+//                $commands[] = ';';
+//            }
+//        }
+
+        $bashWrapperCommand = '"' . implode('; ', $this->commands) . '"';
 
         $command = array_merge(
             ['docker', 'run'],
             $this->mounts,
-            [$this->imageName, $bashWrapperCommand]
+            [$this->imageName],
+            [$this->commands[0]]
+//            ['/bin/bash'],
+//            ['-c'],
+//            [$bashWrapperCommand]
         );
 
-        $commandAsString = implode(', ', $command);
+        $commandAsString = implode(' ', $command);
 
         echo 'Running command: ' . $commandAsString;
+        echo 'Running command: ' . var_export($command, true);
 
         $process = new Process($command, null, null, null, $this->timeout);
 
         // add callable to print to output if verbose
         $process->run();
+
+        echo $process->getErrorOutput();
+        echo $process->getOutput();
 
         if (!$process->isSuccessful()) {
             throw new DockerException('Docker run command was not successful: ' . $commandAsString);
