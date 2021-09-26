@@ -73,23 +73,25 @@ class InspectionRunner
      */
     public function run(): void
     {
+        exec('rm -rf ' . $this->resultsDirectory->getPath() . '/../tmp');
+        $copy = 'rsync -r ' . $this->projectDirectory->getPath() . '/ ' . $this->resultsDirectory->getPath() . '/../tmp';
+        exec($copy);
         // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
         // there is the potential to overwrite their .idea directory locally if we're not careful.
-        // The mounted directories can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
+        // Apart from user directories, these can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
         // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
         $this->dockerFacade
-            ->mount($this->projectDirectory->getPath(), '/app')
+            ->mount($this->resultsDirectory->getPath() . '/../tmp', '/app')
             ->mount($this->ideaDirectory->getPath(), '/app/.idea')
             ->mount($this->resultsDirectory->getPath(), '/results')
+            ->mount('/etc/group', '/etc/group', true)
+            ->mount('/etc/passwd', '/etc/passwd', true)
+            ->addCommand('mkdir /home/$USER')
+            ->addCommand('chown -R $USER:$USER /home/$USER')
             ->addCommand($this->getPhpstormCommand())
-            ->addCommand($this->getChmodCommand())
             ->setTimeout(300);
 
-        $code = $this->dockerFacade->run();
-
-        if ($code !== 0) {
-            throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");
-        }
+        $this->dockerFacade->run();
     }
 
     /**
@@ -109,6 +111,7 @@ class InspectionRunner
     private function getPhpstormCommand(): string
     {
         return implode(' ', [
+            'runuser -u $USER --',
             '/bin/bash phpstorm.sh inspect',
             '/app',
             '/app/.idea/' . InspectionProfilesDirectory::NAME . '/' . $this->inspectionsXml->getName(),

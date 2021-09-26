@@ -100,7 +100,7 @@ class DockerFacade
             . ',source=' . $source
             . ',target=' . $target
             . ',bind-propagation=' . $bindPropagation
-            . ($readonly) ? ',readonly' : '';
+            . ($readonly ? ',readonly' : '');
 
         return $this;
     }
@@ -115,7 +115,7 @@ class DockerFacade
     /**
      * @throws DockerException
      */
-    public function run(): int
+    public function run()
     {
 //        $commands = [];
 //
@@ -131,34 +131,30 @@ class DockerFacade
 
         $bashWrapperCommand = '"' . implode('; ', $this->commands) . '"';
 
-        $command = array_merge(
-            ['docker', 'run'],
-            $this->mounts,
-            [$this->imageName],
-            [$this->commands[0]]
-//            ['/bin/bash'],
+        $command = 'docker run ' . implode(' ', $this->mounts) . ' ' . $this->imageName . ' /bin/bash -c ' . $bashWrapperCommand;
+
+        passthru($command);
 //            ['-c'],
 //            [$bashWrapperCommand]
-        );
 
-        $commandAsString = implode(' ', $command);
-
-        echo 'Running command: ' . $commandAsString;
-        echo 'Running command: ' . var_export($command, true);
-
-        $process = new Process($command, null, null, null, $this->timeout);
-
-        // add callable to print to output if verbose
-        $process->run();
-
-        echo $process->getErrorOutput();
-        echo $process->getOutput();
-
-        if (!$process->isSuccessful()) {
-            throw new DockerException('Docker run command was not successful: ' . $commandAsString);
-        }
-
-        return $process->getExitCode();
+//        $commandAsString = implode(' ', $command);
+//
+//        echo 'Running command: ' . $commandAsString;
+//        echo 'Running command: ' . var_export($command, true);
+//
+//        $process = new Process($command, null, null, null, $this->timeout);
+//
+//        // add callable to print to output if verbose
+//        $process->run();
+//
+//        echo $process->getErrorOutput();
+//        echo $process->getOutput();
+//
+//        if (!$process->isSuccessful()) {
+//            throw new DockerException('Docker run command was not successful: ' . $commandAsString);
+//        }
+//
+//        return $process->getExitCode();
     }
 
     public function setTimeout(int $timeout): self
