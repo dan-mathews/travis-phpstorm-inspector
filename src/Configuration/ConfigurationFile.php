@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\Builders;
+namespace TravisPhpstormInspector\Configuration;
 
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
 /** @implements \ArrayAccess<string, mixed> */
-class ConfigurationFileArray implements \ArrayAccess
+class ConfigurationFile implements \ArrayAccess
 {
     /**
      * @var array<string, mixed>

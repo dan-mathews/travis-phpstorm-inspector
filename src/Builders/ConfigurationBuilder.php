@@ -7,6 +7,7 @@ namespace TravisPhpstormInspector\Builders;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Configuration;
+use TravisPhpstormInspector\Configuration\ConfigurationFile;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
@@ -18,7 +19,7 @@ class ConfigurationBuilder implements BuilderInterface
     public const FILENAME = 'travis-phpstorm-inspector.json';
 
     /**
-     * @var ConfigurationFileArray
+     * @var ConfigurationFile
      */
     private $parsedConfigurationFile;
 
@@ -61,7 +62,7 @@ class ConfigurationBuilder implements BuilderInterface
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();
 
-        $this->parsedConfigurationFile = new ConfigurationFileArray($projectPath . '/' . self::FILENAME);
+        $this->parsedConfigurationFile = new ConfigurationFile($projectPath . '/' . self::FILENAME);
     }
 
     public function getResult(): object
