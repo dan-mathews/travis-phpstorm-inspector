@@ -41,9 +41,6 @@ class ConfigurationFileArray implements \ArrayAccess
     private function getParsedConfigurationFile(string $configurationPath): array
     {
         if (!file_exists($configurationPath)) {
-            echo 'Could not find the configuration file at ' . $configurationPath . ', assuming that command line '
-                . 'arguments or defaults are being used.';
-
             return [];
         }
 

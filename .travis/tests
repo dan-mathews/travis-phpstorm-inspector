@@ -4,5 +4,5 @@ set -e
 
 composer install
 
-vendor/bin/phpunit tests
+vendor/bin/phpunit
 vendor/bin/behat

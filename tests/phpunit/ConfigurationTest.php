@@ -9,6 +9,10 @@ use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
+/**
+ * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
+ * @covers \TravisPhpstormInspector\Configuration
+ */
 final class ConfigurationTest extends TestCase
 {
     private const APP_ROOT_PATH = __DIR__ . '/../../';
