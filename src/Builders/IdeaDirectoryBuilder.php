@@ -24,7 +24,8 @@ class IdeaDirectoryBuilder
      */
     public function build(
         string $inspectorPath,
-        InspectionsXml $inspectionsXml
+        InspectionsXml $inspectionsXml,
+        string $phpVersion
     ): IdeaDirectory {
         $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
 
@@ -35,8 +36,7 @@ class IdeaDirectoryBuilder
 
         //TODO use the real project name from location in ModulesXml and ProjectIml
         $modulesXml = new ModulesXml();
-        //TODO read the language level from config
-        $phpXml = new PhpXml('7.3');
+        $phpXml = new PhpXml($phpVersion);
         $projectIml = new ProjectIml(InspectCommand::NAME);
 
         $ideaDirectory = new IdeaDirectory(

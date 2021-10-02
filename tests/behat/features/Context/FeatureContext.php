@@ -414,7 +414,7 @@ class FeatureContext implements Context
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
 
         if ($string->getRaw() !== $actualOutputLinesForComparison) {
-            echo "For debugging, the last 10 lines of output were:\n" . $this->getLastLinesOfOutput(10);
+            echo "For debugging, the last 40 lines of output were:\n" . $this->getLastLinesOfOutput(40);
         }
 
         Assert::assertSame($string->getRaw(), $actualOutputLinesForComparison);

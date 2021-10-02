@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Input\InputInterface;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
@@ -78,6 +77,7 @@ class ConfigurationBuilder
         $this->setDockerRepository();
         $this->setDockerTag();
         $this->setInspectionProfile();
+        $this->setPhpVersion();
 
         return $this->configuration;
     }
@@ -181,5 +181,25 @@ class ConfigurationBuilder
         }
 
         $this->configuration->setInspectionProfile($value);
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private function setPhpVersion(): void
+    {
+        $value = $this->options[InspectCommand::OPTION_PHP_VERSION]
+            ?? $this->parsedConfigurationFile[InspectCommand::OPTION_PHP_VERSION]
+            ?? null;
+
+        if (null === $value) {
+            return;
+        }
+
+        if (!is_string($value)) {
+            throw new ConfigurationException(InspectCommand::OPTION_PHP_VERSION . ' must be a string.');
+        }
+
+        $this->configuration->setPhpVersion($value);
     }
 }

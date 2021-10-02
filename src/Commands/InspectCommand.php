@@ -22,17 +22,19 @@ class InspectCommand extends Command
 
     public const ARGUMENT_PROJECT_PATH = 'project-path';
 
-    public const OPTION_INSPECTION_PROFILE = 'profile';
-    public const OPTION_IGNORE_SEVERITIES = 'ignore-severities';
     public const OPTION_DOCKER_REPOSITORY = 'docker-repository';
     public const OPTION_DOCKER_TAG = 'docker-tag';
+    public const OPTION_IGNORE_SEVERITIES = 'ignore-severities';
+    public const OPTION_PHP_VERSION = 'php-version';
+    public const OPTION_INSPECTION_PROFILE = 'profile';
 
     public const FLAG_VERBOSE = 'verbose';
 
     public const OPTIONS = [
-        self::OPTION_IGNORE_SEVERITIES,
         self::OPTION_DOCKER_REPOSITORY,
         self::OPTION_DOCKER_TAG,
+        self::OPTION_IGNORE_SEVERITIES,
+        self::OPTION_PHP_VERSION,
         self::OPTION_INSPECTION_PROFILE
     ];
 
@@ -80,6 +82,14 @@ class InspectCommand extends Command
             InputOption::VALUE_OPTIONAL,
             'The docker tag to use, referencing a PhpStorm image in the docker repository' . PHP_EOL
             . '- default: ' . Configuration::DEFAULT_DOCKER_TAG
+        );
+
+        $this->addOption(
+            self::OPTION_PHP_VERSION,
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'The php version to use' . PHP_EOL
+            . '- default: ' . Configuration::DEFAULT_PHP_VERSION
         );
     }
 

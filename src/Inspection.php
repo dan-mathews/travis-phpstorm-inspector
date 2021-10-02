@@ -33,7 +33,8 @@ class Inspection
 
         $ideaDirectory = $ideaDirectoryBuilder->build(
             $configuration->getAppDirectory()->getPath(),
-            $configuration->getInspectionProfile()
+            $configuration->getInspectionProfile(),
+            $configuration->getPhpVersion()
         );
 
         $dockerImage = new DockerImage(

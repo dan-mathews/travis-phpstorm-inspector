@@ -61,7 +61,8 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'php-version' => '7.4',
             ]
         );
 
@@ -88,6 +89,7 @@ final class ConfigurationTest extends TestCase
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
     /**
@@ -106,7 +108,8 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'php-version' => '7.4',
             ]
         );
 
@@ -116,6 +119,7 @@ final class ConfigurationTest extends TestCase
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
             'verbose' => false,
+            'php-version' => '8.0',
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
@@ -134,6 +138,7 @@ final class ConfigurationTest extends TestCase
             'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('8.0', $configuration->getPhpVersion());
     }
 
     /**
@@ -148,6 +153,7 @@ final class ConfigurationTest extends TestCase
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::TEST_INSPECTION_PROFILE_PATH,
             'verbose' => false,
+            'php-version' => '7.4',
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
@@ -166,6 +172,7 @@ final class ConfigurationTest extends TestCase
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
     /**
@@ -190,6 +197,7 @@ final class ConfigurationTest extends TestCase
             'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.3', $configuration->getPhpVersion());
     }
 
     /**
