@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
@@ -29,13 +28,14 @@ class Inspection
      */
     public function __construct(Configuration $configuration)
     {
-        $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
-
-        $ideaDirectory = $ideaDirectoryBuilder->build(
+        $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
             $configuration->getAppDirectory()->getPath(),
             $configuration->getInspectionProfile(),
             $configuration->getPhpVersion()
         );
+
+        $ideaDirectoryBuilder->build();
+        $ideaDirectory = $ideaDirectoryBuilder->getResult();
 
         $dockerImage = new DockerImage(
             $configuration->getDockerRepository(),

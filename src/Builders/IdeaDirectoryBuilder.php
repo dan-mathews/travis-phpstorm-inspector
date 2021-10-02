@@ -13,41 +13,71 @@ use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
 use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
 
-class IdeaDirectoryBuilder
+/**
+ * @implements BuilderInterface<IdeaDirectory>
+ */
+class IdeaDirectoryBuilder implements BuilderInterface
 {
     /**
-     * @param string $inspectorPath
-     * @param InspectionsXml $inspectionsXml
-     * @return IdeaDirectory
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @var string
      */
-    public function build(
+    private $inspectorPath;
+
+    /**
+     * @var InspectionsXml
+     */
+    private $inspectionsXml;
+
+    /**
+     * @var string
+     */
+    private $phpVersion;
+
+    /**
+     * @var IdeaDirectory
+     */
+    private $ideaDirectory;
+
+    public function __construct(
         string $inspectorPath,
         InspectionsXml $inspectionsXml,
         string $phpVersion
-    ): IdeaDirectory {
-        $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
+    ) {
+        $this->inspectorPath = $inspectorPath;
+        $this->inspectionsXml = $inspectionsXml;
+        $this->phpVersion = $phpVersion;
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     */
+    public function build(): void
+    {
+        $profileSettingsXml = new ProfileSettingsXml($this->inspectionsXml->getProfileNameValue());
 
         $inspectionProfilesDirectory = new InspectionProfilesDirectory(
             $profileSettingsXml,
-            $inspectionsXml
+            $this->inspectionsXml
         );
 
         //TODO use the real project name from location in ModulesXml and ProjectIml
         $modulesXml = new ModulesXml();
-        $phpXml = new PhpXml($phpVersion);
+        $phpXml = new PhpXml($this->phpVersion);
         $projectIml = new ProjectIml(InspectCommand::NAME);
 
-        $ideaDirectory = new IdeaDirectory(
+        $this->ideaDirectory = new IdeaDirectory(
             $modulesXml,
             $phpXml,
             $projectIml,
             $inspectionProfilesDirectory
         );
 
-        $ideaDirectory->create($inspectorPath);
+        $this->ideaDirectory->create($this->inspectorPath);
+    }
 
-        return $ideaDirectory;
+    public function getResult(): object
+    {
+        return $this->ideaDirectory;
     }
 }

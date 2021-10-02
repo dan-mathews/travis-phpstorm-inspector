@@ -10,7 +10,10 @@ use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
-class ConfigurationBuilder
+/**
+ * @implements BuilderInterface<Configuration>
+ */
+class ConfigurationBuilder implements BuilderInterface
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
 
@@ -61,7 +64,7 @@ class ConfigurationBuilder
         $this->parsedConfigurationFile = new ConfigurationFileArray($projectPath . '/' . self::FILENAME);
     }
 
-    public function getConfiguration(): Configuration
+    public function getResult(): object
     {
         return $this->configuration;
     }
@@ -70,7 +73,7 @@ class ConfigurationBuilder
      * @throws ConfigurationException
      * @throws InspectionsProfileException
      */
-    public function build(): Configuration
+    public function build(): void
     {
         $this->parsedConfigurationFile->fill();
         $this->setIgnoreSeverities();
@@ -78,8 +81,6 @@ class ConfigurationBuilder
         $this->setDockerTag();
         $this->setInspectionProfile();
         $this->setPhpVersion();
-
-        return $this->configuration;
     }
 
     /**

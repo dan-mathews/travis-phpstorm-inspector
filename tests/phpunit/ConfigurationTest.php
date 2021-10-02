@@ -77,7 +77,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
@@ -133,7 +134,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -167,7 +169,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -192,7 +195,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());

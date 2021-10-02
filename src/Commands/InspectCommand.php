@@ -107,7 +107,8 @@ class InspectCommand extends Command
                 $workingDirectory
             );
 
-            $configuration = $configurationBuilder->build();
+            $configurationBuilder->build();
+            $configuration = $configurationBuilder->getResult();
 
             $inspection = new Inspection($configuration);
 
@@ -136,7 +137,7 @@ class InspectCommand extends Command
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             // We default to verbose if the ConfigurationBuilder wasn't successfully constructed.
-            $verbose = !isset($configurationBuilder) || $configurationBuilder->getConfiguration()->getVerbose();
+            $verbose = !isset($configurationBuilder) || $configurationBuilder->getResult()->getVerbose();
 
             $view = new Error($e, $verbose);
 
