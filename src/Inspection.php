@@ -6,6 +6,7 @@ namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\Helpers\FilesystemHelper;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -43,9 +44,7 @@ class Inspection
             $configuration->getVerbose()
         );
 
-        $resultsDirectory = new ResultsDirectory();
-
-        $resultsDirectory->create($configuration->getAppDirectory()->getPath());
+        $resultsDirectory = FilesystemHelper::makeDirectory($configuration->getAppDirectory()->getPath());
 
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),

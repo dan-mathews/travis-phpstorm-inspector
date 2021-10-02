@@ -21,7 +21,7 @@ class InspectionCommand
     private $ideaDirectory;
 
     /**
-     * @var ResultsDirectory
+     * @var Directory
      */
     private $resultsDirectory;
 
@@ -44,7 +44,7 @@ class InspectionCommand
         Directory $project,
         IdeaDirectory $ideaDirectory,
         InspectionsXml $inspectionsProfile,
-        ResultsDirectory $resultsDirectory,
+        Directory $resultsDirectory,
         DockerImage $dockerImage,
         bool $verbose
     ) {
