@@ -3,3 +3,4 @@ vendor/
 travis-phpstorm-inspector-results/
 travis-phpstorm-inspector-.idea/
 tmp/
+cache/

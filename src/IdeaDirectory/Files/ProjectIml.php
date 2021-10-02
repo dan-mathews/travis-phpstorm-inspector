@@ -26,7 +26,7 @@ class ProjectIml extends AbstractCreatableFile
         . '<module type="WEB_MODULE" version="4">'
         . '<component name="NewModuleRootManager">'
         . '<content url="file://$MODULE_DIR$">'
-        . '<excludeFolder url="file://$MODULE_DIR$/' . $this->appName . '" />'
+//        . '<excludeFolder url="file://$MODULE_DIR$/' . $this->appName . '" />'
         . '</content>'
         . '</component>'
         . '</module>';

@@ -73,8 +73,9 @@ class InspectionRunner
      */
     public function run(): void
     {
-        exec('rm -rf ' . $this->resultsDirectory->getPath() . '/../tmp');
-        $copy = 'rsync -r ' . $this->projectDirectory->getPath() . '/ ' . $this->resultsDirectory->getPath() . '/../tmp';
+        exec('rm -rf ' . $this->resultsDirectory->getPath() . '/../tmp/*');
+        //todo: strip these excludes back so they make sense in flashcard context. Solve self-analysis another time
+        $copy = 'rsync -a --exclude \'.idea\' --exclude \'cache\' --exclude \'tmp\' ' . $this->projectDirectory->getPath() . '/ ' . $this->resultsDirectory->getPath() . '/../tmp';
         exec($copy);
         // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
         // there is the potential to overwrite their .idea directory locally if we're not careful.
@@ -86,6 +87,8 @@ class InspectionRunner
             ->mount($this->resultsDirectory->getPath(), '/results')
             ->mount('/etc/group', '/etc/group', true)
             ->mount('/etc/passwd', '/etc/passwd', true)
+            //todo move this cache folder to ~/$USER/.cache/travis-phpstorm-inspector so that composer update doesn't wipe it
+            ->mount($this->resultsDirectory->getPath() . '/../cache', '/home/$USER/.cache/JetBrains')
             ->addCommand('mkdir /home/$USER')
             ->addCommand('chown -R $USER:$USER /home/$USER')
             ->addCommand($this->getPhpstormCommand())
