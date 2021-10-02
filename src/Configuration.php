@@ -12,9 +12,10 @@ class Configuration
 {
     public const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     public const DEFAULT_DOCKER_TAG = 'latest';
-    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
-    public const DEFAULT_VERBOSE = true;
     public const DEFAULT_IGNORED_SEVERITIES = [];
+    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    public const DEFAULT_PHP_VERSION = '7.3';
+    public const DEFAULT_VERBOSE = true;
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',
@@ -59,6 +60,11 @@ class Configuration
      * @var InspectionsXml
      */
     private $inspectionProfile;
+
+    /**
+     * @var string
+     */
+    private $phpVersion = self::DEFAULT_PHP_VERSION;
 
     /**
      * @param string $appRootPath
@@ -139,6 +145,11 @@ class Configuration
         return $this->inspectionProfile;
     }
 
+    public function getPhpVersion(): string
+    {
+        return $this->phpVersion;
+    }
+
     public function setDockerRepository(string $dockerRepository): void
     {
         $this->dockerRepository = $dockerRepository;
@@ -172,5 +183,10 @@ class Configuration
             . $this->projectDirectory->getPath() . '/' . $inspectionProfile . '), or an absolute path ('
             . $inspectionProfile . ')'
         );
+    }
+
+    public function setPhpVersion(string $phpVersion): void
+    {
+        $this->phpVersion = $phpVersion;
     }
 }

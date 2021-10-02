@@ -21,7 +21,7 @@ Feature: Run inspections
     No problems to report.
     """
 
-  @issue-1 @positive @createsProject
+  @issue-1 @positive @createsProject @dd
   Scenario: Run inspections on a project with problems
     Given I create a new project
     And I initialise git
@@ -71,6 +71,7 @@ Feature: Run inspections
       line 59   WEAK WARNING  (Missing return type declaration): Missing function's return type declaration
       line 66   WARNING       (Missing @throws tag(s)): PHPDoc comment doesn't contain all the necessary @throws tags
       line 68   WARNING       (Missing @throws tag(s)): PHPDoc comment doesn't contain all the necessary @throws tags
+      line 69   WARNING       (Language level): Union types are only allowed since PHP 8.0
       line 69   WARNING       (unused declaration): <ul><li>Method owner class is never instantiated OR</li><li>An instantiation is not reachable from entry points.</li></ul>
       line 76   WARNING       (Unused local variable): Unused local variable 'item'. The value of the variable is not used anywhere.
       line 76   WEAK WARNING  (Array is always empty at the point of access): Array is always empty at this point

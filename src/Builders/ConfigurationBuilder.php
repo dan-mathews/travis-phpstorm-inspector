@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use Symfony\Component\Console\Exception\InvalidArgumentException;
-use Symfony\Component\Console\Input\InputInterface;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Configuration;
+use TravisPhpstormInspector\Configuration\ConfigurationFile;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
-class ConfigurationBuilder
+/**
+ * @implements BuilderInterface<Configuration>
+ */
+class ConfigurationBuilder implements BuilderInterface
 {
     public const FILENAME = 'travis-phpstorm-inspector.json';
 
     /**
-     * @var ConfigurationFileArray
+     * @var ConfigurationFile
      */
     private $parsedConfigurationFile;
 
@@ -59,10 +62,10 @@ class ConfigurationBuilder
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();
 
-        $this->parsedConfigurationFile = new ConfigurationFileArray($projectPath . '/' . self::FILENAME);
+        $this->parsedConfigurationFile = new ConfigurationFile($projectPath . '/' . self::FILENAME);
     }
 
-    public function getConfiguration(): Configuration
+    public function getResult(): object
     {
         return $this->configuration;
     }
@@ -71,15 +74,14 @@ class ConfigurationBuilder
      * @throws ConfigurationException
      * @throws InspectionsProfileException
      */
-    public function build(): Configuration
+    public function build(): void
     {
         $this->parsedConfigurationFile->fill();
         $this->setIgnoreSeverities();
         $this->setDockerRepository();
         $this->setDockerTag();
         $this->setInspectionProfile();
-
-        return $this->configuration;
+        $this->setPhpVersion();
     }
 
     /**
@@ -181,5 +183,25 @@ class ConfigurationBuilder
         }
 
         $this->configuration->setInspectionProfile($value);
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private function setPhpVersion(): void
+    {
+        $value = $this->options[InspectCommand::OPTION_PHP_VERSION]
+            ?? $this->parsedConfigurationFile[InspectCommand::OPTION_PHP_VERSION]
+            ?? null;
+
+        if (null === $value) {
+            return;
+        }
+
+        if (!is_string($value)) {
+            throw new ConfigurationException(InspectCommand::OPTION_PHP_VERSION . ' must be a string.');
+        }
+
+        $this->configuration->setPhpVersion($value);
     }
 }

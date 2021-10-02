@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\IdeaDirectory;
 
-abstract class AbstractCreatableDirectory extends AbstractCreatableFileSystemElement
+//todo merge with Directory or use symfony filesystem
+class CreatableDirectory extends AbstractCreatableFileSystemElement
 {
     /**
      * @var AbstractCreatableFile[]
@@ -12,14 +13,24 @@ abstract class AbstractCreatableDirectory extends AbstractCreatableFileSystemEle
     protected $files = [];
 
     /**
-     * @var AbstractCreatableDirectory[]
+     * @var CreatableDirectory[]
      */
     protected $directories = [];
 
     /**
      * @var bool
      */
-    protected $overwrite = false;
+    protected $overwrite = true;
+
+    /**
+     * @var string
+     */
+    private $name;
+
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
 
     /**
      * @param string $location
@@ -77,5 +88,24 @@ abstract class AbstractCreatableDirectory extends AbstractCreatableFileSystemEle
         }
 
         rmdir($directoryIterator->getPath());
+    }
+
+    public function addFile(AbstractCreatableFile $file): self
+    {
+        $this->files[] = $file;
+
+        return $this;
+    }
+
+    public function addDirectory(CreatableDirectory $directory): self
+    {
+        $this->directories[] = $directory;
+
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

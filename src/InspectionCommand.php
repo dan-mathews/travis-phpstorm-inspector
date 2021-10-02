@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
-use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
+use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
 
 class InspectionCommand
@@ -16,12 +15,12 @@ class InspectionCommand
     private $projectDirectory;
 
     /**
-     * @var IdeaDirectory
+     * @var Directory
      */
     private $ideaDirectory;
 
     /**
-     * @var ResultsDirectory
+     * @var Directory
      */
     private $resultsDirectory;
 
@@ -42,9 +41,9 @@ class InspectionCommand
 
     public function __construct(
         Directory $project,
-        IdeaDirectory $ideaDirectory,
+        Directory $ideaDirectory,
         InspectionsXml $inspectionsProfile,
-        ResultsDirectory $resultsDirectory,
+        Directory $resultsDirectory,
         DockerImage $dockerImage,
         bool $verbose
     ) {
@@ -127,7 +126,8 @@ class InspectionCommand
         return implode(' ', [
             '/bin/bash phpstorm.sh inspect',
             '/app',
-            '/app/.idea/' . InspectionProfilesDirectory::NAME . '/' . $this->inspectionsXml->getName(),
+            '/app/.idea/'
+                . IdeaDirectoryBuilder::DIRECTORY_INSPECTIONS_PROFILE . '/' . $this->inspectionsXml->getName(),
             '/results',
             '-changes',
             '-format json',

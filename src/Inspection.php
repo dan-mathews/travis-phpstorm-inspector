@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use PhpParser\Node\Scalar\MagicConst\Dir;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\IdeaDirectory\CreatableDirectory;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -29,12 +30,14 @@ class Inspection
      */
     public function __construct(Configuration $configuration)
     {
-        $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
-
-        $ideaDirectory = $ideaDirectoryBuilder->build(
+        $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
             $configuration->getAppDirectory()->getPath(),
-            $configuration->getInspectionProfile()
+            $configuration->getInspectionProfile(),
+            $configuration->getPhpVersion()
         );
+
+        $ideaDirectoryBuilder->build();
+        $ideaDirectory = $ideaDirectoryBuilder->getResult();
 
         $dockerImage = new DockerImage(
             $configuration->getDockerRepository(),
@@ -42,9 +45,10 @@ class Inspection
             $configuration->getVerbose()
         );
 
-        $resultsDirectory = new ResultsDirectory();
-
+        //todo clean this up. Either a helper method to create dir, returning Directory, or symfony
+        $resultsDirectory = new CreatableDirectory('travis-phpstorm-inspector-results');
         $resultsDirectory->create($configuration->getAppDirectory()->getPath());
+        $resultsDirectory = new Directory($resultsDirectory->getPath());
 
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),

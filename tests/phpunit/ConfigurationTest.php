@@ -9,6 +9,11 @@ use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
+/**
+ * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
+ * @covers \TravisPhpstormInspector\Configuration
+ * @covers \TravisPhpstormInspector\Configuration
+ */
 final class ConfigurationTest extends TestCase
 {
     private const APP_ROOT_PATH = __DIR__ . '/../../';
@@ -61,7 +66,8 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'php-version' => '7.4',
             ]
         );
 
@@ -72,7 +78,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
@@ -88,6 +95,7 @@ final class ConfigurationTest extends TestCase
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
     /**
@@ -106,7 +114,8 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'php-version' => '7.4',
             ]
         );
 
@@ -116,6 +125,7 @@ final class ConfigurationTest extends TestCase
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
             'verbose' => false,
+            'php-version' => '8.0',
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
@@ -125,7 +135,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -134,6 +145,7 @@ final class ConfigurationTest extends TestCase
             'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('8.0', $configuration->getPhpVersion());
     }
 
     /**
@@ -148,6 +160,7 @@ final class ConfigurationTest extends TestCase
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::TEST_INSPECTION_PROFILE_PATH,
             'verbose' => false,
+            'php-version' => '7.4',
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
@@ -157,7 +170,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -166,6 +180,7 @@ final class ConfigurationTest extends TestCase
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
     /**
@@ -181,7 +196,8 @@ final class ConfigurationTest extends TestCase
             $this->projectPath
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
@@ -190,6 +206,7 @@ final class ConfigurationTest extends TestCase
             'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.3', $configuration->getPhpVersion());
     }
 
     /**
