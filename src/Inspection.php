@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
 class Inspection
 {
+    private const DIRECTORY_NAME_RESULTS = 'travis-phpstorm-inspector-results';
+    public const DIRECTORY_NAME_INSPECTION_PROFILES = 'inspectionProfiles';
+
     /**
      * @var InspectionCommand
      */
@@ -25,26 +28,29 @@ class Inspection
     /**
      * @throws ConfigurationException
      * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @throws FilesystemException
      */
     public function __construct(Configuration $configuration)
     {
-        $ideaDirectoryBuilder = new IdeaDirectoryBuilder();
+        $appDirectory = $configuration->getAppDirectory();
+        $verbose = $configuration->getVerbose();
 
-        $ideaDirectory = $ideaDirectoryBuilder->build(
-            $configuration->getAppDirectory()->getPath(),
-            $configuration->getInspectionProfile()
+        $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
+            $appDirectory,
+            $configuration->getInspectionProfile(),
+            $configuration->getPhpVersion()
         );
+
+        $ideaDirectoryBuilder->build();
+        $ideaDirectory = $ideaDirectoryBuilder->getResult();
 
         $dockerImage = new DockerImage(
             $configuration->getDockerRepository(),
             $configuration->getDockerTag(),
-            $configuration->getVerbose()
+            $verbose
         );
 
-        $resultsDirectory = new ResultsDirectory();
-
-        $resultsDirectory->create($configuration->getAppDirectory()->getPath());
+        $resultsDirectory = $appDirectory->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
 
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),
@@ -52,7 +58,7 @@ class Inspection
             $configuration->getInspectionProfile(),
             $resultsDirectory,
             $dockerImage,
-            $configuration->getVerbose()
+            $verbose
         );
 
         $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);
@@ -61,6 +67,7 @@ class Inspection
     /**
      * @return Problems
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     public function run(): Problems
     {

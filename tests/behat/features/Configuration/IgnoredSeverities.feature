@@ -21,7 +21,7 @@ Feature: Run inspections with certain severities ignored
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    24 problems were found during phpStorm inspection.
+    25 problems were found during phpStorm inspection.
 
     Problems in InspectionViolator.php:
       line 10   WARNING       (Constant name is not following coding convention): Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
@@ -41,6 +41,7 @@ Feature: Run inspections with certain severities ignored
       line 59   WEAK WARNING  (Missing return type declaration): Missing function's return type declaration
       line 66   WARNING       (Missing @throws tag(s)): PHPDoc comment doesn't contain all the necessary @throws tags
       line 68   WARNING       (Missing @throws tag(s)): PHPDoc comment doesn't contain all the necessary @throws tags
+      line 69   WARNING       (Language level): Union types are only allowed since PHP 8.0
       line 69   WARNING       (unused declaration): <ul><li>Method owner class is never instantiated OR</li><li>An instantiation is not reachable from entry points.</li></ul>
       line 76   WARNING       (Unused local variable): Unused local variable 'item'. The value of the variable is not used anywhere.
       line 76   WEAK WARNING  (Array is always empty at the point of access): Array is always empty at this point

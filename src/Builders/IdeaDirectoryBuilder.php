@@ -5,49 +5,77 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use TravisPhpstormInspector\Commands\InspectCommand;
-use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
-use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
-use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
+use TravisPhpstormInspector\Directory;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
+use TravisPhpstormInspector\FileContents\InspectionsXml;
+use TravisPhpstormInspector\FileContents\ModulesXml;
+use TravisPhpstormInspector\FileContents\PhpXml;
+use TravisPhpstormInspector\FileContents\ProfileSettingsXml;
+use TravisPhpstormInspector\FileContents\ProjectIml;
 
-class IdeaDirectoryBuilder
+/**
+ * @implements BuilderInterface<Directory>
+ */
+class IdeaDirectoryBuilder implements BuilderInterface
 {
+    private const DIRECTORY_IDEA = 'travis-phpstorm-inspector-.idea';
+    private const DIRECTORY_INSPECTION_PROFILES = 'inspectionProfiles';
+    private const FILE_MODULES_XML = 'modules.xml';
+    private const FILE_PHP_XML = 'php.xml';
+    private const FILE_PROFILES_SETTINGS = 'profiles_settings.xml';
+    private const FILE_PROJECT_IML = 'project.iml';
+
     /**
-     * @param string $inspectorPath
-     * @param InspectionsXml $inspectionsXml
-     * @return IdeaDirectory
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @var InspectionsXml
      */
-    public function build(
-        string $inspectorPath,
-        InspectionsXml $inspectionsXml
-    ): IdeaDirectory {
-        $profileSettingsXml = new ProfileSettingsXml($inspectionsXml->getProfileNameValue());
+    private $inspectionsXml;
 
-        $inspectionProfilesDirectory = new InspectionProfilesDirectory(
-            $profileSettingsXml,
-            $inspectionsXml
-        );
+    /**
+     * @var string
+     */
+    private $phpVersion;
 
-        //TODO use the real project name from location in ModulesXml and ProjectIml
+    /**
+     * @var Directory
+     */
+    private $ideaDirectory;
+
+    /**
+     * @throws FilesystemException
+     */
+    public function __construct(
+        Directory $inspectorDirectory,
+        InspectionsXml $inspectionsXml,
+        string $phpVersion
+    ) {
+        $this->inspectionsXml = $inspectionsXml;
+        $this->phpVersion = $phpVersion;
+        $this->ideaDirectory = $inspectorDirectory->createDirectory(self::DIRECTORY_IDEA, true);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function build(): void
+    {
+        $inspectionProfilesDirectory = $this->ideaDirectory->createDirectory(self::DIRECTORY_INSPECTION_PROFILES);
+        $profileSettingsXml = new ProfileSettingsXml($this->inspectionsXml->getProfileNameValue());
+        $inspectionProfilesDirectory
+            ->createFile(self::FILE_PROFILES_SETTINGS, $profileSettingsXml)
+            ->createFile($this->inspectionsXml->getName(), $this->inspectionsXml);
+
         $modulesXml = new ModulesXml();
-        //TODO read the language level from config
-        $phpXml = new PhpXml('7.3');
+        $phpXml = new PhpXml($this->phpVersion);
         $projectIml = new ProjectIml(InspectCommand::NAME);
 
-        $ideaDirectory = new IdeaDirectory(
-            $modulesXml,
-            $phpXml,
-            $projectIml,
-            $inspectionProfilesDirectory
-        );
+        $this->ideaDirectory
+            ->createFile(self::FILE_MODULES_XML, $modulesXml)
+            ->createFile(self::FILE_PHP_XML, $phpXml)
+            ->createFile(self::FILE_PROJECT_IML, $projectIml);
+    }
 
-        $ideaDirectory->create($inspectorPath);
-
-        return $ideaDirectory;
+    public function getResult(): object
+    {
+        return $this->ideaDirectory;
     }
 }

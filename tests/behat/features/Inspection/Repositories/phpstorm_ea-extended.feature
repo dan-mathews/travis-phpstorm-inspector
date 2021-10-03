@@ -39,7 +39,7 @@ Feature: Run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    48 problems were found during phpStorm inspection.
+    49 problems were found during phpStorm inspection.
 
     Problems in InspectionViolator.php:
       line 1    ERROR         (PHP short open tag usage): [EA] Using the '<?' short tag considered to be a bad practice
@@ -77,6 +77,7 @@ Feature: Run inspections
       line 59   WEAK WARNING  (Return type hint can be used): [EA] ': int' can be declared as return type hint.
       line 66   WARNING       (Missing @throws tag(s)): PHPDoc comment doesn't contain all the necessary @throws tags
       line 68   WARNING       (Missing @throws tag(s)): PHPDoc comment doesn't contain all the necessary @throws tags
+      line 69   WARNING       (Language level): Union types are only allowed since PHP 8.0
       line 69   WARNING       (unused declaration): <ul><li>Method owner class is never instantiated OR</li><li>An instantiation is not reachable from entry points.</li></ul>
       line 73   WEAK WARNING  ('isset(...)' usage): [EA] '$arg !== null' construction should be used instead.
       line 76   WARNING       (Unused local variable): Unused local variable 'item'. The value of the variable is not used anywhere.

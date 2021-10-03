@@ -64,9 +64,9 @@ final class InspectionViolator extends NonExistent
     //PHPDoc comment doesn't contain all the necessary @throws tags
     //Method owner class is never instantiated OR An instantiation is not reachable from entry points.
     /**
-     * @return int
+     * @return int|string
      */
-    protected function method(): int
+    protected function method(): int|string
     {
         $arg = [];
 

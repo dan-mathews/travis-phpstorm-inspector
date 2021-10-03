@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\Builders;
+namespace TravisPhpstormInspector\Configuration;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
 /** @implements \ArrayAccess<string, mixed> */
-class ConfigurationFileArray implements \ArrayAccess
+class ConfigurationFile implements \ArrayAccess
 {
     /**
      * @var array<string, mixed>
@@ -20,9 +21,15 @@ class ConfigurationFileArray implements \ArrayAccess
      */
     private $path;
 
-    public function __construct(string $configurationPath)
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    public function __construct(string $configurationPath, OutputInterface $output)
     {
         $this->path = $configurationPath;
+        $this->output = $output;
     }
 
     /**
@@ -41,8 +48,10 @@ class ConfigurationFileArray implements \ArrayAccess
     private function getParsedConfigurationFile(string $configurationPath): array
     {
         if (!file_exists($configurationPath)) {
-            echo 'Could not find the configuration file at ' . $configurationPath . ', assuming that command line '
-                . 'arguments or defaults are being used.';
+            $this->output->writeln(
+                'Could not find a configuration file at ' . $configurationPath . ', assuming that command line '
+                . 'arguments or defaults are being used'
+            );
 
             return [];
         }

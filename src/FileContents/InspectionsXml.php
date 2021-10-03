@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory\Files;
+namespace TravisPhpstormInspector\FileContents;
 
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableFile;
 
-class InspectionsXml extends AbstractCreatableFile
+class InspectionsXml implements GetContentsInterface
 {
     /**
      * @var string
@@ -138,7 +137,7 @@ class InspectionsXml extends AbstractCreatableFile
         return $this->name;
     }
 
-    protected function getContents(): string
+    public function getContents(): string
     {
         return $this->contents;
     }

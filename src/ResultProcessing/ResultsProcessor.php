@@ -6,7 +6,7 @@ namespace TravisPhpstormInspector\ResultProcessing;
 
 use DirectoryIterator;
 use TravisPhpstormInspector\Configuration;
-use TravisPhpstormInspector\ResultsDirectory;
+use TravisPhpstormInspector\Directory;
 
 class ResultsProcessor
 {
@@ -21,17 +21,17 @@ class ResultsProcessor
     private $inspectionConfiguration;
 
     /**
-     * @param ResultsDirectory $resultsDirectory
+     * @param Directory $resultsDirectory
      * @param Configuration $inspectionConfiguration
      * @throws \InvalidArgumentException
      */
-    public function __construct(ResultsDirectory $resultsDirectory, Configuration $inspectionConfiguration)
+    public function __construct(Directory $resultsDirectory, Configuration $inspectionConfiguration)
     {
         try {
             $this->directory = new DirectoryIterator($resultsDirectory->getPath());
         } catch (\Throwable $e) {
             throw new \InvalidArgumentException(
-                "Couldn't read inspection results directory " . $resultsDirectory->getName(),
+                "Couldn't read inspection results directory",
                 1,
                 $e
             );

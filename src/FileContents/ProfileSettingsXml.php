@@ -2,14 +2,10 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory\Files;
+namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableFile;
-
-class ProfileSettingsXml extends AbstractCreatableFile
+class ProfileSettingsXml implements GetContentsInterface
 {
-    private const NAME = 'profiles_settings.xml';
-
     /**
      * @var string
      */
@@ -20,7 +16,7 @@ class ProfileSettingsXml extends AbstractCreatableFile
         $this->profileName = $profileName;
     }
 
-    protected function getContents(): string
+    public function getContents(): string
     {
         //PhpStorm creates this without an XML declaration, so we do the same
         return '<component name="InspectionProjectProfileManager">'
@@ -28,10 +24,5 @@ class ProfileSettingsXml extends AbstractCreatableFile
         . '<version value="1.0" />'
         . '</settings>'
         . '</component>';
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
     }
 }

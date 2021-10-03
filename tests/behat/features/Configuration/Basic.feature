@@ -40,6 +40,8 @@ Feature: Run inspections with a configuration file
                                                    - default: danmathews1/phpstorm
           --docker-tag[=DOCKER-TAG]                The docker tag to use, referencing a PhpStorm image in the docker repository
                                                    - default: latest
+          --php-version[=PHP-VERSION]              The php version to use
+                                                   - default: 7.3
       -h, --help                                   Display help for the given command. When no command is given display help for the list command
       -q, --quiet                                  Do not output any message
       -V, --version                                Display this application version

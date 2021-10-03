@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
+use TravisPhpstormInspector\FileContents\InspectionsXml;
 
 class Configuration
 {
     public const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     public const DEFAULT_DOCKER_TAG = 'latest';
-    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
-    public const DEFAULT_VERBOSE = true;
     public const DEFAULT_IGNORED_SEVERITIES = [];
+    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    public const DEFAULT_PHP_VERSION = '7.3';
+    public const DEFAULT_VERBOSE = true;
 
     public const VALID_IGNORED_SEVERITIES = [
         'TYPO',
@@ -61,18 +64,25 @@ class Configuration
     private $inspectionProfile;
 
     /**
-     * @param string $appRootPath
+     * @var string
+     */
+    private $phpVersion = self::DEFAULT_PHP_VERSION;
+
+    /**
      * @param string $projectPath
-     * @throws Exceptions\InspectionsProfileException
-     * @throws \RuntimeException
+     * @param string $appRootPath
+     * @param OutputInterface $output
+     * @throws FilesystemException
+     * @throws InspectionsProfileException
      */
     public function __construct(
         string $projectPath,
-        string $appRootPath
+        string $appRootPath,
+        OutputInterface $output
     ) {
-        $this->projectDirectory = new Directory($projectPath);
+        $this->projectDirectory = new Directory($projectPath, $output);
 
-        $this->appDirectory = new Directory($appRootPath);
+        $this->appDirectory = new Directory($appRootPath, $output);
 
         $this->inspectionProfile = new InspectionsXml(
             $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH
@@ -139,6 +149,11 @@ class Configuration
         return $this->inspectionProfile;
     }
 
+    public function getPhpVersion(): string
+    {
+        return $this->phpVersion;
+    }
+
     public function setDockerRepository(string $dockerRepository): void
     {
         $this->dockerRepository = $dockerRepository;
@@ -172,5 +187,10 @@ class Configuration
             . $this->projectDirectory->getPath() . '/' . $inspectionProfile . '), or an absolute path ('
             . $inspectionProfile . ')'
         );
+    }
+
+    public function setPhpVersion(string $phpVersion): void
+    {
+        $this->phpVersion = $phpVersion;
     }
 }

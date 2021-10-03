@@ -2,14 +2,10 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory\Files;
+namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableFile;
-
-class ProjectIml extends AbstractCreatableFile
+class ProjectIml implements GetContentsInterface
 {
-    private const NAME = 'project.iml';
-
     /**
      * @var string
      */
@@ -20,7 +16,7 @@ class ProjectIml extends AbstractCreatableFile
         $this->appName = $appName;
     }
 
-    protected function getContents(): string
+    public function getContents(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<module type="WEB_MODULE" version="4">'
@@ -30,10 +26,5 @@ class ProjectIml extends AbstractCreatableFile
         . '</content>'
         . '</component>'
         . '</module>';
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
     }
 }

@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace PhpUnitTests;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophet;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
-use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
+ * @covers \TravisPhpstormInspector\Configuration
+ */
 final class ConfigurationTest extends TestCase
 {
     private const APP_ROOT_PATH = __DIR__ . '/../../';
@@ -27,6 +31,11 @@ final class ConfigurationTest extends TestCase
     private $projectPath;
 
     /**
+     * @var Prophet
+     */
+    private $prophet;
+
+    /**
      * @throws \Exception
      */
     protected function setUp(): void
@@ -42,14 +51,11 @@ final class ConfigurationTest extends TestCase
 
         $this->projectPath = $projectPath;
 
+        $this->prophet = new Prophet();
+
         parent::setUp();
     }
 
-    /**
-     * @throws ConfigurationException
-     * @throws \JsonException
-     * @throws InspectionsProfileException
-     */
     public function testReadFromConfigFileOnly(): void
     {
         $this->writeConfigurationFile(
@@ -61,18 +67,26 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'php-version' => '7.4',
             ]
         );
+
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
 
         $configurationBuilder = new ConfigurationBuilder(
             [],
             ['verbose' => false],
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
@@ -88,13 +102,9 @@ final class ConfigurationTest extends TestCase
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
-    /**
-     * @throws \JsonException
-     * @throws ConfigurationException
-     * @throws InspectionsProfileException
-     */
     public function testCommandLineOverridesConfigFile(): void
     {
         $this->writeConfigurationFile(
@@ -106,7 +116,8 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH)
+                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'php-version' => '7.4',
             ]
         );
 
@@ -116,16 +127,24 @@ final class ConfigurationTest extends TestCase
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
             'verbose' => false,
+            'php-version' => '8.0',
         ];
+
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
 
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             $options,
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -134,12 +153,9 @@ final class ConfigurationTest extends TestCase
             'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('8.0', $configuration->getPhpVersion());
     }
 
-    /**
-     * @throws ConfigurationException
-     * @throws InspectionsProfileException
-     */
     public function testReadFromCommandLineOnly(): void
     {
         $options = [
@@ -148,16 +164,29 @@ final class ConfigurationTest extends TestCase
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::TEST_INSPECTION_PROFILE_PATH,
             'verbose' => false,
+            'php-version' => '7.4',
         ];
+
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
+
+        $outputProphesy->writeln(
+            'Could not find a configuration file at ' . $this->projectPath . '/travis-phpstorm-inspector.json, '
+            . 'assuming that command line arguments or defaults are being used'
+        )->willReturn(null);
 
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             $options,
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -166,22 +195,31 @@ final class ConfigurationTest extends TestCase
             'exampleStandards.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
-    /**
-     * @throws ConfigurationException
-     * @throws InspectionsProfileException
-     */
     public function testDefaults(): void
     {
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
+
+        $outputProphesy->writeln(
+            'Could not find a configuration file at ' . $this->projectPath . '/travis-phpstorm-inspector.json, '
+            . 'assuming that command line arguments or defaults are being used'
+        )->willReturn(null);
+
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             ['verbose' => false],
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
-        $configuration = $configurationBuilder->build();
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
 
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
@@ -190,6 +228,7 @@ final class ConfigurationTest extends TestCase
             'default.xml',
             $configuration->getInspectionProfile()->getName()
         );
+        self::assertSame('7.3', $configuration->getPhpVersion());
     }
 
     /**
@@ -211,6 +250,7 @@ final class ConfigurationTest extends TestCase
 
     protected function tearDown(): void
     {
+        $this->prophet->checkPredictions();
         $this->removeDirectory(new \DirectoryIterator($this->projectName));
         parent::tearDown();
     }
