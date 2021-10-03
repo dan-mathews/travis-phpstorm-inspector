@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\FileContents\GetContentsInterface;
-
 class ModulesXml implements GetContentsInterface
 {
-    private const NAME = 'modules.xml';
-
     public function getContents(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>'
@@ -20,10 +16,5 @@ class ModulesXml implements GetContentsInterface
         . '</modules>'
         . '</component>'
         . '</project>';
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
     }
 }

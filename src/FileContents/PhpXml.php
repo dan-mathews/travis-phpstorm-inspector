@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\FileContents\GetContentsInterface;
-
 class PhpXml implements GetContentsInterface
 {
-    private const NAME = 'php.xml';
-
     /**
      * @var string
      */
@@ -28,10 +24,5 @@ class PhpXml implements GetContentsInterface
         . '<option name="suggestChangeDefaultLanguageLevel" value="false" />'
         . '</component>'
         . '</project>';
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
     }
 }

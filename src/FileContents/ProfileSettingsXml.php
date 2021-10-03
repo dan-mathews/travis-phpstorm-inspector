@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\FileContents\GetContentsInterface;
-
 class ProfileSettingsXml implements GetContentsInterface
 {
-    private const NAME = 'profiles_settings.xml';
-
     /**
      * @var string
      */
@@ -28,10 +24,5 @@ class ProfileSettingsXml implements GetContentsInterface
         . '<version value="1.0" />'
         . '</settings>'
         . '</component>';
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\FileContents;
 
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\FileContents\GetContentsInterface;
 
 class InspectionsXml implements GetContentsInterface
 {

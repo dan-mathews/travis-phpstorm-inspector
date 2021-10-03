@@ -348,7 +348,7 @@ class FeatureContext implements Context
     {
         //todo - put this into a behat failure post hook?
         if ((int) $exitCode !== $this->getInspectionExitCode()) {
-            echo "The last 10 lines of the output were:\n" . $this->getLastLinesOfOutput(10);
+            echo "The last 40 lines of the output were:\n" . $this->getLastLinesOfOutput(40);
         }
 
         Assert::assertSame((int) $exitCode, $this->getInspectionExitCode());

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\FileContents\InspectionsXml;
 
@@ -67,18 +69,20 @@ class Configuration
     private $phpVersion = self::DEFAULT_PHP_VERSION;
 
     /**
-     * @param string $appRootPath
      * @param string $projectPath
-     * @throws Exceptions\InspectionsProfileException
-     * @throws \RuntimeException
+     * @param string $appRootPath
+     * @param OutputInterface $output
+     * @throws FilesystemException
+     * @throws InspectionsProfileException
      */
     public function __construct(
         string $projectPath,
-        string $appRootPath
+        string $appRootPath,
+        OutputInterface $output
     ) {
-        $this->projectDirectory = new Directory($projectPath);
+        $this->projectDirectory = new Directory($projectPath, $output);
 
-        $this->appDirectory = new Directory($appRootPath);
+        $this->appDirectory = new Directory($appRootPath, $output);
 
         $this->inspectionProfile = new InspectionsXml(
             $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH

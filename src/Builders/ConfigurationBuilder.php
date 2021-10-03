@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Builders;
 
-use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Configuration\ConfigurationFile;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
 /**
@@ -38,13 +39,18 @@ class ConfigurationBuilder implements BuilderInterface
      * @param array<array-key, mixed> $options
      * @param string $appRootPath
      * @param string $workingDirectory
+     * @param OutputInterface $output
      * @throws ConfigurationException
      * @throws InspectionsProfileException
-     * @throws \RuntimeException
-     * @throws InvalidArgumentException
+     * @throws FilesystemException
      */
-    public function __construct(array $arguments, array $options, string $appRootPath, string $workingDirectory)
-    {
+    public function __construct(
+        array $arguments,
+        array $options,
+        string $appRootPath,
+        string $workingDirectory,
+        OutputInterface $output
+    ) {
         if (
             isset($arguments[InspectCommand::ARGUMENT_PROJECT_PATH]) &&
             !is_string($arguments[InspectCommand::ARGUMENT_PROJECT_PATH])
@@ -57,12 +63,12 @@ class ConfigurationBuilder implements BuilderInterface
 
         $this->options = $options;
 
-        $this->configuration = new Configuration($projectPath, $appRootPath);
+        $this->configuration = new Configuration($projectPath, $appRootPath, $output);
 
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();
 
-        $this->parsedConfigurationFile = new ConfigurationFile($projectPath . '/' . self::FILENAME);
+        $this->parsedConfigurationFile = new ConfigurationFile($projectPath . '/' . self::FILENAME, $output);
     }
 
     public function getResult(): object

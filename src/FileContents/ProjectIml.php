@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\FileContents\GetContentsInterface;
-
 class ProjectIml implements GetContentsInterface
 {
-    private const NAME = 'project.iml';
-
     /**
      * @var string
      */
@@ -30,10 +26,5 @@ class ProjectIml implements GetContentsInterface
         . '</content>'
         . '</component>'
         . '</module>';
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
     }
 }

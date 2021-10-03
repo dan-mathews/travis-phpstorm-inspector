@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Views;
 
-use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use TravisPhpstormInspector\Exceptions\AbstractAppException;
 
 class Error implements DisplayInterface
 {
@@ -28,16 +27,11 @@ class Error implements DisplayInterface
 
     protected function getHeadlineMessage(): string
     {
-        switch (get_class($this->throwable)) {
-            case ConfigurationException::class:
-                return 'Failed to complete inspections because of a probable error in the configuration file.';
-
-            case InspectionsProfileException::class:
-                return 'Failed to complete inspections because of a probable error in the inspections profile.';
-
-            default:
-                return 'Failed to complete inspections because of an unexpected error.';
+        if (is_a($this->throwable, AbstractAppException::class)) {
+            return $this->throwable->getHeadlineMessage();
         }
+
+        return 'Failed to complete inspections because of an unexpected error.';
     }
 
     protected function getBugReportMessage(): string

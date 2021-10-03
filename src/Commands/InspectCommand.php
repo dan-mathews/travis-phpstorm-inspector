@@ -104,7 +104,8 @@ class InspectCommand extends Command
                 $input->getArguments(),
                 $input->getOptions(),
                 $appRootPath,
-                $workingDirectory
+                $workingDirectory,
+                $output
             );
 
             $configurationBuilder->build();

@@ -6,6 +6,7 @@ namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -27,7 +28,7 @@ class Inspection
     /**
      * @throws ConfigurationException
      * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @throws FilesystemException
      */
     public function __construct(Configuration $configuration)
     {
@@ -63,6 +64,7 @@ class Inspection
     /**
      * @return Problems
      * @throws \RuntimeException
+     * @throws \LogicException
      */
     public function run(): Problems
     {

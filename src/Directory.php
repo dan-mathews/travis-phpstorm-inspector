@@ -2,7 +2,8 @@
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use Symfony\Component\Console\Output\OutputInterface;
+use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\FileContents\GetContentsInterface;
 
 class Directory
@@ -12,8 +13,18 @@ class Directory
      */
     private $path;
 
-    public function __construct(string $path)
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    /**
+     * @throws FilesystemException
+     */
+    public function __construct(string $path, OutputInterface $output)
     {
+        $this->output = $output;
+
         $realPath = realpath($path);
 
         if (
@@ -21,7 +32,7 @@ class Directory
             false === is_dir($realPath) ||
             false === is_readable($realPath)
         ) {
-            throw new \RuntimeException('Could not find a readable directory at ' . $path);
+            throw new FilesystemException('Could not find a readable directory at ' . $path);
         }
 
         $this->path = $realPath;
@@ -32,78 +43,117 @@ class Directory
         return $this->path;
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function createFile(string $name, GetContentsInterface $contents): self
     {
-        $file = fopen($this->path . '/' . $name, 'wb');
+        $absolutePath = $this->path . '/' . $name;
+
+        $file = fopen($absolutePath, 'wb');
 
         if (false === $file) {
-            throw new \RuntimeException('Failed to create file at path: "' . $this->path . '/' . $name . '".');
+            throw new FilesystemException('Failed to create file at path: "' . $absolutePath . '".');
         }
 
-        $written = fwrite($file, $contents->getContents());
-
-        if (false === $written) {
-            throw new \RuntimeException('Failed to write to file at path: "' . $this->path . '/' . $name . '".');
+        if (false === fwrite($file, $contents->getContents())) {
+            throw new FilesystemException('Failed to write to file at path: "' . $absolutePath . '".');
         }
 
-        $closed = fclose($file);
-
-        if (false === $closed) {
-            throw new \RuntimeException('Failed to close file at path: "' . $this->path . '/' . $name . '".');
+        if (false === fclose($file)) {
+            throw new FilesystemException('Failed to close file at path: "' . $absolutePath . '".');
         }
+
+        $this->output->writeln('Created file ' . $absolutePath);
 
         return $this;
     }
 
     /**
-     * @throws ConfigurationException
+     * @throws FilesystemException
      */
     public function createDirectory(string $name, bool $overwrite = false): Directory
     {
-        if ($overwrite) {
-            if (is_file($this->path . '/' . $name)) {
-                throw new ConfigurationException('Cannot overwrite a file with a directory');
+        $absolutePath = $this->path . '/' . $name;
+
+        if (file_exists($absolutePath)) {
+            if (false === $overwrite) {
+                throw new FilesystemException('Cannot create directory, file already exists at: ' . $absolutePath);
             }
 
-            if (is_dir($this->path . '/' . $name)) {
-                $this->removeDirectory(new \DirectoryIterator($this->path . '/' . $name));
+            if (is_file($absolutePath)) {
+                throw new FilesystemException('Cannot overwrite a file with a directory');
+            }
+
+            if (is_dir($absolutePath)) {
+                $directoryIterator = $this->getDirectoryIterator($absolutePath);
+
+                $this->removeDirectory($directoryIterator);
             }
         }
 
-        if (file_exists($this->path . '/' . $name)) {
-            throw new ConfigurationException('File cannot exist before creation: ' . $this->path . '/' . $name);
+        if (false === mkdir($absolutePath) && false === is_dir($absolutePath)) {
+            throw new FilesystemException(sprintf('Directory "%s" was not created', $absolutePath));
         }
 
-        if (!mkdir($this->path . '/' . $name) && !is_dir($this->path . '/' . $name)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $this->path . '/' . $name));
-        }
+        $this->output->writeln('Created directory ' . $absolutePath);
 
-        return new Directory($this->path . '/' . $name);
+        return new Directory($absolutePath, $this->output);
     }
 
+    /**
+     * @throws FilesystemException
+     */
     private function removeDirectory(\DirectoryIterator $directoryIterator): void
     {
+        $directoryPath = $directoryIterator->getPath();
+
+        /** @var \SplFileInfo $info */
         foreach ($directoryIterator as $info) {
             if ($info->isDot()) {
                 continue;
             }
 
-            $realPath = $info->getRealPath();
+            $filePath = $info->getRealPath();
 
-            if (false === $realPath) {
-                throw new \RuntimeException('Could not get real path of ' . var_export($info, true));
+            if (false === $filePath) {
+                throw new FilesystemException('Could not get real path of ' . $info->getPath());
             }
 
             if ($info->isDir()) {
-                self::removeDirectory(new \DirectoryIterator($realPath));
+                $directoryIterator = $this->getDirectoryIterator($filePath);
+
+                self::removeDirectory($directoryIterator);
                 continue;
             }
 
-            if ($info->isFile()) {
-                unlink($realPath);
+            if (
+                $info->isFile() &&
+                false === unlink($filePath)
+            ) {
+                throw new FilesystemException('Could not remove file at path ' . $filePath);
             }
+
+            $this->output->writeln('Removed file ' . $filePath);
         }
 
-        rmdir($directoryIterator->getPath());
+        // We check the directory still exists before removing, as PhpStorm makes rapid changes to the .idea directory
+        if (false === rmdir($directoryPath)) {
+            throw new FilesystemException('Could not remove directory at path ' . $directoryPath);
+        }
+
+        $this->output->writeln('Removed directory ' . $directoryPath);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    private function getDirectoryIterator(string $path): \DirectoryIterator
+    {
+        try {
+            return new \DirectoryIterator($path);
+        } catch (\UnexpectedValueException | \RuntimeException $e) {
+            throw new FilesystemException('Could not iterate over directory at path ' . $path, 0, $e);
+        }
     }
 }
