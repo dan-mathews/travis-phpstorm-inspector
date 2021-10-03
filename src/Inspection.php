@@ -32,8 +32,11 @@ class Inspection
      */
     public function __construct(Configuration $configuration)
     {
+        $appDirectory = $configuration->getAppDirectory();
+        $verbose = $configuration->getVerbose();
+
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
-            $configuration->getAppDirectory(),
+            $appDirectory,
             $configuration->getInspectionProfile(),
             $configuration->getPhpVersion()
         );
@@ -44,10 +47,10 @@ class Inspection
         $dockerImage = new DockerImage(
             $configuration->getDockerRepository(),
             $configuration->getDockerTag(),
-            $configuration->getVerbose()
+            $verbose
         );
 
-        $resultsDirectory = $configuration->getAppDirectory()->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
+        $resultsDirectory = $appDirectory->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
 
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),
@@ -55,7 +58,7 @@ class Inspection
             $configuration->getInspectionProfile(),
             $resultsDirectory,
             $dockerImage,
-            $configuration->getVerbose()
+            $verbose
         );
 
         $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);
