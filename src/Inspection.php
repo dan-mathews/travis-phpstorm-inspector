@@ -12,6 +12,8 @@ use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
 class Inspection
 {
+    private const DIRECTORY_NAME_RESULTS = 'travis-phpstorm-inspector-results';
+
     /**
      * @var InspectionCommand
      */
@@ -44,7 +46,9 @@ class Inspection
             $configuration->getVerbose()
         );
 
-        $resultsDirectory = FilesystemHelper::makeDirectory($configuration->getAppDirectory()->getPath());
+        $resultsDirectory = FilesystemHelper::makeDirectory(
+            $configuration->getAppDirectory()->getPath() . '/' . self::DIRECTORY_NAME_RESULTS
+        );
 
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),
