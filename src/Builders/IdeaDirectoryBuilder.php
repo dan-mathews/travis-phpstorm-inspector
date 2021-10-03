@@ -22,6 +22,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
     private const DIRECTORY_INSPECTION_PROFILES = 'inspectionProfiles';
     private const FILE_MODULES_XML = 'modules.xml';
     private const FILE_PHP_XML = 'php.xml';
+    private const FILE_PROFILES_SETTINGS = 'profiles_settings.xml';
     private const FILE_PROJECT_IML = 'project.iml';
 
     /**
@@ -60,7 +61,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
         $inspectionProfilesDirectory = $this->ideaDirectory->createDirectory(self::DIRECTORY_INSPECTION_PROFILES);
         $profileSettingsXml = new ProfileSettingsXml($this->inspectionsXml->getProfileNameValue());
         $inspectionProfilesDirectory
-            ->createFile($this->inspectionsXml->getProfileNameValue(), $profileSettingsXml)
+            ->createFile(self::FILE_PROFILES_SETTINGS, $profileSettingsXml)
             ->createFile($this->inspectionsXml->getName(), $this->inspectionsXml);
 
         $modulesXml = new ModulesXml();
