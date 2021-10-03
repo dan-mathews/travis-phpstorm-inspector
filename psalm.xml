@@ -21,5 +21,10 @@
                 <directory name="tests/phpunit" />
             </errorLevel>
         </PropertyNotSetInConstructor>
+        <TooManyArguments>
+            <errorLevel type="suppress">
+                <referencedFunction name="Prophecy\Prophecy\MethodProphecy::willReturn" />
+            </errorLevel>
+        </TooManyArguments>
     </issueHandlers>
 </psalm>

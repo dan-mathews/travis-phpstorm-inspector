@@ -108,7 +108,6 @@ class Directory
     {
         $directoryPath = $directoryIterator->getPath();
 
-        /** @var \SplFileInfo $info */
         foreach ($directoryIterator as $info) {
             if ($info->isDot()) {
                 continue;

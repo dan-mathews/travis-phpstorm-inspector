@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace PhpUnitTests;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophet;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
-use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
@@ -31,6 +31,11 @@ final class ConfigurationTest extends TestCase
     private $projectPath;
 
     /**
+     * @var Prophet
+     */
+    private $prophet;
+
+    /**
      * @throws \Exception
      */
     protected function setUp(): void
@@ -46,14 +51,11 @@ final class ConfigurationTest extends TestCase
 
         $this->projectPath = $projectPath;
 
+        $this->prophet = new Prophet();
+
         parent::setUp();
     }
 
-    /**
-     * @throws ConfigurationException
-     * @throws \JsonException
-     * @throws InspectionsProfileException
-     */
     public function testReadFromConfigFileOnly(): void
     {
         $this->writeConfigurationFile(
@@ -70,11 +72,17 @@ final class ConfigurationTest extends TestCase
             ]
         );
 
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
+
         $configurationBuilder = new ConfigurationBuilder(
             [],
             ['verbose' => false],
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
         $configurationBuilder->build();
@@ -97,11 +105,6 @@ final class ConfigurationTest extends TestCase
         self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
-    /**
-     * @throws \JsonException
-     * @throws ConfigurationException
-     * @throws InspectionsProfileException
-     */
     public function testCommandLineOverridesConfigFile(): void
     {
         $this->writeConfigurationFile(
@@ -127,11 +130,17 @@ final class ConfigurationTest extends TestCase
             'php-version' => '8.0',
         ];
 
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
+
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             $options,
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
         $configurationBuilder->build();
@@ -147,10 +156,6 @@ final class ConfigurationTest extends TestCase
         self::assertSame('8.0', $configuration->getPhpVersion());
     }
 
-    /**
-     * @throws ConfigurationException
-     * @throws InspectionsProfileException
-     */
     public function testReadFromCommandLineOnly(): void
     {
         $options = [
@@ -162,11 +167,22 @@ final class ConfigurationTest extends TestCase
             'php-version' => '7.4',
         ];
 
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
+
+        $outputProphesy->writeln(
+            'Could not find a configuration file at ' . $this->projectPath . '/travis-phpstorm-inspector.json, '
+            . 'assuming that command line arguments or defaults are being used'
+        )->willReturn(null);
+
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             $options,
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
         $configurationBuilder->build();
@@ -182,17 +198,24 @@ final class ConfigurationTest extends TestCase
         self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
-    /**
-     * @throws ConfigurationException
-     * @throws InspectionsProfileException
-     */
     public function testDefaults(): void
     {
+        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $outputDummy */
+        $outputDummy = $outputProphesy->reveal();
+
+        $outputProphesy->writeln(
+            'Could not find a configuration file at ' . $this->projectPath . '/travis-phpstorm-inspector.json, '
+            . 'assuming that command line arguments or defaults are being used'
+        )->willReturn(null);
+
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             ['verbose' => false],
             self::APP_ROOT_PATH,
-            $this->projectPath
+            $this->projectPath,
+            $outputDummy
         );
 
         $configurationBuilder->build();
@@ -227,6 +250,7 @@ final class ConfigurationTest extends TestCase
 
     protected function tearDown(): void
     {
+        $this->prophet->checkPredictions();
         $this->removeDirectory(new \DirectoryIterator($this->projectName));
         parent::tearDown();
     }
