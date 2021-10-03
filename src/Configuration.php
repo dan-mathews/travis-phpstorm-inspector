@@ -6,7 +6,7 @@ namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
+use TravisPhpstormInspector\FileContents\InspectionsXml;
 
 class Configuration
 {

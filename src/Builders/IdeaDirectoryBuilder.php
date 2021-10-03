@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use TravisPhpstormInspector\Commands\InspectCommand;
-use TravisPhpstormInspector\IdeaDirectory\Directories\IdeaDirectory;
-use TravisPhpstormInspector\IdeaDirectory\Directories\InspectionProfilesDirectory;
-use TravisPhpstormInspector\IdeaDirectory\Files\InspectionsXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\ModulesXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\PhpXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\ProfileSettingsXml;
-use TravisPhpstormInspector\IdeaDirectory\Files\ProjectIml;
+use TravisPhpstormInspector\Directory;
+use TravisPhpstormInspector\FileContents\InspectionsXml;
+use TravisPhpstormInspector\FileContents\ModulesXml;
+use TravisPhpstormInspector\FileContents\PhpXml;
+use TravisPhpstormInspector\FileContents\ProfileSettingsXml;
+use TravisPhpstormInspector\FileContents\ProjectIml;
 
 /**
  * @implements BuilderInterface<IdeaDirectory>
  */
 class IdeaDirectoryBuilder implements BuilderInterface
 {
-    /**
-     * @var string
-     */
-    private $inspectorPath;
+    private const DIRECTORY_NAME_IDEA = 'travis-phpstorm-inspector-.idea';
 
     /**
      * @var InspectionsXml
@@ -34,18 +30,18 @@ class IdeaDirectoryBuilder implements BuilderInterface
     private $phpVersion;
 
     /**
-     * @var IdeaDirectory
+     * @var Directory
      */
     private $ideaDirectory;
 
     public function __construct(
-        string $inspectorPath,
+        Directory $inspectorDirectory,
         InspectionsXml $inspectionsXml,
         string $phpVersion
     ) {
-        $this->inspectorPath = $inspectorPath;
         $this->inspectionsXml = $inspectionsXml;
         $this->phpVersion = $phpVersion;
+        $this->ideaDirectory = $inspectorDirectory->createDirectory(self::DIRECTORY_NAME_IDEA, true);
     }
 
     /**
@@ -54,26 +50,21 @@ class IdeaDirectoryBuilder implements BuilderInterface
      */
     public function build(): void
     {
+        $inspectionProfilesDirectory = $this->ideaDirectory->createDirectory('inspectionProfiles');
         $profileSettingsXml = new ProfileSettingsXml($this->inspectionsXml->getProfileNameValue());
-
-        $inspectionProfilesDirectory = new InspectionProfilesDirectory(
-            $profileSettingsXml,
-            $this->inspectionsXml
-        );
+        $inspectionProfilesDirectory
+            ->createFile($this->inspectionsXml->getProfileNameValue(), $profileSettingsXml)
+            ->createFile($this->inspectionsXml->getName(), $this->inspectionsXml);
 
         //TODO use the real project name from location in ModulesXml and ProjectIml
         $modulesXml = new ModulesXml();
         $phpXml = new PhpXml($this->phpVersion);
         $projectIml = new ProjectIml(InspectCommand::NAME);
 
-        $this->ideaDirectory = new IdeaDirectory(
-            $modulesXml,
-            $phpXml,
-            $projectIml,
-            $inspectionProfilesDirectory
-        );
-
-        $this->ideaDirectory->create($this->inspectorPath);
+        $this->ideaDirectory
+            ->createFile('modules.xml', $modulesXml)
+            ->createFile('php.xml', $phpXml)
+            ->createFile('project.iml', $projectIml);
     }
 
     public function getResult(): object

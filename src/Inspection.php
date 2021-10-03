@@ -6,13 +6,13 @@ namespace TravisPhpstormInspector;
 
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
-use TravisPhpstormInspector\Helpers\FilesystemHelper;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
 class Inspection
 {
     private const DIRECTORY_NAME_RESULTS = 'travis-phpstorm-inspector-results';
+    public const DIRECTORY_NAME_INSPECTION_PROFILES = 'inspectionProfiles';
 
     /**
      * @var InspectionCommand
@@ -32,7 +32,7 @@ class Inspection
     public function __construct(Configuration $configuration)
     {
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
-            $configuration->getAppDirectory()->getPath(),
+            $configuration->getAppDirectory(),
             $configuration->getInspectionProfile(),
             $configuration->getPhpVersion()
         );
@@ -46,9 +46,7 @@ class Inspection
             $configuration->getVerbose()
         );
 
-        $resultsDirectory = FilesystemHelper::makeDirectory(
-            $configuration->getAppDirectory()->getPath() . '/' . self::DIRECTORY_NAME_RESULTS
-        );
+        $resultsDirectory = $configuration->getAppDirectory()->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
 
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),

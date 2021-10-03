@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory\Files;
+namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableFile;
+use TravisPhpstormInspector\FileContents\GetContentsInterface;
 
-class ModulesXml extends AbstractCreatableFile
+class ModulesXml implements GetContentsInterface
 {
     private const NAME = 'modules.xml';
 
-    protected function getContents(): string
+    public function getContents(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<project version="4">'

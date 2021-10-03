@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace TravisPhpstormInspector\IdeaDirectory\Files;
+namespace TravisPhpstormInspector\FileContents;
 
-use TravisPhpstormInspector\IdeaDirectory\AbstractCreatableFile;
+use TravisPhpstormInspector\FileContents\GetContentsInterface;
 
-class PhpXml extends AbstractCreatableFile
+class PhpXml implements GetContentsInterface
 {
     private const NAME = 'php.xml';
 
@@ -20,7 +20,7 @@ class PhpXml extends AbstractCreatableFile
         $this->phpLanguageLevel = $phpLanguageLevel;
     }
 
-    protected function getContents(): string
+    public function getContents(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?>'
         . '<project version="4">'
