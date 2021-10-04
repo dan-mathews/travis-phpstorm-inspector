@@ -100,6 +100,9 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder->build();
         $configuration = $configurationBuilder->getResult();
 
+        self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
+        self::assertSame(realpath(self::APP_ROOT_PATH), $configuration->getAppDirectory()->getPath());
+        self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
         self::assertSame(
@@ -138,7 +141,7 @@ final class ConfigurationTest extends TestCase
             'docker-repository' => 'docker-repository-from-arg',
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
-            'verbose' => false,
+            'verbose' => true,
             'php-version' => '8.0',
         ];
 
@@ -153,6 +156,9 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder->build();
         $configuration = $configurationBuilder->getResult();
 
+        self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
+        self::assertSame(realpath(self::APP_ROOT_PATH), $configuration->getAppDirectory()->getPath());
+        self::assertTrue($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
@@ -190,6 +196,9 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder->build();
         $configuration = $configurationBuilder->getResult();
 
+        self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
+        self::assertSame(realpath(self::APP_ROOT_PATH), $configuration->getAppDirectory()->getPath());
+        self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
