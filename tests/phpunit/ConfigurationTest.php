@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace PhpUnitTests;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophet;
-use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use Symfony\Component\Console\Output\OutputInterface;
+use TravisPhpstormInspector\Builders\ConfigurationBuilder;
+use TravisPhpstormInspector\Exceptions\ConfigurationException;
 
 /**
  * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
@@ -36,6 +38,16 @@ final class ConfigurationTest extends TestCase
     private $prophet;
 
     /**
+     * @var ObjectProphecy
+     */
+    private $outputProphesy;
+
+    /**
+     * @var OutputInterface
+     */
+    private $outputDummy;
+
+    /**
      * @throws \Exception
      */
     protected function setUp(): void
@@ -52,6 +64,11 @@ final class ConfigurationTest extends TestCase
         $this->projectPath = $projectPath;
 
         $this->prophet = new Prophet();
+
+        $this->outputProphesy = $this->prophet->prophesize(OutputInterface::class);
+
+        /** @var OutputInterface $this->outputDummy */
+        $this->outputDummy = $this->outputProphesy->reveal();
 
         parent::setUp();
     }
@@ -72,17 +89,12 @@ final class ConfigurationTest extends TestCase
             ]
         );
 
-        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
-
-        /** @var OutputInterface $outputDummy */
-        $outputDummy = $outputProphesy->reveal();
-
         $configurationBuilder = new ConfigurationBuilder(
-            [],
+            ['project-path' => $this->projectPath],
             ['verbose' => false],
             self::APP_ROOT_PATH,
             $this->projectPath,
-            $outputDummy
+            $this->outputDummy
         );
 
         $configurationBuilder->build();
@@ -130,17 +142,12 @@ final class ConfigurationTest extends TestCase
             'php-version' => '8.0',
         ];
 
-        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
-
-        /** @var OutputInterface $outputDummy */
-        $outputDummy = $outputProphesy->reveal();
-
         $configurationBuilder = new ConfigurationBuilder(
-            [$this->projectName],
+            ['project-path' => $this->projectPath],
             $options,
             self::APP_ROOT_PATH,
             $this->projectPath,
-            $outputDummy
+            $this->outputDummy
         );
 
         $configurationBuilder->build();
@@ -167,12 +174,7 @@ final class ConfigurationTest extends TestCase
             'php-version' => '7.4',
         ];
 
-        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
-
-        /** @var OutputInterface $outputDummy */
-        $outputDummy = $outputProphesy->reveal();
-
-        $outputProphesy->writeln(
+        $this->outputProphesy->writeln(
             'Could not find a configuration file at ' . $this->projectPath . '/travis-phpstorm-inspector.json, '
             . 'assuming that command line arguments or defaults are being used'
         )->willReturn(null);
@@ -182,7 +184,7 @@ final class ConfigurationTest extends TestCase
             $options,
             self::APP_ROOT_PATH,
             $this->projectPath,
-            $outputDummy
+            $this->outputDummy
         );
 
         $configurationBuilder->build();
@@ -200,22 +202,17 @@ final class ConfigurationTest extends TestCase
 
     public function testDefaults(): void
     {
-        $outputProphesy = $this->prophet->prophesize(OutputInterface::class);
-
-        /** @var OutputInterface $outputDummy */
-        $outputDummy = $outputProphesy->reveal();
-
-        $outputProphesy->writeln(
+        $this->outputProphesy->writeln(
             'Could not find a configuration file at ' . $this->projectPath . '/travis-phpstorm-inspector.json, '
             . 'assuming that command line arguments or defaults are being used'
         )->willReturn(null);
 
         $configurationBuilder = new ConfigurationBuilder(
-            [$this->projectName],
+            ['project-path' => $this->projectPath],
             ['verbose' => false],
             self::APP_ROOT_PATH,
             $this->projectPath,
-            $outputDummy
+            $this->outputDummy
         );
 
         $configurationBuilder->build();
@@ -229,6 +226,137 @@ final class ConfigurationTest extends TestCase
             $configuration->getInspectionProfile()->getName()
         );
         self::assertSame('7.3', $configuration->getPhpVersion());
+    }
+
+    public function testSetDockerRepository(): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'docker-repository' => 3,
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $configurationBuilder->build();
+    }
+
+    public function testSetDockerTag(): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'docker-tag' => 3,
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $configurationBuilder->build();
+    }
+
+    public function testSetInspectionProfile(): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'profile' => 3,
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $configurationBuilder->build();
+    }
+
+    public function testSetPhpVersion(): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'php-version' => 3,
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $configurationBuilder->build();
+    }
+
+    public function testSetIgnoredSeveritiesFromConfigFile(): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'ignore-severities' => 3,
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $configurationBuilder->build();
+    }
+
+    public function testSetIgnoredSeveritiesFromCommandLine(): void
+    {
+        $options = [
+            'ignore-severities' => 3,
+            'verbose' => false,
+        ];
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            $options,
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $configurationBuilder->build();
+    }
+
+    public function testConstructor(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        new ConfigurationBuilder(
+            ['project-path' => 0],
+            [],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
     }
 
     /**

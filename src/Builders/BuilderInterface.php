@@ -14,5 +14,5 @@ interface BuilderInterface
     /**
      * @return T
      */
-    public function getResult(): object;
+    public function getResult();
 }

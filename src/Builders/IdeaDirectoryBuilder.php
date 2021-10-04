@@ -74,7 +74,10 @@ class IdeaDirectoryBuilder implements BuilderInterface
             ->createFile(self::FILE_PROJECT_IML, $projectIml);
     }
 
-    public function getResult(): object
+    /**
+     * @inheritDoc
+     */
+    public function getResult()
     {
         return $this->ideaDirectory;
     }

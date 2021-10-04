@@ -71,7 +71,10 @@ class ConfigurationBuilder implements BuilderInterface
         $this->parsedConfigurationFile = new ConfigurationFile($projectPath . '/' . self::FILENAME, $output);
     }
 
-    public function getResult(): object
+    /**
+     * @inheritDoc
+     */
+    public function getResult()
     {
         return $this->configuration;
     }
