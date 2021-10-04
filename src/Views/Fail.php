@@ -38,8 +38,8 @@ class Fail implements DisplayInterface
                 $currentFilename = $problem->getFilename();
             }
 
-            $output .= "  line " . str_pad($problem->getLine(), 3) . '  ' . str_pad($problem->getSeverity(), 13) . ' ('
-                . $problem->getProblemName() . '): ' . $problem->getDescription() . "\n";
+            $output .= '  line ' . str_pad($problem->getLine(), 4) . ' ' . str_pad($problem->getSeverity(), 13) . ' ('
+                . $problem->getProblemName() . ') ' . $problem->getDescription() . "\n";
 
             $this->problems->next();
         }
