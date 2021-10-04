@@ -95,5 +95,5 @@ final class InspectionViolator extends NonExistent
 class InspectionViolator extends InspectionViolator
 {}
 
-/** @noinspection PhpUndefinedConstantInspection - this is a small test that suppressions still work */
+/** @noinspection PhpUndefinedConstantInspection - this is a small test that suppression still works */
 $x = notAllowed;
