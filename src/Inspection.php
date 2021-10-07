@@ -7,6 +7,8 @@ namespace TravisPhpstormInspector;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -29,15 +31,18 @@ class Inspection
      * @throws ConfigurationException
      * @throws \InvalidArgumentException
      * @throws FilesystemException
+     * @throws InspectionsProfileException
      */
     public function __construct(Configuration $configuration)
     {
         $appDirectory = $configuration->getAppDirectory();
         $verbose = $configuration->getVerbose();
 
+        $inspectionProfileXml = new InspectionProfileXml($configuration->getInspectionProfilePath());
+
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
             $appDirectory,
-            $configuration->getInspectionProfile(),
+            $inspectionProfileXml,
             $configuration->getPhpVersion()
         );
 
@@ -55,7 +60,7 @@ class Inspection
         $this->inspectionCommand = new InspectionCommand(
             $configuration->getProjectDirectory(),
             $ideaDirectory,
-            $configuration->getInspectionProfile(),
+            $inspectionProfileXml,
             $resultsDirectory,
             $dockerImage,
             $verbose

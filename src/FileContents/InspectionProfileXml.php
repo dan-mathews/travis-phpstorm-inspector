@@ -6,7 +6,7 @@ namespace TravisPhpstormInspector\FileContents;
 
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
-class InspectionsXml implements GetContentsInterface
+class InspectionProfileXml implements GetContentsInterface
 {
     /**
      * @var string
