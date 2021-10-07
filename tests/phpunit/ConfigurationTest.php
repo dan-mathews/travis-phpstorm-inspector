@@ -67,7 +67,11 @@ final class ConfigurationTest extends TestCase
 
         $this->outputProphesy = $this->prophet->prophesize(OutputInterface::class);
 
-        /** @var OutputInterface $this->outputDummy */
+        /**
+         * phpstan and psalm doesn't understand the reveal() method
+         * @psalm-suppress PropertyTypeCoercion
+         * @phpstan-ignore-next-line
+         */
         $this->outputDummy = $this->outputProphesy->reveal();
 
         parent::setUp();
