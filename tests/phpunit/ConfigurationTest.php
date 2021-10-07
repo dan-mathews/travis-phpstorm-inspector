@@ -75,6 +75,8 @@ final class ConfigurationTest extends TestCase
 
     public function testReadFromConfigFileOnly(): void
     {
+        $profilePath = realpath(self::TEST_INSPECTION_PROFILE_PATH);
+
         $this->writeConfigurationFile(
             [
                 'docker-tag' => 'docker-tag-from-config',
@@ -84,7 +86,7 @@ final class ConfigurationTest extends TestCase
                     'SERVER PROBLEM',
                     'INFORMATION'
                 ],
-                'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
+                'profile' => $profilePath,
                 'php-version' => '7.4',
             ]
         );
@@ -113,10 +115,7 @@ final class ConfigurationTest extends TestCase
             ],
             $configuration->getIgnoredSeverities()
         );
-        self::assertSame(
-            'exampleStandards.xml',
-            $configuration->getInspectionProfile()->getName()
-        );
+        self::assertSame($profilePath, $configuration->getInspectionProfilePath());
         self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
@@ -162,10 +161,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
-        self::assertSame(
-            'default.xml',
-            $configuration->getInspectionProfile()->getName()
-        );
+        self::assertSame(self::DEFAULT_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
         self::assertSame('8.0', $configuration->getPhpVersion());
     }
 
@@ -202,10 +198,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
-        self::assertSame(
-            'exampleStandards.xml',
-            $configuration->getInspectionProfile()->getName()
-        );
+        self::assertSame(self::TEST_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
         self::assertSame('7.4', $configuration->getPhpVersion());
     }
 
@@ -230,98 +223,138 @@ final class ConfigurationTest extends TestCase
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
         self::assertSame([], $configuration->getIgnoredSeverities());
-        self::assertSame(
-            'default.xml',
-            $configuration->getInspectionProfile()->getName()
-        );
+        self::assertSame(realpath(self::DEFAULT_INSPECTION_PROFILE_PATH), $configuration->getInspectionProfilePath());
         self::assertSame('7.3', $configuration->getPhpVersion());
     }
 
-    public function testSetDockerRepository(): void
+    public function testSetInspectionProfileRelativePath(): void
     {
-        $this->writeConfigurationFile(
+        $this->writeFile($this->projectPath . '/profile.xml', '');
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            [
+                'profile' => 'profile.xml',
+                'verbose' => false
+            ],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
+
+        self::assertSame(
+            $this->projectPath . '/profile.xml',
+            $configuration->getInspectionProfilePath()
+        );
+    }
+
+    public function testSetDockerRepositoryTypeError(): void
+    {
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
             [
                 'docker-repository' => 3,
-            ]
-        );
-
-        $configurationBuilder = new ConfigurationBuilder(
-            ['project-path' => $this->projectPath],
-            ['verbose' => false],
+                'verbose' => false
+            ],
             self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
 
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('docker-repository must be a string.');
+
         $configurationBuilder->build();
     }
 
-    public function testSetDockerTag(): void
+    public function testSetDockerTagTypeError(): void
     {
-        $this->writeConfigurationFile(
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
             [
                 'docker-tag' => 3,
-            ]
-        );
-
-        $configurationBuilder = new ConfigurationBuilder(
-            ['project-path' => $this->projectPath],
-            ['verbose' => false],
+                'verbose' => false
+            ],
             self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
 
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('docker-tag must be a string.');
+
         $configurationBuilder->build();
     }
 
-    public function testSetInspectionProfile(): void
+    public function testSetInspectionProfileTypeError(): void
     {
-        $this->writeConfigurationFile(
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
             [
                 'profile' => 3,
-            ]
-        );
-
-        $configurationBuilder = new ConfigurationBuilder(
-            ['project-path' => $this->projectPath],
-            ['verbose' => false],
+                'verbose' => false
+            ],
             self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
 
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('profile must be a string.');
+
         $configurationBuilder->build();
     }
 
-    public function testSetPhpVersion(): void
+    public function testSetInspectionProfileNonExistent(): void
     {
-        $this->writeConfigurationFile(
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            [
+                'profile' => 'profile.xml',
+                'verbose' => false
+            ],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage(
+            'Could not read inspection profile as a path relative to the project directory '
+            . '(' . $this->projectPath . '/profile.xml), '
+            . 'or an absolute path (profile.xml)'
+        );
+
+        $configurationBuilder->build();
+    }
+
+    public function testSetPhpVersionTypeError(): void
+    {
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
             [
                 'php-version' => 3,
-            ]
-        );
-
-        $configurationBuilder = new ConfigurationBuilder(
-            ['project-path' => $this->projectPath],
-            ['verbose' => false],
+                'verbose' => false
+            ],
             self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
 
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('php-version must be a string.');
+
         $configurationBuilder->build();
     }
 
-    public function testSetIgnoredSeveritiesFromConfigFile(): void
+    public function testSetIgnoredSeveritiesConfigFileTypeError(): void
     {
         $this->writeConfigurationFile(
             [
-                'ignore-severities' => 3,
+                'ignore-severities' => 3
             ]
         );
 
@@ -334,31 +367,57 @@ final class ConfigurationTest extends TestCase
         );
 
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('ignore-severities in the configuration file must be an array.');
+
         $configurationBuilder->build();
     }
 
-    public function testSetIgnoredSeveritiesFromCommandLine(): void
+    public function testSetIgnoredSeveritiesOptionsTypeError(): void
     {
-        $options = [
-            'ignore-severities' => 3,
-            'verbose' => false,
-        ];
+            $configurationBuilder = new ConfigurationBuilder(
+                ['project-path' => $this->projectPath],
+                [
+                    'verbose' => false,
+                    'ignore-severities' => 3,
+                ],
+                self::APP_ROOT_PATH,
+                $this->projectPath,
+                $this->outputDummy
+            );
 
+            $this->expectException(ConfigurationException::class);
+            $this->expectExceptionMessage('The ignore-severities command line option must be a string.');
+
+            $configurationBuilder->build();
+    }
+
+    public function testSetIgnoredSeveritiesInvalidError(): void
+    {
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
-            $options,
+            [
+                'verbose' => false,
+                'ignore-severities' => 'cat',
+            ],
             self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
 
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage(
+            'Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, '
+            . 'SERVER PROBLEM, INFORMATION.'
+        );
+
         $configurationBuilder->build();
     }
 
     public function testConstructor(): void
     {
         $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('project-path must be a string.');
+
         new ConfigurationBuilder(
             ['project-path' => 0],
             [],

@@ -41,7 +41,6 @@ class ConfigurationBuilder implements BuilderInterface
      * @param string $workingDirectory
      * @param OutputInterface $output
      * @throws ConfigurationException
-     * @throws InspectionsProfileException
      * @throws FilesystemException
      */
     public function __construct(
@@ -81,7 +80,6 @@ class ConfigurationBuilder implements BuilderInterface
 
     /**
      * @throws ConfigurationException
-     * @throws InspectionsProfileException
      */
     public function build(): void
     {
@@ -175,7 +173,6 @@ class ConfigurationBuilder implements BuilderInterface
 
     /**
      * @throws ConfigurationException
-     * @throws InspectionsProfileException
      */
     private function setInspectionProfile(): void
     {
@@ -191,7 +188,7 @@ class ConfigurationBuilder implements BuilderInterface
             throw new ConfigurationException(InspectCommand::OPTION_INSPECTION_PROFILE . ' must be a string.');
         }
 
-        $this->configuration->setInspectionProfile($value);
+        $this->configuration->setInspectionProfilePath($value);
     }
 
     /**

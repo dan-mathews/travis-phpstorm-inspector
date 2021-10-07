@@ -7,8 +7,6 @@ namespace TravisPhpstormInspector;
 use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\FileContents\InspectionsXml;
 
 class Configuration
 {
@@ -59,9 +57,9 @@ class Configuration
     private $projectDirectory;
 
     /**
-     * @var InspectionsXml
+     * @var string
      */
-    private $inspectionProfile;
+    private $inspectionProfilePath;
 
     /**
      * @var string
@@ -73,7 +71,6 @@ class Configuration
      * @param string $appRootPath
      * @param OutputInterface $output
      * @throws FilesystemException
-     * @throws InspectionsProfileException
      */
     public function __construct(
         string $projectPath,
@@ -84,9 +81,7 @@ class Configuration
 
         $this->appDirectory = new Directory($appRootPath, $output);
 
-        $this->inspectionProfile = new InspectionsXml(
-            $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH
-        );
+        $this->inspectionProfilePath = $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH;
     }
 
     public function setVerbose(bool $verbose): void
@@ -144,9 +139,9 @@ class Configuration
         return $this->verbose;
     }
 
-    public function getInspectionProfile(): InspectionsXml
+    public function getInspectionProfilePath(): string
     {
-        return $this->inspectionProfile;
+        return $this->inspectionProfilePath;
     }
 
     public function getPhpVersion(): string
@@ -166,26 +161,23 @@ class Configuration
 
     /**
      * @throws ConfigurationException
-     * @throws InspectionsProfileException
      */
-    public function setInspectionProfile(string $inspectionProfile): void
+    public function setInspectionProfilePath(string $inspectionProfilePath): void
     {
-        if (file_exists($this->projectDirectory->getPath() . '/' . $inspectionProfile)) {
-            $this->inspectionProfile = new InspectionsXml(
-                $this->projectDirectory->getPath() . '/' . $inspectionProfile
-            );
+        if (file_exists($this->projectDirectory->getPath() . '/' . $inspectionProfilePath)) {
+            $this->inspectionProfilePath = $this->projectDirectory->getPath() . '/' . $inspectionProfilePath;
             return;
         }
 
-        if (file_exists($inspectionProfile)) {
-            $this->inspectionProfile = new InspectionsXml($inspectionProfile);
+        if (file_exists($inspectionProfilePath)) {
+            $this->inspectionProfilePath = $inspectionProfilePath;
             return;
         }
 
         throw new ConfigurationException(
             'Could not read inspection profile as a path relative to the project directory ('
-            . $this->projectDirectory->getPath() . '/' . $inspectionProfile . '), or an absolute path ('
-            . $inspectionProfile . ')'
+            . $this->projectDirectory->getPath() . '/' . $inspectionProfilePath . '), or an absolute path ('
+            . $inspectionProfilePath . ')'
         );
     }
 

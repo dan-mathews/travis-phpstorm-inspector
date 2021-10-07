@@ -7,7 +7,7 @@ namespace TravisPhpstormInspector\Builders;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Directory;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
-use TravisPhpstormInspector\FileContents\InspectionsXml;
+use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 use TravisPhpstormInspector\FileContents\ModulesXml;
 use TravisPhpstormInspector\FileContents\PhpXml;
 use TravisPhpstormInspector\FileContents\ProfileSettingsXml;
@@ -26,7 +26,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
     private const FILE_PROJECT_IML = 'project.iml';
 
     /**
-     * @var InspectionsXml
+     * @var InspectionProfileXml
      */
     private $inspectionsXml;
 
@@ -45,7 +45,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
      */
     public function __construct(
         Directory $inspectorDirectory,
-        InspectionsXml $inspectionsXml,
+        InspectionProfileXml $inspectionsXml,
         string $phpVersion
     ) {
         $this->inspectionsXml = $inspectionsXml;

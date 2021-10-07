@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\FileContents\InspectionsXml;
+use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 
 class InspectionCommand
 {
@@ -24,7 +24,7 @@ class InspectionCommand
     private $resultsDirectory;
 
     /**
-     * @var InspectionsXml
+     * @var InspectionProfileXml
      */
     private $inspectionsXml;
 
@@ -41,7 +41,7 @@ class InspectionCommand
     public function __construct(
         Directory $project,
         Directory $ideaDirectory,
-        InspectionsXml $inspectionsProfile,
+        InspectionProfileXml $inspectionsProfile,
         Directory $resultsDirectory,
         DockerImage $dockerImage,
         bool $verbose
@@ -75,7 +75,6 @@ class InspectionCommand
 
     /**
      * @throws \RuntimeException
-     * @throws \LogicException
      */
     public function run(): void
     {
