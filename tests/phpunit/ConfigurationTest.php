@@ -410,7 +410,7 @@ final class ConfigurationTest extends TestCase
 
         $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage(
-            'Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, '
+            'Invalid values for ignore severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, '
             . 'SERVER PROBLEM, INFORMATION.'
         );
 
