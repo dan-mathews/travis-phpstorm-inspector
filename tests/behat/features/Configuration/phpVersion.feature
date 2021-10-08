@@ -21,7 +21,7 @@ Feature: Run inspections with different versions of php
     """
     39 problems were found during phpStorm inspection.
 
-    Problems in InspectionViolator.php:
+    Problems in src/InspectionViolator.php:
       line 1    ERROR         (Short open tag usage) Short opening tag usage
       line 5    ERROR         (Undefined class) Undefined class 'NonExistent'
       line 10   WARNING       (Constant name is not following coding convention) Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
@@ -77,7 +77,7 @@ Feature: Run inspections with different versions of php
     """
     38 problems were found during phpStorm inspection.
 
-    Problems in InspectionViolator.php:
+    Problems in src/InspectionViolator.php:
       line 1    ERROR         (Short open tag usage) Short opening tag usage
       line 5    ERROR         (Undefined class) Undefined class 'NonExistent'
       line 10   WARNING       (Constant name is not following coding convention) Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc

@@ -23,7 +23,7 @@ Feature: Run inspections with certain severities ignored
     """
     25 problems were found during phpStorm inspection.
 
-    Problems in InspectionViolator.php:
+    Problems in src/InspectionViolator.php:
       line 10   WARNING       (Constant name is not following coding convention) Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
       line 10   WARNING       (Missing visibility) PSR-12: Missing visibility definition
       line 10   WARNING       (unused declaration) Constant is never used.
@@ -50,28 +50,3 @@ Feature: Run inspections with certain severities ignored
       line 89   WARNING       (Inconsistent return points) Missing 'return' statement
       line 95   WEAK WARNING  (Multiple class declarations) Multiple definitions exist for class 'InspectionViolator'
     """
-
-  @issue-8 @negative @createsProject
-  Scenario Outline: Run inspections on a project with invalid ignored severities
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
-    And I create a php file with problems
-    And I stage the php file in git
-    And I create a configuration file with:
-    """
-    {
-      "ignore-severities": <payload>
-    }
-    """
-    When I run inspections
-    Then the exit code should be 2
-    And the last lines of the output should be:
-    """
-    <message>
-    """
-
-    Examples:
-      | payload | message                                                                                                                         |
-      | ["CAT"] | Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, SERVER PROBLEM, INFORMATION. |
-      | 5       | ignore-severities in the configuration file must be an array.                                                                   |

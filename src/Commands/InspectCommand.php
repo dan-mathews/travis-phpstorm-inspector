@@ -25,6 +25,7 @@ class InspectCommand extends Command
     public const OPTION_DOCKER_REPOSITORY = 'docker-repository';
     public const OPTION_DOCKER_TAG = 'docker-tag';
     public const OPTION_IGNORE_SEVERITIES = 'ignore-severities';
+    public const OPTION_IGNORE_LINES = 'ignore-lines';
     public const OPTION_PHP_VERSION = 'php-version';
     public const OPTION_INSPECTION_PROFILE = 'profile';
 
@@ -34,8 +35,9 @@ class InspectCommand extends Command
         self::OPTION_DOCKER_REPOSITORY,
         self::OPTION_DOCKER_TAG,
         self::OPTION_IGNORE_SEVERITIES,
+        self::OPTION_IGNORE_LINES,
         self::OPTION_PHP_VERSION,
-        self::OPTION_INSPECTION_PROFILE
+        self::OPTION_INSPECTION_PROFILE,
     ];
 
     /**
@@ -65,7 +67,7 @@ class InspectCommand extends Command
             null,
             InputOption::VALUE_OPTIONAL,
             'The severities to ignore, as a comma-separated list without spaces e.g. \'TYPO\',\'INFORMATION\''
-            . PHP_EOL . '- default: ' . var_export(implode(',', Configuration::DEFAULT_IGNORED_SEVERITIES), true)
+            . PHP_EOL . '- default: ' . var_export(implode(',', Configuration::DEFAULT_IGNORE_SEVERITIES), true)
         );
 
         $this->addOption(

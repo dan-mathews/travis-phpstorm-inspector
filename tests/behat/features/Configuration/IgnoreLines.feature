@@ -1,28 +1,7 @@
-Feature: Run inspections
+Feature: Run inspections with certain lines ignored
 
-  @issue-1 @positive @createsProject
-  Scenario: Run inspections on a project with no problems
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
-    And I create a php file without problems
-    And I stage the php file in git
-    And I create a configuration file with:
-    """
-    {
-      "docker-repository": "danmathews1/phpstorm",
-      "docker-tag": "2021.1.2"
-    }
-    """
-    When I run inspections
-    Then the exit code should be 0
-    And the last lines of the output should be:
-    """
-    No problems to report.
-    """
-
-  @issue-1 @positive @createsProject
-  Scenario: Run inspections on a project with problems
+  @issue-35 @positive @createsProject @dd
+  Scenario: Run inspections on a project with certain lines ignored in the configuration file
     Given I create a new project
     And I initialise git
     And I create a valid inspections xml file
@@ -31,7 +10,13 @@ Feature: Run inspections
     And I create a configuration file with:
     """
     {
-      "docker-repository": "danmathews1/phpstorm",
+      "ignore-lines": {
+        "src/InspectionViolator.php": [
+          10,
+          19,
+          37
+        ]
+      },
       "docker-tag": "2021.1.2"
     }
     """
@@ -39,28 +24,21 @@ Feature: Run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    40 problems were found during phpStorm inspection.
+    33 problems were found during phpStorm inspection.
 
     Problems in src/InspectionViolator.php:
       line 1    ERROR         (Short open tag usage) Short opening tag usage
       line 5    ERROR         (Undefined class) Undefined class 'NonExistent'
-      line 10   WARNING       (Constant name is not following coding convention) Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
-      line 10   WARNING       (Missing visibility) PSR-12: Missing visibility definition
-      line 10   WARNING       (unused declaration) Constant is never used.
       line 14   TYPO          (Typo) Typo: In word 'propertie'
       line 15   TYPO          (Typo) Typo: In word 'propertie'
       line 16   TYPO          (Typo) Typo: In word 'propertie'
       line 16   WARNING       (Language level) Typed properties are only allowed since PHP 7.4
       line 16   WARNING       (Missing PHPDoc comment) Missing PHPDoc comment for field
       line 16   WARNING       (Property name is not following coding convention) Property name <code>$bad_propertie</code> doesn't match regex '[a-z][A-Za-z\d]*' #loc
-      line 19   WARNING       (unused declaration) Constructor is never used.
       line 22   WARNING       (Parameters number mismatch declaration) Method call is provided 1 parameters, but the method signature uses 0 parameters
       line 25   ERROR         (Method '__toString' implementation) Method '__toString' is not implemented for '\stdClass'
       line 34   WARNING       (PHPDoc comment matches function/method signature) PHPDoc for non-existing argument
       line 35   WARNING       (PHPDoc comment matches function/method signature) Return type does not match the declared
-      line 37   ERROR         (Annotator) 'Abstract' modifier is not allowed here #loc
-      line 37   ERROR         (Annotator) Method should either have body or be abstract #loc
-      line 37   WARNING       (Method name is not following coding convention) Method name <code>bad_method</code> doesn't match regex '[a-z][A-Za-z\d]*' #loc
       line 41   ERROR         (Undefined variable) Undefined variable '$argument'
       line 41   WARNING       (Statement has empty body) Statement has empty body
       line 45   WARNING       (Expression result unused) Expression result is not used anywhere

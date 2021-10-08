@@ -12,12 +12,13 @@ class Configuration
 {
     public const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     public const DEFAULT_DOCKER_TAG = 'latest';
-    public const DEFAULT_IGNORED_SEVERITIES = [];
+    public const DEFAULT_IGNORE_LINES = [];
+    public const DEFAULT_IGNORE_SEVERITIES = [];
     public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
     public const DEFAULT_PHP_VERSION = '7.3';
     public const DEFAULT_VERBOSE = true;
 
-    public const VALID_IGNORED_SEVERITIES = [
+    public const VALID_IGNORE_SEVERITIES = [
         'TYPO',
         'WEAK WARNING',
         'WARNING',
@@ -29,7 +30,12 @@ class Configuration
     /**
      * @var string[]
      */
-    private $ignoredSeverities = self::DEFAULT_IGNORED_SEVERITIES;
+    private $ignoreSeverities = self::DEFAULT_IGNORE_SEVERITIES;
+
+    /**
+     * @var array<string, array<int>>
+     */
+    private $ignoreLines = self::DEFAULT_IGNORE_LINES;
 
     /**
      * @var string
@@ -66,6 +72,7 @@ class Configuration
      */
     private $phpVersion = self::DEFAULT_PHP_VERSION;
 
+
     /**
      * @param string $projectPath
      * @param string $appRootPath
@@ -90,28 +97,67 @@ class Configuration
     }
 
     /**
-     * @param array<mixed> $ignoredSeverities
+     * @param array<mixed> $ignoreSeverities
      * @throws ConfigurationException
      * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
      */
-    public function setIgnoredSeverities(array $ignoredSeverities): void
+    public function setIgnoreSeverities(array $ignoreSeverities): void
     {
-        if ([] !== array_diff($ignoredSeverities, self::VALID_IGNORED_SEVERITIES)) {
+        if ([] !== array_diff($ignoreSeverities, self::VALID_IGNORE_SEVERITIES)) {
             throw new ConfigurationException(
-                'Invalid values for ignored severities. The allowed values are: '
-                . implode(', ', self::VALID_IGNORED_SEVERITIES) . '.'
+                'Invalid values for ignore severities. The allowed values are: '
+                . implode(', ', self::VALID_IGNORE_SEVERITIES) . '.'
             );
         }
 
-        $this->ignoredSeverities = $ignoredSeverities;
+        $this->ignoreSeverities = $ignoreSeverities;
+    }
+
+    /**
+     * @param array<mixed> $ignoreLines
+     * @throws ConfigurationException
+     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
+     */
+    public function setIgnoreLines(array $ignoreLines): void
+    {
+        $errorMessage = 'Ignore lines must be an object in the format {"index.php": [23, 36], "User.php": [13]}.';
+
+        foreach ($ignoreLines as $filename => $lineArray) {
+            if (
+                !\is_string($filename) ||
+                !\is_array($lineArray)
+            ) {
+                throw new ConfigurationException($errorMessage);
+            }
+
+            // The key isn't needed, but for completeness we check it's an integer
+            foreach ($lineArray as $key => $line) {
+                if (
+                    !\is_int($key) ||
+                    !\is_int($line)
+                ) {
+                    throw new ConfigurationException($errorMessage);
+                }
+            }
+        }
+
+        $this->ignoreLines = $ignoreLines;
     }
 
     /**
      * @return string[]
      */
-    public function getIgnoredSeverities(): array
+    public function getIgnoreSeverities(): array
     {
-        return $this->ignoredSeverities;
+        return $this->ignoreSeverities;
+    }
+
+    /**
+     * @return array<string, array<int>>
+     */
+    public function getIgnoreLines(): array
+    {
+        return $this->ignoreLines;
     }
 
     public function getDockerRepository(): string

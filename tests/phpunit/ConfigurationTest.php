@@ -117,7 +117,7 @@ final class ConfigurationTest extends TestCase
                 'SERVER PROBLEM',
                 'INFORMATION'
             ],
-            $configuration->getIgnoredSeverities()
+            $configuration->getIgnoreSeverities()
         );
         self::assertSame($profilePath, $configuration->getInspectionProfilePath());
         self::assertSame('7.4', $configuration->getPhpVersion());
@@ -164,7 +164,7 @@ final class ConfigurationTest extends TestCase
         self::assertTrue($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
-        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
+        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
         self::assertSame(self::DEFAULT_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
         self::assertSame('8.0', $configuration->getPhpVersion());
     }
@@ -201,7 +201,7 @@ final class ConfigurationTest extends TestCase
         self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
-        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
+        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
         self::assertSame(self::TEST_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
         self::assertSame('7.4', $configuration->getPhpVersion());
     }
@@ -226,7 +226,7 @@ final class ConfigurationTest extends TestCase
 
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
-        self::assertSame([], $configuration->getIgnoredSeverities());
+        self::assertSame([], $configuration->getIgnoreSeverities());
         self::assertSame(realpath(self::DEFAULT_INSPECTION_PROFILE_PATH), $configuration->getInspectionProfilePath());
         self::assertSame('7.3', $configuration->getPhpVersion());
     }

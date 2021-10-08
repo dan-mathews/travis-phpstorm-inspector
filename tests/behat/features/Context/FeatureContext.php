@@ -245,7 +245,9 @@ class FeatureContext implements Context
 
         $phpContents = $this->readFromFile('tests/data/' . $filename);
 
-        $this->phpFilePath = $this->writeToFile($this->getProjectPath() . '/' . $filename, $phpContents);
+        $this->makeDirectory($this->getProjectPath() . '/src');
+
+        $this->phpFilePath = $this->writeToFile($this->getProjectPath() . '/src/' . $filename, $phpContents);
     }
 
     private function writeToFile(string $path, string $contents): string
