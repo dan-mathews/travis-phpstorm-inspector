@@ -1,7 +1,7 @@
 Feature: Run inspections with certain lines ignored
 
-  @issue-35 @positive @createsProject @dd
-  Scenario: Run inspections on a project with certain lines ignored in the configuration file
+  @issue-35 @positive @createsProject
+  Scenario: Run inspections on a project with certain lines ignored
     Given I create a new project
     And I initialise git
     And I create a valid inspections xml file
@@ -60,4 +60,27 @@ Feature: Run inspections with certain lines ignored
       line 95   ERROR         (Annotator) Another definition with same name exists in this file #loc
       line 95   ERROR         (Annotator) Class should not extend itself #loc
       line 95   WEAK WARNING  (Multiple class declarations) Multiple definitions exist for class 'InspectionViolator'
+    """
+
+  @issue-35 @positive @createsProject
+  Scenario: Run inspections on a project with all lines of a file ignored
+    Given I create a new project
+    And I initialise git
+    And I create a valid inspections xml file
+    And I create a php file with problems
+    And I stage the php file in git
+    And I create a configuration file with:
+    """
+    {
+      "ignore-lines": {
+        "src/InspectionViolator.php": ["*"]
+      },
+      "docker-tag": "2021.1.2"
+    }
+    """
+    When I run inspections
+    Then the exit code should be 0
+    And the last lines of the output should be:
+    """
+    No problems to report.
     """

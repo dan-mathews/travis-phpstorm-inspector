@@ -146,7 +146,7 @@ final class ConfigurationTest extends TestCase
                 'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
                 'php-version' => '7.4',
                 'ignore-lines' => [
-                    'file.php' => [1, 5]
+                    'file.php' => ['*']
                 ],
             ]
         );
@@ -181,7 +181,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame('8.0', $configuration->getPhpVersion());
         self::assertSame(
             [
-                'file.php' => [1, 5]
+                'file.php' => ['*']
             ],
             $configuration->getIgnoreLines()
         );
@@ -407,43 +407,43 @@ final class ConfigurationTest extends TestCase
      */
     public function invalidIgnoreLinesProvider(): \Generator
     {
-        $basicTypeErrorMessage = 'ignore-lines must be an array.';
+        $basicTypeMessage = 'ignore-lines must be an array.';
 
         yield 'invalid integer value' => [
             1,
-            $basicTypeErrorMessage
+            $basicTypeMessage
         ];
 
         yield 'invalid string value' => [
             'cat',
-            $basicTypeErrorMessage
+            $basicTypeMessage
         ];
 
-        $formatErrorMessage = 'Ignore lines must be an object in the format {"index.php": [23, 36], "User.php": [13]}.';
+        $fullFormatMessage = 'Ignore lines must be an object in the format {"index.php": [23, 36], "User.php": ["*"]}.';
 
         yield 'valid filename key with invalid integer value' => [
             ['valid.string' => 1],
-            $formatErrorMessage
+            $fullFormatMessage
         ];
 
         yield 'valid filename key with invalid string value' => [
             ['valid.string' => 'cat'],
-            $formatErrorMessage
+            $fullFormatMessage
         ];
 
         yield 'valid filename key with invalid array of strings' => [
-            ['valid.string' => ['string', 'string']],
-            $formatErrorMessage
+            ['valid.string' => ['*', '*']],
+            $fullFormatMessage
         ];
 
         yield 'valid filename key with invalid array of arrays' => [
             ['valid.string' => [[], []]],
-            $formatErrorMessage
+            $fullFormatMessage
         ];
 
         yield 'invalid integer key with valid line number array' => [
             [1 => [1, 2]],
-            $formatErrorMessage
+            $fullFormatMessage
         ];
     }
 

@@ -33,10 +33,13 @@ class Problems extends \SplHeap
 
             if (
                 isset($this->configuration->getIgnoreLines()[$problem->getFilename()]) &&
-                \in_array(
-                    (int) $problem->getLine(),
-                    $this->configuration->getIgnoreLines()[$problem->getFilename()],
-                    true
+                (
+                    ['*'] === $this->configuration->getIgnoreLines()[$problem->getFilename()] ||
+                    \in_array(
+                        (int) $problem->getLine(),
+                        $this->configuration->getIgnoreLines()[$problem->getFilename()],
+                        true
+                    )
                 )
             ) {
                 continue;

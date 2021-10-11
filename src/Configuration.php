@@ -33,7 +33,7 @@ class Configuration
     private $ignoreSeverities = self::DEFAULT_IGNORE_SEVERITIES;
 
     /**
-     * @var array<string, array<int>>
+     * @var array<string, array<int|string>>
      */
     private $ignoreLines = self::DEFAULT_IGNORE_LINES;
 
@@ -120,7 +120,7 @@ class Configuration
      */
     public function setIgnoreLines(array $ignoreLines): void
     {
-        $errorMessage = 'Ignore lines must be an object in the format {"index.php": [23, 36], "User.php": [13]}.';
+        $errorMessage = 'Ignore lines must be an object in the format {"index.php": [23, 36], "User.php": ["*"]}.';
 
         foreach ($ignoreLines as $filename => $lineArray) {
             if (
@@ -128,6 +128,11 @@ class Configuration
                 !\is_array($lineArray)
             ) {
                 throw new ConfigurationException($errorMessage);
+            }
+
+            if (['*'] === $lineArray) {
+                $this->ignoreLines = $ignoreLines;
+                return;
             }
 
             // The key isn't needed, but for completeness we check it's an integer
@@ -154,7 +159,7 @@ class Configuration
     }
 
     /**
-     * @return array<string, array<int>>
+     * @return array<string, array<int|string>>
      */
     public function getIgnoreLines(): array
     {
