@@ -129,14 +129,10 @@ class ConfigurationBuilder implements BuilderInterface
      */
     private function setIgnoreLines(): void
     {
-
-
         if (isset($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
             if (!\is_array($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
-                throw new ConfigurationException($errorMessage);
+                throw new ConfigurationException(InspectCommand::OPTION_IGNORE_LINES . ' must be an array.');
             }
-
-
 
             $this->configuration->setIgnoreLines(
                 $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES]

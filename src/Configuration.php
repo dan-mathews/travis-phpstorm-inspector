@@ -131,6 +131,7 @@ class Configuration
             }
 
             // The key isn't needed, but for completeness we check it's an integer
+            /** @var mixed $line */
             foreach ($lineArray as $key => $line) {
                 if (
                     !\is_int($key) ||
