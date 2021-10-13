@@ -92,6 +92,9 @@ final class ConfigurationTest extends TestCase
                 ],
                 'profile' => $profilePath,
                 'php-version' => '7.4',
+                'ignore-lines' => [
+                    'file.php' => [1, 5]
+                ],
             ]
         );
 
@@ -117,10 +120,16 @@ final class ConfigurationTest extends TestCase
                 'SERVER PROBLEM',
                 'INFORMATION'
             ],
-            $configuration->getIgnoredSeverities()
+            $configuration->getIgnoreSeverities()
         );
         self::assertSame($profilePath, $configuration->getInspectionProfilePath());
         self::assertSame('7.4', $configuration->getPhpVersion());
+        self::assertSame(
+            [
+            'file.php' => [1, 5]
+            ],
+            $configuration->getIgnoreLines()
+        );
     }
 
     public function testCommandLineOverridesConfigFile(): void
@@ -136,6 +145,9 @@ final class ConfigurationTest extends TestCase
                 ],
                 'profile' => realpath(self::TEST_INSPECTION_PROFILE_PATH),
                 'php-version' => '7.4',
+                'ignore-lines' => [
+                    'file.php' => ['*']
+                ],
             ]
         );
 
@@ -164,9 +176,15 @@ final class ConfigurationTest extends TestCase
         self::assertTrue($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
-        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
+        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
         self::assertSame(self::DEFAULT_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
         self::assertSame('8.0', $configuration->getPhpVersion());
+        self::assertSame(
+            [
+                'file.php' => ['*']
+            ],
+            $configuration->getIgnoreLines()
+        );
     }
 
     public function testReadFromCommandLineOnly(): void
@@ -201,9 +219,11 @@ final class ConfigurationTest extends TestCase
         self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
-        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoredSeverities());
+        self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
         self::assertSame(self::TEST_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
         self::assertSame('7.4', $configuration->getPhpVersion());
+        // This cannot be set via command line, so we check it's default.
+        self::assertSame([], $configuration->getIgnoreLines());
     }
 
     public function testDefaults(): void
@@ -226,9 +246,10 @@ final class ConfigurationTest extends TestCase
 
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
-        self::assertSame([], $configuration->getIgnoredSeverities());
+        self::assertSame([], $configuration->getIgnoreSeverities());
         self::assertSame(realpath(self::DEFAULT_INSPECTION_PROFILE_PATH), $configuration->getInspectionProfilePath());
         self::assertSame('7.3', $configuration->getPhpVersion());
+        self::assertSame([], $configuration->getIgnoreLines());
     }
 
     public function testSetInspectionProfileRelativePath(): void
@@ -354,7 +375,134 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder->build();
     }
 
-    public function testSetIgnoredSeveritiesConfigFileTypeError(): void
+    /**
+     * @dataProvider invalidIgnoreLinesProvider
+     * @param mixed $invalidValue
+     * @param string $expectedErrorMessage
+     */
+    public function testSetIgnoreLinesTypeError($invalidValue, string $expectedErrorMessage): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'ignore-lines' => $invalidValue
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage($expectedErrorMessage);
+
+        $configurationBuilder->build();
+    }
+
+    /**
+     * @return \Generator<string, array>
+     */
+    public function invalidIgnoreLinesProvider(): \Generator
+    {
+        $basicTypeMessage = 'ignore-lines must be an array.';
+
+        yield 'invalid integer value' => [
+            1,
+            $basicTypeMessage
+        ];
+
+        yield 'invalid string value' => [
+            'cat',
+            $basicTypeMessage
+        ];
+
+        $fullFormatMessage = 'Ignore lines must be an object in the format {"index.php": [23, 36], "User.php": ["*"]}.';
+
+        yield 'valid filename key with invalid integer value' => [
+            ['valid.string' => 1],
+            $fullFormatMessage
+        ];
+
+        yield 'valid filename key with invalid string value' => [
+            ['valid.string' => 'cat'],
+            $fullFormatMessage
+        ];
+
+        yield 'valid filename key with invalid array of strings' => [
+            ['valid.string' => ['*', '*']],
+            $fullFormatMessage
+        ];
+
+        yield 'valid filename key with invalid array of arrays' => [
+            ['valid.string' => [[], []]],
+            $fullFormatMessage
+        ];
+
+        yield 'invalid integer key with valid line number array' => [
+            [1 => [1, 2]],
+            $fullFormatMessage
+        ];
+    }
+
+    public function testSetIgnoreSeveritiesOptionsTypeError(): void
+    {
+            $configurationBuilder = new ConfigurationBuilder(
+                ['project-path' => $this->projectPath],
+                [
+                    'verbose' => false,
+                    'ignore-severities' => 3,
+                ],
+                self::APP_ROOT_PATH,
+                $this->projectPath,
+                $this->outputDummy
+            );
+
+            $this->expectException(ConfigurationException::class);
+            $this->expectExceptionMessage('The ignore-severities command line option must be a string.');
+
+            $configurationBuilder->build();
+    }
+
+    public function testSetIgnoreSeveritiesInvalidValueError(): void
+    {
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            [
+                'verbose' => false,
+                'ignore-severities' => 'cat',
+            ],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage(
+            'Invalid values for ignore severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, '
+            . 'SERVER PROBLEM, INFORMATION.'
+        );
+
+        $configurationBuilder->build();
+    }
+
+    public function testProjectPathTypeError(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('project-path must be a string.');
+
+        new ConfigurationBuilder(
+            ['project-path' => 0],
+            [],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+    }
+
+    public function testSetIgnoreSeveritiesConfigFileTypeError(): void
     {
         $this->writeConfigurationFile(
             [
@@ -374,61 +522,6 @@ final class ConfigurationTest extends TestCase
         $this->expectExceptionMessage('ignore-severities in the configuration file must be an array.');
 
         $configurationBuilder->build();
-    }
-
-    public function testSetIgnoredSeveritiesOptionsTypeError(): void
-    {
-            $configurationBuilder = new ConfigurationBuilder(
-                ['project-path' => $this->projectPath],
-                [
-                    'verbose' => false,
-                    'ignore-severities' => 3,
-                ],
-                self::APP_ROOT_PATH,
-                $this->projectPath,
-                $this->outputDummy
-            );
-
-            $this->expectException(ConfigurationException::class);
-            $this->expectExceptionMessage('The ignore-severities command line option must be a string.');
-
-            $configurationBuilder->build();
-    }
-
-    public function testSetIgnoredSeveritiesInvalidError(): void
-    {
-        $configurationBuilder = new ConfigurationBuilder(
-            ['project-path' => $this->projectPath],
-            [
-                'verbose' => false,
-                'ignore-severities' => 'cat',
-            ],
-            self::APP_ROOT_PATH,
-            $this->projectPath,
-            $this->outputDummy
-        );
-
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage(
-            'Invalid values for ignored severities. The allowed values are: TYPO, WEAK WARNING, WARNING, ERROR, '
-            . 'SERVER PROBLEM, INFORMATION.'
-        );
-
-        $configurationBuilder->build();
-    }
-
-    public function testConstructor(): void
-    {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('project-path must be a string.');
-
-        new ConfigurationBuilder(
-            ['project-path' => 0],
-            [],
-            self::APP_ROOT_PATH,
-            $this->projectPath,
-            $this->outputDummy
-        );
     }
 
     /**

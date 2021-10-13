@@ -85,6 +85,7 @@ class ConfigurationBuilder implements BuilderInterface
     {
         $this->parsedConfigurationFile->fill();
         $this->setIgnoreSeverities();
+        $this->setIgnoreLines();
         $this->setDockerRepository();
         $this->setDockerTag();
         $this->setInspectionProfile();
@@ -103,7 +104,7 @@ class ConfigurationBuilder implements BuilderInterface
                 );
             }
 
-            $this->configuration->setIgnoredSeverities(
+            $this->configuration->setIgnoreSeverities(
                 explode(',', $this->options[InspectCommand::OPTION_IGNORE_SEVERITIES])
             );
 
@@ -117,8 +118,24 @@ class ConfigurationBuilder implements BuilderInterface
                 );
             }
 
-            $this->configuration->setIgnoredSeverities(
+            $this->configuration->setIgnoreSeverities(
                 $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_SEVERITIES]
+            );
+        }
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private function setIgnoreLines(): void
+    {
+        if (isset($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
+            if (!\is_array($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
+                throw new ConfigurationException(InspectCommand::OPTION_IGNORE_LINES . ' must be an array.');
+            }
+
+            $this->configuration->setIgnoreLines(
+                $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES]
             );
         }
     }

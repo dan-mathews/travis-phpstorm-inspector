@@ -11,11 +11,11 @@ class Problems extends \SplHeap
     /**
      * @var Configuration
      */
-    private $inspectionConfiguration;
+    private $configuration;
 
-    public function __construct(Configuration $inspectionConfiguration)
+    public function __construct(Configuration $configuration)
     {
-        $this->inspectionConfiguration = $inspectionConfiguration;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -27,7 +27,21 @@ class Problems extends \SplHeap
         foreach ($jsonProblems as $jsonProblem) {
             $problem = new Problem($jsonProblem);
 
-            if (in_array($problem->getSeverity(), $this->inspectionConfiguration->getIgnoredSeverities(), true)) {
+            if (\in_array($problem->getSeverity(), $this->configuration->getIgnoreSeverities(), true)) {
+                continue;
+            }
+
+            if (
+                isset($this->configuration->getIgnoreLines()[$problem->getFilename()]) &&
+                (
+                    ['*'] === $this->configuration->getIgnoreLines()[$problem->getFilename()] ||
+                    \in_array(
+                        (int) $problem->getLine(),
+                        $this->configuration->getIgnoreLines()[$problem->getFilename()],
+                        true
+                    )
+                )
+            ) {
                 continue;
             }
 

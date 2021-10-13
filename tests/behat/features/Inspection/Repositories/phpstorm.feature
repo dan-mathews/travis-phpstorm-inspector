@@ -1,12 +1,9 @@
 Feature: Run inspections
 
-  @issue-1 @positive @createsProject
-  Scenario: Run inspections on a project with no problems
+  Background:
     Given I create a new project
     And I initialise git
     And I create a valid inspections xml file
-    And I create a php file without problems
-    And I stage the php file in git
     And I create a configuration file with:
     """
     {
@@ -14,6 +11,11 @@ Feature: Run inspections
       "docker-tag": "2021.1.2"
     }
     """
+
+  @issue-1 @positive @createsProject
+  Scenario: Run inspections on a project with no problems
+    Given I create a php file without problems
+    And I stage the php file in git
     When I run inspections
     Then the exit code should be 0
     And the last lines of the output should be:
@@ -23,25 +25,15 @@ Feature: Run inspections
 
   @issue-1 @positive @createsProject
   Scenario: Run inspections on a project with problems
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
-    And I create a php file with problems
+    Given I create a php file with problems
     And I stage the php file in git
-    And I create a configuration file with:
-    """
-    {
-      "docker-repository": "danmathews1/phpstorm",
-      "docker-tag": "2021.1.2"
-    }
-    """
     When I run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
     40 problems were found during phpStorm inspection.
 
-    Problems in InspectionViolator.php:
+    Problems in src/InspectionViolator.php:
       line 1    ERROR         (Short open tag usage) Short opening tag usage
       line 5    ERROR         (Undefined class) Undefined class 'NonExistent'
       line 10   WARNING       (Constant name is not following coding convention) Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
