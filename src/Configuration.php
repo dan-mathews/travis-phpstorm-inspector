@@ -99,7 +99,7 @@ class Configuration
     /**
      * @param array<mixed> $ignoreSeverities
      * @throws ConfigurationException
-     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
+     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoreSeverities is string[], throwing after array_diff
      */
     public function setIgnoreSeverities(array $ignoreSeverities): void
     {
@@ -116,7 +116,7 @@ class Configuration
     /**
      * @param array<mixed> $ignoreLines
      * @throws ConfigurationException
-     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoredSeverities is string[], throwing after array_diff
+     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoreLines is string[], throwing after array_diff
      */
     public function setIgnoreLines(array $ignoreLines): void
     {

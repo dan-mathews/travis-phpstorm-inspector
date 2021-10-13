@@ -502,7 +502,7 @@ final class ConfigurationTest extends TestCase
         );
     }
 
-    public function testSetIgnoredSeveritiesConfigFileTypeError(): void
+    public function testSetIgnoreSeveritiesConfigFileTypeError(): void
     {
         $this->writeConfigurationFile(
             [

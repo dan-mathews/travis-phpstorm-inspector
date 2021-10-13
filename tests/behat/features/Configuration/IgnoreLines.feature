@@ -1,13 +1,15 @@
 Feature: Run inspections with certain lines ignored
 
-  @issue-35 @positive @createsProject
-  Scenario: Run inspections on a project with certain lines ignored
+  Background:
     Given I create a new project
     And I initialise git
     And I create a valid inspections xml file
     And I create a php file with problems
     And I stage the php file in git
-    And I create a configuration file with:
+
+  @issue-35 @positive @createsProject
+  Scenario: Run inspections on a project with certain lines ignored
+    Given I create a configuration file with:
     """
     {
       "ignore-lines": {
@@ -64,12 +66,7 @@ Feature: Run inspections with certain lines ignored
 
   @issue-35 @positive @createsProject
   Scenario: Run inspections on a project with all lines of a file ignored
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
-    And I create a php file with problems
-    And I stage the php file in git
-    And I create a configuration file with:
+    Given I create a configuration file with:
     """
     {
       "ignore-lines": {

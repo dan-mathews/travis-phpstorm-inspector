@@ -1,19 +1,15 @@
 Feature: Run inspections
 
-  @issue-1 @negative @createsProject
-  Scenario: Use an inspections file with the wrong extension
+  Background:
     Given I create a new project
     And I initialise git
-    And I create an invalid inspections xml file
+
+  @issue-1 @negative @createsProject
+  Scenario: Use an inspections file with the wrong extension
+    Given I create an invalid inspections xml file
     And I create a php file without problems
     And I stage the php file in git
     And I am expecting an error
-    And I create a configuration file with:
-    """
-    {
-      "docker-tag": "2021.1.2"
-    }
-    """
     When I run inspections
     Then the exit code should be 2
     And the last lines of the output should be:
@@ -23,18 +19,9 @@ Feature: Run inspections
 
   @issue-14 @positive @createsProject
   Scenario: Run inspections without local .idea directory being changed
-    Given I create a new project
-    And I initialise git
-    And I create a valid inspections xml file
+    Given I create a valid inspections xml file
     And I create a php file with problems
     And I stage the php file in git
-    And I create a configuration file with:
-    """
-    {
-      "docker-repository": "danmathews1/phpstorm",
-      "docker-tag": "2021.1.2"
-    }
-    """
     And I have local .idea directory with a file in it
     When I run inspections
     Then the exit code should be 1
