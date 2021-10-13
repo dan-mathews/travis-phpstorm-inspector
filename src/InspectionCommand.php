@@ -38,13 +38,19 @@ class InspectionCommand
      */
     private $verbose;
 
+    /**
+     * @var bool
+     */
+    private $wholeProject;
+
     public function __construct(
         Directory $project,
         Directory $ideaDirectory,
         InspectionProfileXml $inspectionProfileXml,
         Directory $resultsDirectory,
         DockerImage $dockerImage,
-        bool $verbose
+        bool $verbose,
+        bool $wholeProject
     ) {
         $this->projectDirectory = $project;
 
@@ -57,6 +63,8 @@ class InspectionCommand
         $this->dockerImage = $dockerImage;
 
         $this->verbose = $verbose;
+
+        $this->wholeProject = $wholeProject;
     }
 
     private function mountCommand(string $source, string $target): string
@@ -127,7 +135,7 @@ class InspectionCommand
             '/app/.idea/' . Inspection::DIRECTORY_NAME_INSPECTION_PROFILES . '/'
                 . $this->inspectionProfileXml->getName(),
             '/results',
-            '-changes',
+            ($this->wholeProject ? '' : '-changes'),
             '-format json',
             '-v2',
         ]);

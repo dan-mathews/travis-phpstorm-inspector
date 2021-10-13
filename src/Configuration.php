@@ -17,6 +17,7 @@ class Configuration
     public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
     public const DEFAULT_PHP_VERSION = '7.3';
     public const DEFAULT_VERBOSE = true;
+    public const DEFAULT_WHOLE_PROJECT = false;
 
     public const VALID_IGNORE_SEVERITIES = [
         'TYPO',
@@ -72,6 +73,10 @@ class Configuration
      */
     private $phpVersion = self::DEFAULT_PHP_VERSION;
 
+    /**
+     * @var bool
+     */
+    private $wholeProject = self::DEFAULT_WHOLE_PROJECT;
 
     /**
      * @param string $projectPath
@@ -236,5 +241,15 @@ class Configuration
     public function setPhpVersion(string $phpVersion): void
     {
         $this->phpVersion = $phpVersion;
+    }
+
+    public function getWholeProject(): bool
+    {
+        return $this->wholeProject;
+    }
+
+    public function setWholeProject(bool $wholeProject): void
+    {
+        $this->wholeProject = $wholeProject;
     }
 }

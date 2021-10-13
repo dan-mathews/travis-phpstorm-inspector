@@ -90,6 +90,7 @@ class ConfigurationBuilder implements BuilderInterface
         $this->setDockerTag();
         $this->setInspectionProfile();
         $this->setPhpVersion();
+        $this->setWholeProject();
     }
 
     /**
@@ -226,5 +227,17 @@ class ConfigurationBuilder implements BuilderInterface
         }
 
         $this->configuration->setPhpVersion($value);
+    }
+
+    private function setWholeProject(): void
+    {
+        if (!isset($this->options[InspectCommand::OPTION_WHOLE_PROJECT])) {
+            return;
+        }
+
+        /** @var bool $wholeProject */
+        $wholeProject = $this->options[InspectCommand::OPTION_WHOLE_PROJECT];
+
+        $this->configuration->setWholeProject($wholeProject);
     }
 }
