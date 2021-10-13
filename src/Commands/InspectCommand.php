@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Commands;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -28,6 +29,7 @@ class InspectCommand extends Command
     public const OPTION_IGNORE_LINES = 'ignore-lines';
     public const OPTION_PHP_VERSION = 'php-version';
     public const OPTION_INSPECTION_PROFILE = 'profile';
+    public const OPTION_WHOLE_PROJECT = 'whole-project';
 
     public const FLAG_VERBOSE = 'verbose';
 
@@ -38,6 +40,7 @@ class InspectCommand extends Command
         self::OPTION_IGNORE_LINES,
         self::OPTION_PHP_VERSION,
         self::OPTION_INSPECTION_PROFILE,
+        self::OPTION_WHOLE_PROJECT
     ];
 
     /**
@@ -45,6 +48,9 @@ class InspectCommand extends Command
      */
     protected static $defaultName = 'inspect';
 
+    /**
+     * @throws InvalidArgumentException
+     */
     protected function configure(): void
     {
         $this->addArgument(
@@ -93,6 +99,13 @@ class InspectCommand extends Command
             'The php version to use' . PHP_EOL
             . '- default: ' . Configuration::DEFAULT_PHP_VERSION
         );
+
+        $this->addOption(
+            self::OPTION_WHOLE_PROJECT,
+            null,
+            InputOption::VALUE_NONE,
+            'Inspect the whole project rather than just the local uncommitted changes'
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -140,6 +153,7 @@ class InspectCommand extends Command
             return Command::SUCCESS;
         } catch (\Throwable $e) {
             // We default to verbose if the ConfigurationBuilder wasn't successfully constructed.
+            /** @noinspection UnSafeIsSetOverArrayInspection - We need to check if it's set, rather than null. */
             $verbose = !isset($configurationBuilder) || $configurationBuilder->getResult()->getVerbose();
 
             $view = new Error($e, $verbose);

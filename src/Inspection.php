@@ -63,7 +63,8 @@ class Inspection
             $inspectionProfileXml,
             $resultsDirectory,
             $dockerImage,
-            $verbose
+            $verbose,
+            $configuration->getWholeProject()
         );
 
         $this->resultsProcessor = new ResultsProcessor($resultsDirectory, $configuration);
@@ -72,7 +73,6 @@ class Inspection
     /**
      * @return Problems
      * @throws \RuntimeException
-     * @throws \LogicException
      */
     public function run(): Problems
     {
