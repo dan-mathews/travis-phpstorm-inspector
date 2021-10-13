@@ -17,7 +17,7 @@ class Configuration
     public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
     public const DEFAULT_PHP_VERSION = '7.3';
     public const DEFAULT_VERBOSE = true;
-    public const DEFAULT_WHOLE_PROJECT = true;
+    public const DEFAULT_WHOLE_PROJECT = false;
 
     public const VALID_IGNORE_SEVERITIES = [
         'TYPO',

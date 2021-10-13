@@ -158,6 +158,7 @@ final class ConfigurationTest extends TestCase
             'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
             'verbose' => true,
             'php-version' => '8.0',
+            'whole-project' => true,
         ];
 
         $configurationBuilder = new ConfigurationBuilder(
@@ -185,6 +186,7 @@ final class ConfigurationTest extends TestCase
             ],
             $configuration->getIgnoreLines()
         );
+        self::assertSame(true, $configuration->getWholeProject());
     }
 
     public function testReadFromCommandLineOnly(): void
@@ -196,6 +198,7 @@ final class ConfigurationTest extends TestCase
             'profile' => self::TEST_INSPECTION_PROFILE_PATH,
             'verbose' => false,
             'php-version' => '7.4',
+            'whole-project' => true,
         ];
 
         $this->outputProphesy->writeln(
@@ -224,6 +227,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame('7.4', $configuration->getPhpVersion());
         // This cannot be set via command line, so we check it's default.
         self::assertSame([], $configuration->getIgnoreLines());
+        self::assertSame(true, $configuration->getWholeProject());
     }
 
     public function testDefaults(): void
@@ -250,6 +254,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame(realpath(self::DEFAULT_INSPECTION_PROFILE_PATH), $configuration->getInspectionProfilePath());
         self::assertSame('7.3', $configuration->getPhpVersion());
         self::assertSame([], $configuration->getIgnoreLines());
+        self::assertSame(false, $configuration->getWholeProject());
     }
 
     public function testSetInspectionProfileRelativePath(): void

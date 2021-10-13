@@ -42,6 +42,7 @@ Feature: Run inspections with a configuration file
                                                    - default: latest
           --php-version[=PHP-VERSION]              The php version to use
                                                    - default: 7.3
+          --whole-project                          Inspect the whole project rather than just the local uncommitted changes
       -h, --help                                   Display help for the given command. When no command is given display help for the list command
       -q, --quiet                                  Do not output any message
       -V, --version                                Display this application version

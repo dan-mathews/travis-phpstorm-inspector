@@ -231,6 +231,10 @@ class ConfigurationBuilder implements BuilderInterface
 
     private function setWholeProject(): void
     {
+        if (!isset($this->options[InspectCommand::OPTION_WHOLE_PROJECT])) {
+            return;
+        }
+
         /** @var bool $wholeProject */
         $wholeProject = $this->options[InspectCommand::OPTION_WHOLE_PROJECT];
 
