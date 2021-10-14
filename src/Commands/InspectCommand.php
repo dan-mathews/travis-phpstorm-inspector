@@ -43,6 +43,10 @@ class InspectCommand extends Command
         self::OPTION_WHOLE_PROJECT
     ];
 
+    private const SUCCESS = 0;
+    private const FAILURE = 1;
+    private const INVALID = 2;
+
     /**
      * @var string|null The default command name
      */
@@ -135,22 +139,14 @@ class InspectCommand extends Command
 
                 $view->display();
 
-                /**
-                 * @var int
-                 * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
-                 */
-                return Command::FAILURE;
+                return self::FAILURE;
             }
 
             $view = new Pass();
 
             $view->display();
 
-            /**
-             * @var int
-             * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
-             */
-            return Command::SUCCESS;
+            return self::SUCCESS;
         } catch (\Throwable $e) {
             // We default to verbose if the ConfigurationBuilder wasn't successfully constructed.
             /** @noinspection UnSafeIsSetOverArrayInspection - We need to check if it's set, rather than null. */
@@ -160,11 +156,7 @@ class InspectCommand extends Command
 
             $view->display();
 
-            /**
-             * @var int
-             * @psalm-suppress UndefinedConstant - psalm is not detecting symfony's Command constants.
-             */
-            return Command::INVALID;
+            return self::INVALID;
         }
     }
 

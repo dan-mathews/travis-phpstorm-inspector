@@ -15,7 +15,7 @@ function includeIfExists(string $filePath): bool
 
 if (
     !includeIfExists(__DIR__ . '/../vendor/autoload.php') &&
-    !includeIfExists(__DIR__ . '/../../../vendor/autoload.php')
+    !includeIfExists(__DIR__ . '/../../../autoload.php')
 ) {
     throw new RuntimeException('Could not find autoloaded classes as vendor or main project.');
 }
