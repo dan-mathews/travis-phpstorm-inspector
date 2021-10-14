@@ -7,13 +7,13 @@ namespace TravisPhpstormInspector\FileContents;
 class ProjectIml implements GetContentsInterface
 {
     /**
-     * @var string
+     * @var array<string>
      */
-    private $appName;
+    private $excludeFolderPaths;
 
-    public function __construct(string $appName)
+    public function __construct(array $excludeFolderPaths)
     {
-        $this->appName = $appName;
+        $this->excludeFolderPaths = $excludeFolderPaths;
     }
 
     public function getContents(): string
@@ -22,9 +22,20 @@ class ProjectIml implements GetContentsInterface
         . '<module type="WEB_MODULE" version="4">'
         . '<component name="NewModuleRootManager">'
         . '<content url="file://$MODULE_DIR$">'
-        . '<excludeFolder url="file://$MODULE_DIR$/' . $this->appName . '" />'
+        . $this->constructExcludeFoldersXmlTags()
         . '</content>'
         . '</component>'
         . '</module>';
+    }
+
+    private function constructExcludeFoldersXmlTags(): string
+    {
+        $excludeFoldersXmlTags = '';
+
+        foreach ($this->excludeFolderPaths as $excludeFolderPath) {
+            $excludeFoldersXmlTags .= '<excludeFolder url="file://$MODULE_DIR$/' . $excludeFolderPath . '" />';
+        }
+
+        return $excludeFoldersXmlTags;
     }
 }

@@ -114,7 +114,7 @@ class InspectionCommand
     }
 
     /**
-     * @param string[] $commands
+     * @param array<string> $commands
      * @return string
      */
     private function getMultipleBashCommands(array $commands): string

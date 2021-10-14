@@ -66,7 +66,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
 
         $modulesXml = new ModulesXml();
         $phpXml = new PhpXml($this->phpVersion);
-        $projectIml = new ProjectIml(InspectCommand::NAME);
+        $projectIml = new ProjectIml(/**todo*/);
 
         $this->ideaDirectory
             ->createFile(self::FILE_MODULES_XML, $modulesXml)
