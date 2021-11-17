@@ -4,5 +4,14 @@
   "ignore-severities": [
     "INFORMATION",
     "TYPO"
+  ],
+  "exclude-folders": [
+    "vendor",
+    "tests",
+    ".travis",
+    "bin",
+    "data",
+    ".phpunit-coverage-report",
+    ".phpunit.cache"
   ]
 }

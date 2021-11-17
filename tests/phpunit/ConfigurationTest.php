@@ -54,14 +54,11 @@ final class ConfigurationTest extends TestCase
     {
         $this->projectName = 'phpUnitTest' . random_int(0, 1000);
 
-        if (
-            false === mkdir($this->projectName) ||
-            false === $projectPath = realpath($this->projectName)
-        ) {
-            throw new \RuntimeException('Could not make project directory with name ' . $this->projectName);
-        }
+        $projectPath = $this->makeDir($this->projectName);
 
         $this->projectPath = $projectPath;
+
+        $this->makeDir($projectPath . '/' . 'src');
 
         $this->prophet = new Prophet();
 
@@ -94,6 +91,9 @@ final class ConfigurationTest extends TestCase
                 'php-version' => '7.4',
                 'ignore-lines' => [
                     'file.php' => [1, 5]
+                ],
+                'exclude-folders' => [
+                    'src'
                 ],
             ]
         );
@@ -130,6 +130,12 @@ final class ConfigurationTest extends TestCase
             ],
             $configuration->getIgnoreLines()
         );
+        self::assertSame(
+            [
+                'src'
+            ],
+            $configuration->getExcludeFolders()
+        );
     }
 
     public function testCommandLineOverridesConfigFile(): void
@@ -147,6 +153,9 @@ final class ConfigurationTest extends TestCase
                 'php-version' => '7.4',
                 'ignore-lines' => [
                     'file.php' => ['*']
+                ],
+                'exclude-folders' => [
+                    'src'
                 ],
             ]
         );
@@ -187,6 +196,12 @@ final class ConfigurationTest extends TestCase
             $configuration->getIgnoreLines()
         );
         self::assertSame(true, $configuration->getWholeProject());
+        self::assertSame(
+            [
+                'src'
+            ],
+            $configuration->getExcludeFolders()
+        );
     }
 
     public function testReadFromCommandLineOnly(): void
@@ -228,6 +243,7 @@ final class ConfigurationTest extends TestCase
         // This cannot be set via command line, so we check it's default.
         self::assertSame([], $configuration->getIgnoreLines());
         self::assertSame(true, $configuration->getWholeProject());
+        self::assertSame([], $configuration->getExcludeFolders());
     }
 
     public function testDefaults(): void
@@ -255,6 +271,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame('7.3', $configuration->getPhpVersion());
         self::assertSame([], $configuration->getIgnoreLines());
         self::assertSame(false, $configuration->getWholeProject());
+        self::assertSame([], $configuration->getExcludeFolders());
     }
 
     public function testSetInspectionProfileRelativePath(): void
@@ -452,6 +469,83 @@ final class ConfigurationTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider invalidExcludeFoldersProvider
+     * @param mixed $invalidValue
+     * @param string $expectedErrorMessage
+     */
+    public function testSetExcludeFoldersTypeError($invalidValue, string $expectedErrorMessage): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'exclude-folders' => $invalidValue
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage($expectedErrorMessage);
+
+        $configurationBuilder->build();
+    }
+
+    /**
+     * @return \Generator<string, array>
+     */
+    public function invalidExcludeFoldersProvider(): \Generator
+    {
+        yield 'invalid integer value' => [
+            1,
+            'exclude-folders must be an array.'
+        ];
+
+        yield 'invalid string value' => [
+            'cat',
+            'exclude-folders must be an array.'
+        ];
+
+        yield 'invalid array of integers' => [
+            [1, 2],
+            'exclude-folders must be an array of strings.'
+        ];
+
+        yield 'invalid array of arrays' => [
+            [[], []],
+            'exclude-folders must be an array of strings.'
+        ];
+    }
+
+    public function testSetExcludeFoldersInvalidValueError(): void
+    {
+        $this->writeConfigurationFile(
+            [
+                'exclude-folders' => ['invalid']
+            ]
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            ['verbose' => false],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage(
+            'Folders to exclude must be specified as relative paths from the project root. Could not find: invalid'
+        );
+
+        $configurationBuilder->build();
+    }
+
     public function testSetIgnoreSeveritiesOptionsTypeError(): void
     {
             $configurationBuilder = new ConfigurationBuilder(
@@ -577,5 +671,22 @@ final class ConfigurationTest extends TestCase
         }
 
         rmdir($directoryIterator->getPath());
+    }
+
+    /**
+     * @param string $name
+     * @return string The full path to the created Directory.
+     * @throws \RuntimeException
+     */
+    private function makeDir(string $name): string
+    {
+        if (
+            false === mkdir($name) ||
+            false === $projectPath = realpath($name)
+        ) {
+            throw new \RuntimeException('Could not make project directory with name ' . $name);
+        }
+
+        return $projectPath;
     }
 }

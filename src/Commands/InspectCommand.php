@@ -25,6 +25,7 @@ class InspectCommand extends Command
 
     public const OPTION_DOCKER_REPOSITORY = 'docker-repository';
     public const OPTION_DOCKER_TAG = 'docker-tag';
+    public const OPTION_EXCLUDE_FOLDERS = 'exclude-folders';
     public const OPTION_IGNORE_SEVERITIES = 'ignore-severities';
     public const OPTION_IGNORE_LINES = 'ignore-lines';
     public const OPTION_PHP_VERSION = 'php-version';
@@ -36,6 +37,7 @@ class InspectCommand extends Command
     public const OPTIONS = [
         self::OPTION_DOCKER_REPOSITORY,
         self::OPTION_DOCKER_TAG,
+        self::OPTION_EXCLUDE_FOLDERS,
         self::OPTION_IGNORE_SEVERITIES,
         self::OPTION_IGNORE_LINES,
         self::OPTION_PHP_VERSION,

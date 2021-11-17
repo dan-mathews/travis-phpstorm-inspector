@@ -43,7 +43,8 @@ class Inspection
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
             $appDirectory,
             $inspectionProfileXml,
-            $configuration->getPhpVersion()
+            $configuration->getPhpVersion(),
+            $configuration->getExcludeFolders()
         );
 
         $ideaDirectoryBuilder->build();

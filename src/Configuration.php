@@ -12,6 +12,7 @@ class Configuration
 {
     public const DEFAULT_DOCKER_REPOSITORY = 'danmathews1/phpstorm';
     public const DEFAULT_DOCKER_TAG = 'latest';
+    public const DEFAULT_EXCLUDE_FOLDERS = [];
     public const DEFAULT_IGNORE_LINES = [];
     public const DEFAULT_IGNORE_SEVERITIES = [];
     public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
@@ -29,7 +30,7 @@ class Configuration
     ];
 
     /**
-     * @var string[]
+     * @var array<string>
      */
     private $ignoreSeverities = self::DEFAULT_IGNORE_SEVERITIES;
 
@@ -47,6 +48,11 @@ class Configuration
      * @var string
      */
     private $dockerTag = self::DEFAULT_DOCKER_TAG;
+
+    /**
+     * @var array<string>
+     */
+    private $excludeFolders = self::DEFAULT_EXCLUDE_FOLDERS;
 
     /**
      * @var Directory
@@ -79,6 +85,11 @@ class Configuration
     private $wholeProject = self::DEFAULT_WHOLE_PROJECT;
 
     /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    /**
      * @param string $projectPath
      * @param string $appRootPath
      * @param OutputInterface $output
@@ -94,6 +105,8 @@ class Configuration
         $this->appDirectory = new Directory($appRootPath, $output);
 
         $this->inspectionProfilePath = $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH;
+
+        $this->output = $output;
     }
 
     public function setVerbose(bool $verbose): void
@@ -104,7 +117,7 @@ class Configuration
     /**
      * @param array<mixed> $ignoreSeverities
      * @throws ConfigurationException
-     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoreSeverities is string[], throwing after array_diff
+     * @psalm-suppress MixedPropertyTypeCoercion - we validate it's an array<string>, throwing after array_diff
      */
     public function setIgnoreSeverities(array $ignoreSeverities): void
     {
@@ -121,7 +134,7 @@ class Configuration
     /**
      * @param array<mixed> $ignoreLines
      * @throws ConfigurationException
-     * @psalm-suppress MixedPropertyTypeCoercion - we validate $ignoreLines is string[], throwing after array_diff
+     * @psalm-suppress MixedPropertyTypeCoercion - we validate it's an array<string>, throwing after array_diff
      */
     public function setIgnoreLines(array $ignoreLines): void
     {
@@ -156,7 +169,30 @@ class Configuration
     }
 
     /**
-     * @return string[]
+     * @param array<string> $excludeFolders
+     * @throws ConfigurationException
+     */
+    public function setExcludeFolders(array $excludeFolders): void
+    {
+        foreach ($excludeFolders as $folderName) {
+            try {
+                // Use Directory to validate that this is a relative path from the project to a real folder.
+                new Directory($this->getProjectDirectory()->getPath() . '/' . $folderName, $this->output);
+            } catch (FilesystemException $e) {
+                throw new ConfigurationException(
+                    'Folders to exclude must be specified as relative paths from the project root. '
+                    . 'Could not find: ' . $folderName,
+                    2,
+                    $e
+                );
+            }
+
+            $this->excludeFolders[] = $folderName;
+        }
+    }
+
+    /**
+     * @return array<string>
      */
     public function getIgnoreSeverities(): array
     {
@@ -179,6 +215,14 @@ class Configuration
     public function getDockerTag(): string
     {
         return $this->dockerTag;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getExcludeFolders(): array
+    {
+        return $this->excludeFolders;
     }
 
     public function getAppDirectory(): Directory
