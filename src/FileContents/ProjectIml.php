@@ -11,6 +11,9 @@ class ProjectIml implements GetContentsInterface
      */
     private $excludeFolderPaths;
 
+    /**
+     * @param array<string> $excludeFolderPaths
+     */
     public function __construct(array $excludeFolderPaths)
     {
         $this->excludeFolderPaths = $excludeFolderPaths;

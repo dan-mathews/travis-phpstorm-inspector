@@ -131,39 +131,44 @@ class ConfigurationBuilder implements BuilderInterface
      */
     private function setIgnoreLines(): void
     {
-        if (isset($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
-            if (!\is_array($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
-                throw new ConfigurationException(InspectCommand::OPTION_IGNORE_LINES . ' must be an array.');
-            }
-
-            $this->configuration->setIgnoreLines(
-                $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES]
-            );
+        if (!isset($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
+            return;
         }
+
+        if (!\is_array($this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES])) {
+            throw new ConfigurationException(InspectCommand::OPTION_IGNORE_LINES . ' must be an array.');
+        }
+
+        $this->configuration->setIgnoreLines(
+            $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES]
+        );
     }
 
     /**
      * @throws ConfigurationException
+     * @psalm-suppress MixedArgumentTypeCoercion - we validate it's an array<string>
      */
     private function setExcludeFolders(): void
     {
-        if (isset($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS])) {
-            if (!\is_array($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS])) {
-                throw new ConfigurationException(InspectCommand::OPTION_EXCLUDE_FOLDERS . ' must be an array.');
-            }
-
-            foreach ($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS] as $folderName) {
-                if (!\is_string($folderName)) {
-                    throw new ConfigurationException(
-                        InspectCommand::OPTION_EXCLUDE_FOLDERS . ' must be an array of strings.'
-                    );
-                }
-            }
-
-            $this->configuration->setExcludeFolders(
-                $this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS]
-            );
+        if (!isset($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS])) {
+            return;
         }
+
+        $excludeFoldersConfiguration = $this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS];
+
+        if (!\is_array($excludeFoldersConfiguration)) {
+            throw new ConfigurationException(InspectCommand::OPTION_EXCLUDE_FOLDERS . ' must be an array.');
+        }
+
+        foreach ($excludeFoldersConfiguration as $folderName) {
+            if (!\is_string($folderName)) {
+                throw new ConfigurationException(
+                    InspectCommand::OPTION_EXCLUDE_FOLDERS . ' must be an array of strings.'
+                );
+            }
+        }
+
+        $this->configuration->setExcludeFolders($excludeFoldersConfiguration);
     }
 
     /**
