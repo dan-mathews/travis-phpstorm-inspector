@@ -86,6 +86,7 @@ class ConfigurationBuilder implements BuilderInterface
         $this->parsedConfigurationFile->fill();
         $this->setIgnoreSeverities();
         $this->setIgnoreLines();
+        $this->setExcludeFolders();
         $this->setDockerRepository();
         $this->setDockerTag();
         $this->setInspectionProfile();
@@ -137,6 +138,30 @@ class ConfigurationBuilder implements BuilderInterface
 
             $this->configuration->setIgnoreLines(
                 $this->parsedConfigurationFile[InspectCommand::OPTION_IGNORE_LINES]
+            );
+        }
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private function setExcludeFolders(): void
+    {
+        if (isset($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS])) {
+            if (!\is_array($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS])) {
+                throw new ConfigurationException(InspectCommand::OPTION_EXCLUDE_FOLDERS . ' must be an array.');
+            }
+
+            foreach ($this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS] as $folderName) {
+                if (!\is_string($folderName)) {
+                    throw new ConfigurationException(
+                        InspectCommand::OPTION_EXCLUDE_FOLDERS . ' must be an array of strings.'
+                    );
+                }
+            }
+
+            $this->configuration->setExcludeFolders(
+                $this->parsedConfigurationFile[InspectCommand::OPTION_EXCLUDE_FOLDERS]
             );
         }
     }
