@@ -298,6 +298,35 @@ final class ConfigurationTest extends TestCase
         );
     }
 
+    public function testSetConfigurationFileRelativePath(): void
+    {
+        $this->writeFile(
+            $this->projectPath . '/myConfig.json',
+            '{
+                "php-version": "20"
+            }'
+        );
+
+        $configurationBuilder = new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            [
+                'configuration' => $this->projectPath . '/myConfig.json',
+                'verbose' => false
+            ],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
+        );
+
+        $configurationBuilder->build();
+        $configuration = $configurationBuilder->getResult();
+
+        self::assertSame(
+            '20',
+            $configuration->getPhpVersion()
+        );
+    }
+
     public function testSetDockerRepositoryTypeError(): void
     {
         $configurationBuilder = new ConfigurationBuilder(
