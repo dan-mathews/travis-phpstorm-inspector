@@ -32,6 +32,8 @@ Feature: Run inspections with a configuration file
                                                    - default: the current working directory
 
     Options:
+          --configuration[=CONFIGURATION]          The absolute path of the configuration file to use
+                                                   - default: If it exists, the configuration file in the project root
           --profile[=PROFILE]                      The absolute or relative path of the inspection profile to use
                                                    - default: PhpStorm's default profile, see /data/default.xml
           --ignore-severities[=IGNORE-SEVERITIES]  The severities to ignore, as a comma-separated list without spaces e.g. 'TYPO','INFORMATION'

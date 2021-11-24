@@ -70,6 +70,7 @@ class ConfigurationBuilder implements BuilderInterface
         $configurationPath = $projectPath . '/' . self::FILENAME;
 
         if (isset($this->options[InspectCommand::OPTION_CONFIGURATION])) {
+            /** @var string $configurationPath */
             $configurationPath = $this->options[InspectCommand::OPTION_CONFIGURATION];
 
             if (
