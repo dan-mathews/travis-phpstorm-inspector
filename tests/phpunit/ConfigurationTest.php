@@ -298,7 +298,7 @@ final class ConfigurationTest extends TestCase
         );
     }
 
-    public function testSetConfigurationFileRelativePath(): void
+    public function testSetConfigurationFileAbsolutePath(): void
     {
         $this->writeFile(
             $this->projectPath . '/myConfig.json',
@@ -324,6 +324,25 @@ final class ConfigurationTest extends TestCase
         self::assertSame(
             '20',
             $configuration->getPhpVersion()
+        );
+    }
+
+    public function testSetConfigurationFileAbsolutePathValueError(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage(
+            'Could not read the configuration file at ' . $this->projectPath . '/nonExistent.json'
+        );
+
+        new ConfigurationBuilder(
+            ['project-path' => $this->projectPath],
+            [
+                'configuration' => $this->projectPath . '/nonExistent.json',
+                'verbose' => false
+            ],
+            self::APP_ROOT_PATH,
+            $this->projectPath,
+            $this->outputDummy
         );
     }
 
