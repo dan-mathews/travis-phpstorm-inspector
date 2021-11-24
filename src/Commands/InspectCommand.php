@@ -23,6 +23,7 @@ class InspectCommand extends Command
 
     public const ARGUMENT_PROJECT_PATH = 'project-path';
 
+    public const OPTION_CONFIGURATION = 'configuration';
     public const OPTION_DOCKER_REPOSITORY = 'docker-repository';
     public const OPTION_DOCKER_TAG = 'docker-tag';
     public const OPTION_EXCLUDE_FOLDERS = 'exclude-folders';
@@ -35,6 +36,7 @@ class InspectCommand extends Command
     public const FLAG_VERBOSE = 'verbose';
 
     public const OPTIONS = [
+        self::OPTION_CONFIGURATION,
         self::OPTION_DOCKER_REPOSITORY,
         self::OPTION_DOCKER_TAG,
         self::OPTION_EXCLUDE_FOLDERS,
@@ -60,6 +62,14 @@ class InspectCommand extends Command
             InputArgument::OPTIONAL,
             'The absolute or relative path of the project to inspect' . PHP_EOL
             . '- default: the current working directory'
+        );
+
+        $this->addOption(
+            self::OPTION_CONFIGURATION,
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'The absolute path of the configuration file to use' . PHP_EOL
+            . '- default: If it exists, the configuration file in the project root'
         );
 
         $this->addOption(

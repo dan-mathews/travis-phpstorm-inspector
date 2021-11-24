@@ -67,7 +67,23 @@ class ConfigurationBuilder implements BuilderInterface
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();
 
-        $this->parsedConfigurationFile = new ConfigurationFile($projectPath . '/' . self::FILENAME, $output);
+        $configurationPath = $projectPath . '/' . self::FILENAME;
+
+        if (isset($this->options[InspectCommand::OPTION_CONFIGURATION])) {
+            /** @var string $configurationPath */
+            $configurationPath = $this->options[InspectCommand::OPTION_CONFIGURATION];
+
+            if (
+                !is_file($configurationPath) ||
+                !is_readable($configurationPath)
+            ) {
+                throw new ConfigurationException(
+                    'Could not read the configuration file at ' . $configurationPath
+                );
+            }
+        }
+
+        $this->parsedConfigurationFile = new ConfigurationFile($configurationPath, $output);
     }
 
     /**
