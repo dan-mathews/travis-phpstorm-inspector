@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 
 class InspectionCommand
@@ -29,9 +30,9 @@ class InspectionCommand
     private $inspectionProfileXml;
 
     /**
-     * @var DockerImage
+     * @var DockerFacade
      */
-    private $dockerImage;
+    private $dockerFacade;
 
     /**
      * @var bool
@@ -48,7 +49,7 @@ class InspectionCommand
         Directory $ideaDirectory,
         InspectionProfileXml $inspectionProfileXml,
         Directory $resultsDirectory,
-        DockerImage $dockerImage,
+        DockerFacade $dockerFacade,
         bool $verbose,
         bool $wholeProject
     ) {
@@ -60,76 +61,63 @@ class InspectionCommand
 
         $this->inspectionProfileXml = $inspectionProfileXml;
 
-        $this->dockerImage = $dockerImage;
+        $this->dockerFacade = $dockerFacade;
 
         $this->verbose = $verbose;
 
         $this->wholeProject = $wholeProject;
     }
 
-    private function mountCommand(string $source, string $target): string
-    {
-        // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
-        // there is the potential to overwrite their .idea directory locally if we're not careful.
-        // The mounted directories can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
-        // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
-
-        return '--mount '
-            . 'type=bind'
-            . ',source=' . $source
-            . ',target=' . $target
-            . ',bind-propagation=private';
-    }
-
     /**
-     * @throws \RuntimeException
+     * @throws DockerException
      */
     public function run(): void
     {
-        $command = implode(' ', [
-            'docker run ',
-            $this->mountCommand($this->projectDirectory->getPath(), '/app'),
-            $this->mountCommand($this->ideaDirectory->getPath(), '/app/.idea'),
-            $this->mountCommand($this->resultsDirectory->getPath(), '/results'),
-            $this->dockerImage->getReference(),
-            $this->getMultipleBashCommands([$this->getPhpstormCommand(), $this->getChmodCommand()])
-        ]);
+        exec('rm -rf ' . $this->resultsDirectory->getPath() . '/../tmp/*');
+        //todo: strip these excludes back so they make sense in flashcard context. Solve self-analysis another time
+        $copy = 'rsync -a --exclude \'.idea\' --exclude \'cache\' --exclude \'tmp\' '
+            . $this->projectDirectory->getPath() . '/ ' . $this->resultsDirectory->getPath() . '/../tmp';
 
-        //todo replace with verbose-aware outputter
-        echo 'Running command: ' . $command . "\n";
+        exec($copy);
 
-        $code = 1;
-
+        //TODO create a wrapper class for the exec command and add a comment to explain why symfony Process doesn't work
+        // for this project. Then move this and the docker facade execs to that and remove symfony Process.
         $output = [];
+        $code = 1;
+        exec(
+            'if [ ! -d "/home/$USER/.cache/travis-phpstorm-inspector" ]; '
+            . 'then mkdir /home/$USER/.cache/travis-phpstorm-inspector; '
+            . 'fi 2>&1',
+            $output,
+            $code
+        );
 
-        if ($this->verbose) {
-            passthru($command, $code);
-        } else {
-            exec($command . ' 2>&1', $output, $code);
+        if (0 !== $code) {
+            throw new DockerException(implode("\n", $output));
         }
 
-        if ($code !== 0) {
-            throw new \RuntimeException("PhpStorm's Inspection command exited with a non-zero code.");
-        }
-    }
+        // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
+        // there is the potential to overwrite their .idea directory locally if we're not careful.
+        // Apart from user directories, these can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
+        // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
+        $this->dockerFacade
+            ->mount($this->resultsDirectory->getPath() . '/../tmp', '/app')
+            ->mount($this->ideaDirectory->getPath(), '/app/.idea')
+            ->mount($this->resultsDirectory->getPath(), '/results')
+            ->mount('/etc/group', '/etc/group', true)
+            ->mount('/etc/passwd', '/etc/passwd', true)
+            ->mount('/home/$USER/.cache/travis-phpstorm-inspector', '/home/$USER/.cache/JetBrains')
+            ->addCommand('chown -R $USER:$USER /home/$USER')
+            ->addCommand($this->getPhpstormCommand());
 
-    /**
-     * @param array<string> $commands
-     * @return string
-     */
-    private function getMultipleBashCommands(array $commands): string
-    {
-        return '/bin/bash -c "' . implode('; ', $commands) . '"';
-    }
-
-    private function getChmodCommand(): string
-    {
-        return 'chmod -R 777 /app/.idea';
+        $this->dockerFacade->run();
     }
 
     private function getPhpstormCommand(): string
     {
         return implode(' ', [
+            'runuser -u $USER',
+            '--', // A double-dash in a shell command signals the end of options and disables further option processing.
             '/bin/bash phpstorm.sh inspect',
             '/app',
             '/app/.idea/' . Inspection::DIRECTORY_NAME_INSPECTION_PROFILES . '/'

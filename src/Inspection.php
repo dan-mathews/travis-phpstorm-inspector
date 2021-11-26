@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
+use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 use TravisPhpstormInspector\FileContents\InspectionProfileXml;
@@ -28,10 +28,10 @@ class Inspection
     private $resultsProcessor;
 
     /**
-     * @throws ConfigurationException
      * @throws \InvalidArgumentException
      * @throws FilesystemException
      * @throws InspectionsProfileException
+     * @throws DockerException
      */
     public function __construct(Configuration $configuration)
     {
@@ -50,10 +50,9 @@ class Inspection
         $ideaDirectoryBuilder->build();
         $ideaDirectory = $ideaDirectoryBuilder->getResult();
 
-        $dockerImage = new DockerImage(
+        $dockerFacade = new DockerFacade(
             $configuration->getDockerRepository(),
-            $configuration->getDockerTag(),
-            $verbose
+            $configuration->getDockerTag()
         );
 
         $resultsDirectory = $appDirectory->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
@@ -63,7 +62,7 @@ class Inspection
             $ideaDirectory,
             $inspectionProfileXml,
             $resultsDirectory,
-            $dockerImage,
+            $dockerFacade,
             $verbose,
             $configuration->getWholeProject()
         );
@@ -74,6 +73,7 @@ class Inspection
     /**
      * @return Problems
      * @throws \RuntimeException
+     * @throws DockerException
      */
     public function run(): Problems
     {
