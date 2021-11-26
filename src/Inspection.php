@@ -55,6 +55,7 @@ class Inspection
             $configuration->getDockerTag()
         );
 
+        //TODO create a cache directory to house the results, the phpstorm cache, and the copy of the local project.
         $resultsDirectory = $appDirectory->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
 
         $this->inspectionCommand = new InspectionCommand(
