@@ -4,3 +4,5 @@ travis-phpstorm-inspector-results/
 travis-phpstorm-inspector-.idea/
 .phpunit.cache/
 .phpunit-coverage-report/
+tmp/
+cache/

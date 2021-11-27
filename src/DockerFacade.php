@@ -9,12 +9,18 @@ use TravisPhpstormInspector\Exceptions\DockerException;
 
 class DockerFacade
 {
+    /**
+     * @var array
+     */
     private const OPTIONS_TYPE = [
         'bind',
         'volume',
         'tmpfs'
     ];
 
+    /**
+     * @var array
+     */
     private const OPTIONS_BIND_PROPAGATION = [
         'rprivate',
         'private',
@@ -131,7 +137,8 @@ class DockerFacade
     {
         $bashWrapperCommand = '"' . implode('; ', $this->commands) . '"';
 
-        $command = 'docker run ' . implode(' ', $this->mounts) . ' ' . $this->imageName . ' /bin/bash -c ' . $bashWrapperCommand;
+        $command = 'docker run ' . implode(' ', $this->mounts) . ' ' . $this->imageName . ' /bin/bash -c '
+            . $bashWrapperCommand;
 
         $output = [];
 
