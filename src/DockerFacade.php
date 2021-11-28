@@ -61,15 +61,22 @@ class DockerFacade
     private $commands = [];
 
     /**
+     * @var CommandRunner
+     */
+    private $commandRunner;
+
+    /**
      * @throws DockerException
      */
-    public function __construct(string $repository, string $tag)
+    public function __construct(string $repository, string $tag, CommandRunner $commandRunner)
     {
         $this->repository = $repository;
 
         $this->tag = $tag;
 
         $this->imageName = $repository . ':' . $tag;
+
+        $this->commandRunner = $commandRunner;
 
         try {
             $process = new Process(['docker', 'image', 'inspect', $this->imageName]);
@@ -140,16 +147,10 @@ class DockerFacade
         $command = 'docker run ' . implode(' ', $this->mounts) . ' ' . $this->imageName . ' /bin/bash -c '
             . $bashWrapperCommand;
 
-        $output = [];
-
-        $code = 1;
-
-        exec($command . ' 2>&1', $output, $code);
-
-        if ($code !== 0) {
-            throw new DockerException(
-                "Failure when running docker command.\nOutput was: \n\t" . implode("\n\t", $output)
-            );
+        try {
+            $this->commandRunner->run($command);
+        } catch (\RuntimeException $e) {
+            throw new DockerException('Could not successfully perform Docker run command', 1, $e);
         }
     }
 

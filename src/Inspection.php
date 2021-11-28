@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
@@ -52,22 +53,54 @@ class Inspection
     private $inspectionProfileXml;
 
     /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    /**
+     * @var Directory
+     */
+    private $cacheDirectory;
+
+    /**
+     * @var Directory
+     */
+    private $jetBrainsDirectory;
+
+    /**
+     * @var Directory
+     */
+    private $projectCopyDirectory;
+
+    /**
      * @throws \InvalidArgumentException
      * @throws FilesystemException
      * @throws InspectionsProfileException
      * @throws DockerException
+     * @throws \RuntimeException
      */
-    public function __construct(Configuration $configuration)
+    public function __construct(Configuration $configuration, OutputInterface $output)
     {
         //todo make this a service
         $this->configuration = $configuration;
-        $appDirectory = $configuration->getAppDirectory();
+        $this->output = $output;
         $this->verbose = $configuration->getVerbose();
+        $commandRunner = new CommandRunner($this->verbose);
+
+        $this->cacheDirectory = $this->createCacheDirectory();
+
+        $this->jetBrainsDirectory = $this->cacheDirectory->getOrCreateSubDirectory('JetBrains');
+        $this->projectCopyDirectory = $this->cacheDirectory->getOrCreateSubDirectory('projectCopy');
+        $this->projectCopyDirectory->empty();
+        //TODO create a cache directory to house the results, the phpstorm cache, and the copy of the local project.
+        $this->resultsDirectory = $this->cacheDirectory->getOrCreateSubDirectory(self::DIRECTORY_NAME_RESULTS);
+        $this->resultsDirectory->empty();
+        $this->configuration->getProjectDirectory()->copyTo($this->projectCopyDirectory, ['.idea'], $commandRunner);
 
         $this->inspectionProfileXml = new InspectionProfileXml($configuration->getInspectionProfilePath());
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
-            $appDirectory,
+            $this->cacheDirectory,
             $this->inspectionProfileXml,
             $configuration->getPhpVersion(),
             $configuration->getExcludeFolders()
@@ -78,11 +111,9 @@ class Inspection
 
         $this->dockerFacade = new DockerFacade(
             $configuration->getDockerRepository(),
-            $configuration->getDockerTag()
+            $configuration->getDockerTag(),
+            $commandRunner
         );
-
-        //TODO create a cache directory to house the results, the phpstorm cache, and the copy of the local project.
-        $this->resultsDirectory = $appDirectory->createDirectory(self::DIRECTORY_NAME_RESULTS, true);
 
         $this->resultsProcessor = new ResultsProcessor($this->resultsDirectory, $configuration);
     }
@@ -94,42 +125,17 @@ class Inspection
      */
     public function run(): Problems
     {
-        $commandRunner = new CommandRunner($this->verbose);
-
-        //todo name each caommand to represent what it does
-        //todo follow the ->addCommand() pattern from dockerFacade
-        //todo make a cache class to keep all this logic and hold relevant dirs
-        $command = 'rm -rf ' . $this->resultsDirectory->getPath() . '/../tmp/*';
-
-        $commandRunner->run($command);
-
-        //todo: strip these excludes back so they make sense in flashcard context. Solve self-analysis another time
-        $command = 'rsync -a --exclude \'.idea\' --exclude \'cache\' --exclude \'tmp\' '
-            . $this->configuration->getProjectDirectory()->getPath() . '/ ' . $this->resultsDirectory->getPath()
-            . '/../tmp';
-
-        $commandRunner->run($command);
-
-        //TODO create a wrapper class for the exec command and add a comment to explain why symfony Process doesn't work
-        // for this project. Then move this and the docker facade execs to that and remove symfony Process.
-
-        $command = 'if [ ! -d "/home/$USER/.cache/travis-phpstorm-inspector" ]; '
-            . 'then mkdir /home/$USER/.cache/travis-phpstorm-inspector; '
-            . 'fi';
-
-        $commandRunner->run($command);
-
         // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
         // there is the potential to overwrite their .idea directory locally if we're not careful.
         // Apart from user directories, these can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
         // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
         $this->dockerFacade
-            ->mount($this->resultsDirectory->getPath() . '/../tmp', '/app')
+            ->mount($this->projectCopyDirectory->getPath(), '/app')
             ->mount($this->ideaDirectory->getPath(), '/app/.idea')
             ->mount($this->resultsDirectory->getPath(), '/results')
             ->mount('/etc/group', '/etc/group', true)
             ->mount('/etc/passwd', '/etc/passwd', true)
-            ->mount('/home/$USER/.cache/travis-phpstorm-inspector', '/home/$USER/.cache/JetBrains')
+            ->mount($this->jetBrainsDirectory->getPath(), '/home/$USER/.cache/JetBrains')
             ->addCommand('chown -R $USER:$USER /home/$USER')
             ->addCommand($this->getPhpstormCommand());
 
@@ -152,5 +158,25 @@ class Inspection
             '-format json',
             '-v2',
         ]);
+    }
+
+    /**
+     * @throws FilesystemException
+     * @throws \RuntimeException
+     */
+    private function createCacheDirectory(): Directory
+    {
+        $userId = posix_geteuid();
+        $userInfo = posix_getpwuid($userId);
+
+        if (false === $userInfo) {
+            throw new \RuntimeException('Could not retrieve user information, needed to create cache directory');
+        }
+
+        $user = $userInfo['name'];
+
+        $cachePath = "/home/$user/.cache/travis-phpstorm-inspector";
+
+        return new Directory($cachePath, $this->output, true);
     }
 }

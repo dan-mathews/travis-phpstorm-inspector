@@ -37,7 +37,6 @@ class ConfigurationBuilder implements BuilderInterface
     /**
      * @param array<array-key, mixed> $arguments
      * @param array<array-key, mixed> $options
-     * @param string $appRootPath
      * @param string $workingDirectory
      * @param OutputInterface $output
      * @throws ConfigurationException
@@ -46,7 +45,6 @@ class ConfigurationBuilder implements BuilderInterface
     public function __construct(
         array $arguments,
         array $options,
-        string $appRootPath,
         string $workingDirectory,
         OutputInterface $output
     ) {
@@ -62,7 +60,7 @@ class ConfigurationBuilder implements BuilderInterface
 
         $this->options = $options;
 
-        $this->configuration = new Configuration($projectPath, $appRootPath, $output);
+        $this->configuration = new Configuration($projectPath, $output);
 
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();

@@ -21,18 +21,25 @@ class Directory
     /**
      * @throws FilesystemException
      */
-    public function __construct(string $path, OutputInterface $output)
-    {
+    public function __construct(
+        string $absolutePath,
+        OutputInterface $output,
+        bool $createIfNotFound = false
+    ) {
+        if ('' === $absolutePath) {
+            throw new FilesystemException('Cannot construct a Directory with an empty path');
+        }
+
         $this->output = $output;
 
-        $realPath = realpath($path);
+        $realPath = realpath($absolutePath);
 
-        if (
-            false === $realPath ||
-            false === is_dir($realPath) ||
-            false === is_readable($realPath)
-        ) {
-            throw new FilesystemException('Could not find a readable directory at ' . $path);
+        if (!$this->isDirectoryReadable($realPath)) {
+            if (false === $createIfNotFound) {
+                throw new FilesystemException('Could not find a readable directory at ' . $absolutePath);
+            }
+
+            $realPath = $this->createDirectory($absolutePath)->getPath();
         }
 
         $this->path = $realPath;
@@ -72,24 +79,14 @@ class Directory
     /**
      * @throws FilesystemException
      */
-    public function createDirectory(string $name, bool $overwrite = false): Directory
+    private function createDirectory(string $absolutePath): Directory
     {
-        $absolutePath = $this->path . '/' . $name;
+        if ('' === $absolutePath) {
+            throw new FilesystemException('Cannot create a directory with an empty path');
+        }
 
         if (file_exists($absolutePath)) {
-            if (false === $overwrite) {
-                throw new FilesystemException('Cannot create directory, file already exists at: ' . $absolutePath);
-            }
-
-            if (is_file($absolutePath)) {
-                throw new FilesystemException('Cannot overwrite a file with a directory');
-            }
-
-            if (is_dir($absolutePath)) {
-                $directoryIterator = $this->getDirectoryIterator($absolutePath);
-
-                $this->removeDirectory($directoryIterator);
-            }
+            throw new FilesystemException('Cannot create directory, file already exists at: ' . $absolutePath);
         }
 
         if (false === mkdir($absolutePath) && false === is_dir($absolutePath)) {
@@ -104,39 +101,42 @@ class Directory
     /**
      * @throws FilesystemException
      */
+    public function createSubDirectory(string $name): Directory
+    {
+        $absolutePath = $this->path . '/' . $name;
+
+        return $this->createDirectory($absolutePath);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function getOrCreateSubDirectory(string $name): Directory
+    {
+        $absolutePath = $this->path . '/' . $name;
+
+        return new Directory($absolutePath, $this->output, true);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function empty(): void
+    {
+        $directoryIterator = $this->getDirectoryIterator($this->path);
+
+        $this->emptyDirectory($directoryIterator);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
     private function removeDirectory(\DirectoryIterator $directoryIterator): void
     {
         $directoryPath = $directoryIterator->getPath();
 
-        foreach ($directoryIterator as $info) {
-            if ($info->isDot()) {
-                continue;
-            }
+        $this->emptyDirectory($directoryIterator);
 
-            $filePath = $info->getRealPath();
-
-            if (false === $filePath) {
-                throw new FilesystemException('Could not get real path of ' . $info->getPath());
-            }
-
-            if ($info->isDir()) {
-                $directoryIterator = $this->getDirectoryIterator($filePath);
-
-                self::removeDirectory($directoryIterator);
-                continue;
-            }
-
-            if (
-                $info->isFile() &&
-                false === unlink($filePath)
-            ) {
-                throw new FilesystemException('Could not remove file at path ' . $filePath);
-            }
-
-            $this->output->writeln('Removed file ' . $filePath);
-        }
-
-        // We check the directory still exists before removing, as PhpStorm makes rapid changes to the .idea directory
         if (false === rmdir($directoryPath)) {
             throw new FilesystemException('Could not remove directory at path ' . $directoryPath);
         }
@@ -154,5 +154,74 @@ class Directory
         } catch (\UnexpectedValueException | \RuntimeException $e) {
             throw new FilesystemException('Could not iterate over directory at path ' . $path, 0, $e);
         }
+    }
+
+    /**
+     * @param false|string $realPath
+     * @return bool
+     */
+    private function isDirectoryReadable($realPath): bool
+    {
+        return
+            true === is_string($realPath) &&
+            true === is_dir($realPath) &&
+            true === is_readable($realPath);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    private function emptyDirectory(\DirectoryIterator $directoryIterator)
+    {
+        foreach ($directoryIterator as $info) {
+            if ($info->isDot()) {
+                continue;
+            }
+
+            $filePath = $info->getRealPath();
+
+            if (false === $filePath) {
+                throw new FilesystemException('Could not get real path of ' . $info->getPath());
+            }
+
+            if ($info->isDir()) {
+                $directoryIterator = $this->getDirectoryIterator($filePath);
+
+                $this->removeDirectory($directoryIterator);
+                continue;
+            }
+
+            if (
+                $info->isFile() &&
+                false === unlink($filePath)
+            ) {
+                throw new FilesystemException('Could not remove file at path ' . $filePath);
+            }
+
+            $this->output->writeln('Removed file ' . $filePath);
+        }
+    }
+
+    /**
+     * @throws \RuntimeException
+     */
+    public function copyTo(Directory $directory, array $excludeFolders, CommandRunner $commandRunner): void
+    {
+        //TODO create a wrapper class for the exec command and add a comment to explain why symfony Process doesn't work
+        // for this project. Then move this and the docker facade execs to that and remove symfony Process.
+
+        $excludeString = '';
+
+        foreach ($excludeFolders as $folder) {
+            $excludeString .= '--exclude \'' . $folder . '\' ';
+        }
+
+        //todo name each command to represent what it does
+        //todo follow the ->addCommand() pattern from dockerFacade
+        //todo make a cache class to keep all this logic and hold relevant dirs
+        //todo: strip these excludes back so they make sense in flashcard context. Solve self-analysis another time
+        $command = 'rsync -a ' . $excludeString . $this->path . '/ ' . $directory->getPath();
+
+        $commandRunner->run($command);
     }
 }

@@ -46,21 +46,22 @@ class IdeaDirectoryBuilder implements BuilderInterface
     private $excludeFolders;
 
     /**
-     * @param Directory $inspectorDirectory
+     * @param Directory $parentDirectory
      * @param InspectionProfileXml $inspectionsXml
      * @param string $phpVersion
      * @param array<string> $excludeFolders
      * @throws FilesystemException
      */
     public function __construct(
-        Directory $inspectorDirectory,
+        Directory $parentDirectory,
         InspectionProfileXml $inspectionsXml,
         string $phpVersion,
         array $excludeFolders
     ) {
         $this->inspectionsXml = $inspectionsXml;
         $this->phpVersion = $phpVersion;
-        $this->ideaDirectory = $inspectorDirectory->createDirectory(self::DIRECTORY_IDEA, true);
+        $this->ideaDirectory = $parentDirectory->getOrCreateSubDirectory(self::DIRECTORY_IDEA);
+        $this->ideaDirectory->empty();
         $this->excludeFolders = $excludeFolders;
     }
 
@@ -69,7 +70,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
      */
     public function build(): void
     {
-        $inspectionProfilesDirectory = $this->ideaDirectory->createDirectory(self::DIRECTORY_INSPECTION_PROFILES);
+        $inspectionProfilesDirectory = $this->ideaDirectory->createSubDirectory(self::DIRECTORY_INSPECTION_PROFILES);
         $profileSettingsXml = new ProfileSettingsXml($this->inspectionsXml->getProfileNameValue());
         $inspectionProfilesDirectory
             ->createFile(self::FILE_PROFILES_SETTINGS, $profileSettingsXml)

@@ -15,7 +15,7 @@ class Configuration
     public const DEFAULT_EXCLUDE_FOLDERS = [];
     public const DEFAULT_IGNORE_LINES = [];
     public const DEFAULT_IGNORE_SEVERITIES = [];
-    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    public const DEFAULT_INSPECTION_PROFILE_PATH = __DIR__ . '/../../travis-phpstorm-inspector/data/default.xml';
     public const DEFAULT_PHP_VERSION = '7.3';
     public const DEFAULT_VERBOSE = true;
     public const DEFAULT_WHOLE_PROJECT = false;
@@ -55,11 +55,6 @@ class Configuration
     private $excludeFolders = self::DEFAULT_EXCLUDE_FOLDERS;
 
     /**
-     * @var Directory
-     */
-    private $appDirectory;
-
-    /**
      * @var bool
      */
     private $verbose = self::DEFAULT_VERBOSE;
@@ -91,20 +86,16 @@ class Configuration
 
     /**
      * @param string $projectPath
-     * @param string $appRootPath
      * @param OutputInterface $output
      * @throws FilesystemException
      */
     public function __construct(
         string $projectPath,
-        string $appRootPath,
         OutputInterface $output
     ) {
         $this->projectDirectory = new Directory($projectPath, $output);
 
-        $this->appDirectory = new Directory($appRootPath, $output);
-
-        $this->inspectionProfilePath = $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH;
+        $this->inspectionProfilePath = self::DEFAULT_INSPECTION_PROFILE_PATH;
 
         $this->output = $output;
     }
@@ -223,11 +214,6 @@ class Configuration
     public function getExcludeFolders(): array
     {
         return $this->excludeFolders;
-    }
-
-    public function getAppDirectory(): Directory
-    {
-        return $this->appDirectory;
     }
 
     public function getProjectDirectory(): Directory

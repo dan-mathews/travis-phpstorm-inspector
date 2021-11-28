@@ -24,7 +24,8 @@
     "ext-json": "*",
     "ext-xmlreader": "*",
     "symfony/console": "^5.3",
-    "symfony/process": "^5.3"
+    "symfony/process": "^5.3",
+    "ext-posix": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

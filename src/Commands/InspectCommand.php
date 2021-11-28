@@ -123,14 +123,11 @@ class InspectCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $appRootPath = __DIR__ . '/../../../travis-phpstorm-inspector/';
-
             $workingDirectory = $this->getWorkingDirectory();
 
             $configurationBuilder = new ConfigurationBuilder(
                 $input->getArguments(),
                 $input->getOptions(),
-                $appRootPath,
                 $workingDirectory,
                 $output
             );
@@ -138,7 +135,7 @@ class InspectCommand extends Command
             $configurationBuilder->build();
             $configuration = $configurationBuilder->getResult();
 
-            $inspection = new Inspection($configuration);
+            $inspection = new Inspection($configuration, $output);
 
             $problems = $inspection->run();
 
