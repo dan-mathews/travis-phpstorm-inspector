@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use TravisPhpstormInspector\Builders\CacheDirectoryBuilder;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
@@ -85,9 +86,13 @@ class Inspection
         $this->configuration = $configuration;
         $this->output = $output;
         $this->verbose = $configuration->getVerbose();
+        $this->inspectionProfileXml = new InspectionProfileXml($configuration->getInspectionProfilePath());
         $commandRunner = new CommandRunner($this->verbose);
 
-        $this->cacheDirectory = $this->createCacheDirectory();
+        $cacheDirectoryBuilder = new CacheDirectoryBuilder($this->inspectionProfileXml, $this->output);
+        $cacheDirectoryBuilder->build();
+
+        $this->cacheDirectory = $cacheDirectoryBuilder->getResult();
 
         $this->jetBrainsDirectory = $this->cacheDirectory->getOrCreateSubDirectory('JetBrains');
         $this->projectCopyDirectory = $this->cacheDirectory->getOrCreateSubDirectory('projectCopy');
@@ -96,8 +101,6 @@ class Inspection
         $this->resultsDirectory = $this->cacheDirectory->getOrCreateSubDirectory(self::DIRECTORY_NAME_RESULTS);
         $this->resultsDirectory->empty();
         $this->configuration->getProjectDirectory()->copyTo($this->projectCopyDirectory, ['.idea'], $commandRunner);
-
-        $this->inspectionProfileXml = new InspectionProfileXml($configuration->getInspectionProfilePath());
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
             $this->cacheDirectory,
@@ -158,25 +161,5 @@ class Inspection
             '-format json',
             '-v2',
         ]);
-    }
-
-    /**
-     * @throws FilesystemException
-     * @throws \RuntimeException
-     */
-    private function createCacheDirectory(): Directory
-    {
-        $userId = posix_geteuid();
-        $userInfo = posix_getpwuid($userId);
-
-        if (false === $userInfo) {
-            throw new \RuntimeException('Could not retrieve user information, needed to create cache directory');
-        }
-
-        $user = $userInfo['name'];
-
-        $cachePath = "/home/$user/.cache/travis-phpstorm-inspector";
-
-        return new Directory($cachePath, $this->output, true);
     }
 }
