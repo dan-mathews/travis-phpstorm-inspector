@@ -16,7 +16,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "BehatTests\\": "tests/behat/features"
+      "BehatTests\\": "tests/behat/features",
+      "PhpUnitTests\\": "tests/phpunit"
     }
   },
   "require": {
