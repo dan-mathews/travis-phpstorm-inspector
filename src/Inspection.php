@@ -9,8 +9,6 @@ use TravisPhpstormInspector\Builders\CacheDirectoryBuilder;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
-use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 use TravisPhpstormInspector\ResultProcessing\ResultsProcessor;
 
@@ -32,11 +30,6 @@ class Inspection
     private $configuration;
 
     /**
-     * @var InspectionProfileXml
-     */
-    private $inspectionProfileXml;
-
-    /**
      * @var Directory
      */
     private $cacheDirectory;
@@ -44,20 +37,17 @@ class Inspection
     /**
      * @throws \InvalidArgumentException
      * @throws FilesystemException
-     * @throws InspectionsProfileException
      * @throws DockerException
      * @throws \RuntimeException
      */
     public function __construct(Configuration $configuration, OutputInterface $output)
     {
         $this->configuration = $configuration;
-        $this->inspectionProfileXml = new InspectionProfileXml($configuration->getInspectionProfilePath());
 
         $commandRunner = new CommandRunner($configuration->getVerbose());
 
         $cacheDirectoryBuilder = new CacheDirectoryBuilder(
             $configuration,
-            $this->inspectionProfileXml,
             $output,
             $commandRunner
         );
@@ -114,7 +104,7 @@ class Inspection
             '/bin/bash phpstorm.sh inspect',
             '/app',
             '/app/.idea/' . IdeaDirectoryBuilder::DIRECTORY_INSPECTION_PROFILES . '/'
-            . $this->inspectionProfileXml->getName(),
+            . $this->configuration->getInspectionProfile()->getName(),
             '/results',
             ($this->configuration->getWholeProject() ? '' : '-changes'),
             '-format json',

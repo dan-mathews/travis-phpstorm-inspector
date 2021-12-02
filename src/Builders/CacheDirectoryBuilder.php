@@ -9,7 +9,6 @@ use TravisPhpstormInspector\CommandRunner;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Directory;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
-use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 
 /**
  * @implements BuilderInterface<Directory>
@@ -19,11 +18,6 @@ class CacheDirectoryBuilder implements BuilderInterface
     public const DIRECTORY_JETBRAINS = 'JetBrains';
     public const DIRECTORY_PROJECT_COPY = 'projectCopy';
     public const DIRECTORY_RESULTS = 'results';
-
-    /**
-     * @var InspectionProfileXml
-     */
-    private $inspectionsXml;
 
     /**
      * @var Directory
@@ -45,11 +39,9 @@ class CacheDirectoryBuilder implements BuilderInterface
      */
     public function __construct(
         Configuration $configuration,
-        InspectionProfileXml $inspectionsXml,
         OutputInterface $output,
         CommandRunner $commandRunner
     ) {
-        $this->inspectionsXml = $inspectionsXml;
         $this->configuration = $configuration;
         $this->commandRunner = $commandRunner;
 
@@ -93,7 +85,7 @@ class CacheDirectoryBuilder implements BuilderInterface
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
             $this->cacheDirectory,
-            $this->inspectionsXml,
+            $this->configuration->getInspectionProfile(),
             $this->configuration->getPhpVersion(),
             $this->configuration->getExcludeFolders()
         );

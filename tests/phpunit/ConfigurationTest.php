@@ -10,6 +10,8 @@ use Prophecy\Prophet;
 use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 
 /**
  * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
@@ -76,7 +78,7 @@ final class ConfigurationTest extends TestCase
 
     public function testReadFromConfigFileOnly(): void
     {
-        $profilePath = realpath(self::TEST_INSPECTION_PROFILE_PATH);
+        $profilePath = self::TEST_INSPECTION_PROFILE_PATH;
 
         $this->writeConfigurationFile(
             [
@@ -120,7 +122,10 @@ final class ConfigurationTest extends TestCase
             ],
             $configuration->getIgnoreSeverities()
         );
-        self::assertSame($profilePath, $configuration->getInspectionProfilePath());
+        self::assertEquals(
+            new InspectionProfileXml($profilePath),
+            $configuration->getInspectionProfile()
+        );
         self::assertSame('7.4', $configuration->getPhpVersion());
         self::assertSame(
             [
@@ -183,7 +188,10 @@ final class ConfigurationTest extends TestCase
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
-        self::assertSame(self::DEFAULT_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
+        self::assertEquals(
+            new InspectionProfileXml(self::DEFAULT_INSPECTION_PROFILE_PATH),
+            $configuration->getInspectionProfile()
+        );
         self::assertSame('8.0', $configuration->getPhpVersion());
         self::assertSame(
             [
@@ -232,7 +240,10 @@ final class ConfigurationTest extends TestCase
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
-        self::assertSame(self::TEST_INSPECTION_PROFILE_PATH, $configuration->getInspectionProfilePath());
+        self::assertEquals(
+            new InspectionProfileXml(self::TEST_INSPECTION_PROFILE_PATH),
+            $configuration->getInspectionProfile()
+        );
         self::assertSame('7.4', $configuration->getPhpVersion());
         // This cannot be set via command line, so we check it's default.
         self::assertSame([], $configuration->getIgnoreLines());
@@ -260,7 +271,10 @@ final class ConfigurationTest extends TestCase
         self::assertSame('latest', $configuration->getDockerTag());
         self::assertSame('danmathews1/phpstorm', $configuration->getDockerRepository());
         self::assertSame([], $configuration->getIgnoreSeverities());
-        self::assertSame(realpath(self::DEFAULT_INSPECTION_PROFILE_PATH), $configuration->getInspectionProfilePath());
+        self::assertEquals(
+            new InspectionProfileXml(self::DEFAULT_INSPECTION_PROFILE_PATH),
+            $configuration->getInspectionProfile()
+        );
         self::assertSame('7.3', $configuration->getPhpVersion());
         self::assertSame([], $configuration->getIgnoreLines());
         self::assertSame(false, $configuration->getWholeProject());
@@ -269,7 +283,10 @@ final class ConfigurationTest extends TestCase
 
     public function testSetInspectionProfileRelativePath(): void
     {
-        $this->writeFile($this->projectPath . '/profile.xml', '');
+        $this->writeFile(
+            $this->projectPath . '/profile.xml',
+            '<profile version="1.0"><option name="myName" value="exampleStandards" /></profile>'
+        );
 
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
@@ -284,9 +301,9 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder->build();
         $configuration = $configurationBuilder->getResult();
 
-        self::assertSame(
-            $this->projectPath . '/profile.xml',
-            $configuration->getInspectionProfilePath()
+        self::assertEquals(
+            new InspectionProfileXml($this->projectPath . '/profile.xml'),
+            $configuration->getInspectionProfile()
         );
     }
 
@@ -402,12 +419,8 @@ final class ConfigurationTest extends TestCase
             $this->outputDummy
         );
 
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage(
-            'Could not read inspection profile as a path relative to the project directory '
-            . '(' . $this->projectPath . '/profile.xml), '
-            . 'or an absolute path (profile.xml)'
-        );
+        $this->expectException(InspectionsProfileException::class);
+        $this->expectExceptionMessage('The inspections profile at profile.xml does not exist.');
 
         $configurationBuilder->build();
     }

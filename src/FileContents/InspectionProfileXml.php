@@ -56,18 +56,22 @@ class InspectionProfileXml implements GetContentsInterface
         /** @noinspection StaticInvocationViaThisInspection as above */
         $xml->open($inspectionsXmlPath);
 
-        while ($xml->read()) {
-            if (
-                $xml->nodeType === $xml::ELEMENT &&
-                $xml->name === 'option' &&
-                $xml->getAttribute('name') === 'myName'
-            ) {
-                $value = $xml->getAttribute('value');
+        try {
+            while ($xml->read()) {
+                if (
+                    $xml->nodeType === $xml::ELEMENT &&
+                    $xml->name === 'option' &&
+                    $xml->getAttribute('name') === 'myName'
+                ) {
+                    $value = $xml->getAttribute('value');
 
-                if (null !== $value) {
-                    return $value;
+                    if (null !== $value) {
+                        return $value;
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            throw new InspectionsProfileException('Could not parse the xml in ' . $inspectionsXmlPath, 1, $e);
         }
 
         $xml->close();

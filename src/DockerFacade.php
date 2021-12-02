@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
-use Symfony\Component\Process\Process;
 use TravisPhpstormInspector\Exceptions\DockerException;
 
 class DockerFacade
@@ -129,6 +128,10 @@ class DockerFacade
      */
     public function run(): void
     {
+        if ([] === $this->commands) {
+            throw new DockerException('Could not run docker commands as no commands were added');
+        }
+
         $bashWrapperCommand = '"' . implode('; ', $this->commands) . '"';
 
         $command = 'docker run ' . implode(' ', $this->mounts) . ' ' . $this->imageName . ' /bin/bash -c '
@@ -139,6 +142,10 @@ class DockerFacade
         } catch (\RuntimeException $e) {
             throw new DockerException('Could not successfully perform Docker run command', 1, $e);
         }
+
+        $this->commands = [];
+
+        $this->mounts = [];
     }
 
     public function getRepository(): string

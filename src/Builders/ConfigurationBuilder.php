@@ -249,7 +249,7 @@ class ConfigurationBuilder implements BuilderInterface
             throw new ConfigurationException(InspectCommand::OPTION_INSPECTION_PROFILE . ' must be a string.');
         }
 
-        $this->configuration->setInspectionProfilePath($value);
+        $this->configuration->setInspectionProfile($value);
     }
 
     /**
