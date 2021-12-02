@@ -76,7 +76,6 @@ class ConfigurationFile implements \ArrayAccess
             throw new ConfigurationException('Configuration should be written as a json object.');
         }
 
-        //TODO pass ::KEYS in and make the whole thing a service
         $invalidKeys = array_diff(array_keys($parsedConfiguration), InspectCommand::OPTIONS);
 
         if ([] !== $invalidKeys) {

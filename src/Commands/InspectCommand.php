@@ -54,6 +54,7 @@ class InspectCommand extends Command
 
     /**
      * @throws InvalidArgumentException
+     * @throws \LogicException
      */
     protected function configure(): void
     {
@@ -193,28 +194,24 @@ class InspectCommand extends Command
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws \LogicException
      */
     private function getRelativeDefaultPath(): string
     {
         $errorMessage = 'Could not process default profile path relative to project root';
 
-        $defaultProfilePath = realpath(Configuration::DEFAULT_INSPECTION_PROFILE_PATH);
-
-        if (false === $defaultProfilePath) {
-            throw new InvalidArgumentException($errorMessage);
-        }
+        $defaultProfilePath = Configuration::DEFAULT_INSPECTION_PROFILE_PATH;
 
         $startPosition = strripos($defaultProfilePath, 'data');
 
         if (false === $startPosition) {
-            throw new InvalidArgumentException($errorMessage);
+            throw new \LogicException($errorMessage);
         }
 
         $relativeDefaultProfilePath = substr($defaultProfilePath, $startPosition);
 
         if (empty($relativeDefaultProfilePath)) {
-            throw new InvalidArgumentException($errorMessage);
+            throw new \LogicException($errorMessage);
         }
 
         return $relativeDefaultProfilePath;

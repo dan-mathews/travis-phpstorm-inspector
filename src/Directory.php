@@ -249,18 +249,12 @@ class Directory
      */
     public function copyTo(Directory $directory, array $excludeFolders, CommandRunner $commandRunner): void
     {
-        //TODO create a wrapper class for the exec command and add a comment to explain why symfony Process doesn't work
-        // for this project. Then move this and the docker facade execs to that and remove symfony Process.
-
         $excludeString = '';
 
         foreach ($excludeFolders as $folder) {
             $excludeString .= '--exclude \'' . $folder . '\' ';
         }
 
-        //todo follow the ->addCommand() pattern from dockerFacade
-        //todo make a cache class to keep all this logic and hold relevant dirs
-        //todo: strip these excludes back so they make sense in flashcard context. Solve self-analysis another time
         $rsyncCommand = 'rsync -a ' . $excludeString . $this->path . '/ ' . $directory->getPath();
 
         try {

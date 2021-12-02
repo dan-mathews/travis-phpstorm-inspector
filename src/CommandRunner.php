@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+//todo follow the ->addCommand() pattern from dockerFacade
 class CommandRunner
 {
     /**

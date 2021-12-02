@@ -91,10 +91,6 @@ class Inspection
         $ideaDirectory = $this->cacheDirectory->getSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
         $jetbrainsDirectory = $this->cacheDirectory->getSubDirectory(CacheDirectoryBuilder::DIRECTORY_JETBRAINS);
 
-        // As we're mounting their whole project into /app, and mounting our generated .idea directory into /app/.idea,
-        // there is the potential to overwrite their .idea directory locally if we're not careful.
-        // Apart from user directories, these can't be readonly (phpstorm modifies files such as /app/.idea/shelf/* and
-        // /app/.idea/.gitignore) but we can explicitly state private bind-propagation to prevent overwriting.
         $this->dockerFacade
             ->mount($projectCopyDirectory->getPath(), '/app')
             ->mount($ideaDirectory->getPath(), '/app/.idea')

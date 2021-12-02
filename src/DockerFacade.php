@@ -74,15 +74,15 @@ class DockerFacade
         $this->commandRunner = $commandRunner;
 
         try {
-            $process = new Process(['docker', 'image', 'inspect', $this->imageName]);
+            $command = 'docker image inspect ' . $this->imageName;
 
-            $process->run();
-        } catch (\Throwable $e) {
-            throw new DockerException('Could not create and run docker processes', 1, $e);
-        }
-
-        if (!$process->isSuccessful()) {
-            throw new DockerException('Docker image \'' . $this->imageName . '\' doesn\'t seem to exist locally.');
+            $commandRunner->run($command);
+        } catch (\RuntimeException $e) {
+            throw new DockerException(
+                'Docker image \'' . $this->imageName . '\' doesn\'t seem to exist locally.',
+                1,
+                $e
+            );
         }
     }
 
