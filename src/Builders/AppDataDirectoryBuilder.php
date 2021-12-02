@@ -13,16 +13,17 @@ use TravisPhpstormInspector\Exceptions\FilesystemException;
 /**
  * @implements BuilderInterface<Directory>
  */
-class CacheDirectoryBuilder implements BuilderInterface
+class AppDataDirectoryBuilder implements BuilderInterface
 {
-    public const DIRECTORY_JETBRAINS = 'JetBrains';
+    public const DIRECTORY_CACHE = 'cache';
     public const DIRECTORY_PROJECT_COPY = 'projectCopy';
     public const DIRECTORY_RESULTS = 'results';
+    private const DIRECTORY_STORAGE = '.travis-phpstorm-inspector';
 
     /**
      * @var Directory
      */
-    private $cacheDirectory;
+    private $appDataDirectory;
     /**
      * @var Configuration
      */
@@ -54,9 +55,9 @@ class CacheDirectoryBuilder implements BuilderInterface
 
         $user = $userInfo['name'];
 
-        $cachePath = "/home/$user/.cache/travis-phpstorm-inspector";
+        $cachePath = '/home/' . $user . '/' . self::DIRECTORY_STORAGE;
 
-        $this->cacheDirectory = new Directory($cachePath, $output, true);
+        $this->appDataDirectory = new Directory($cachePath, $output, true);
     }
 
     /**
@@ -64,15 +65,15 @@ class CacheDirectoryBuilder implements BuilderInterface
      */
     public function build(): void
     {
-        // Make/Create an empty 'JetBrains' directory to house PhpStorm's cache.
+        // Make/Create a 'cache' directory to house PhpStorm's cache.
 
-        $this->cacheDirectory->setOrCreateSubDirectory(self::DIRECTORY_JETBRAINS);
+        $this->appDataDirectory->setOrCreateSubDirectory(self::DIRECTORY_CACHE);
 
 
         // Make/Create an empty 'projectCopy' directory to hold a copy of the user's project.
         // This allows the user to continue to make changes while the inspections are being run.
 
-        $projectCopyDirectory = $this->cacheDirectory->setOrCreateSubDirectory(self::DIRECTORY_PROJECT_COPY);
+        $projectCopyDirectory = $this->appDataDirectory->setOrCreateSubDirectory(self::DIRECTORY_PROJECT_COPY);
 
         $projectCopyDirectory->empty();
 
@@ -81,10 +82,10 @@ class CacheDirectoryBuilder implements BuilderInterface
 
         // Remove and freshly recreate the '.idea' directory according to the configuration we've received.
 
-        $this->cacheDirectory->removeSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
+        $this->appDataDirectory->removeSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
-            $this->cacheDirectory,
+            $this->appDataDirectory,
             $this->configuration->getInspectionProfile(),
             $this->configuration->getPhpVersion(),
             $this->configuration->getExcludeFolders()
@@ -95,7 +96,7 @@ class CacheDirectoryBuilder implements BuilderInterface
 
         // Make/Create an empty 'results' directory to hold the results of the inspection.
 
-        $resultsDirectory = $this->cacheDirectory->setOrCreateSubDirectory(self::DIRECTORY_RESULTS);
+        $resultsDirectory = $this->appDataDirectory->setOrCreateSubDirectory(self::DIRECTORY_RESULTS);
 
         $resultsDirectory->empty();
     }
@@ -105,6 +106,6 @@ class CacheDirectoryBuilder implements BuilderInterface
      */
     public function getResult()
     {
-        return $this->cacheDirectory;
+        return $this->appDataDirectory;
     }
 }

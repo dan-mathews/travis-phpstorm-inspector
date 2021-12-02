@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use TravisPhpstormInspector\Builders\CacheDirectoryBuilder;
+use TravisPhpstormInspector\Builders\AppDataDirectoryBuilder;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\Exceptions\DockerException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
@@ -32,7 +32,7 @@ class Inspection
     /**
      * @var Directory
      */
-    private $cacheDirectory;
+    private $appDataDirectory;
 
     /**
      * @throws \InvalidArgumentException
@@ -46,7 +46,7 @@ class Inspection
 
         $commandRunner = new CommandRunner($configuration->getVerbose());
 
-        $cacheDirectoryBuilder = new CacheDirectoryBuilder(
+        $cacheDirectoryBuilder = new AppDataDirectoryBuilder(
             $configuration,
             $output,
             $commandRunner
@@ -54,7 +54,7 @@ class Inspection
 
         $cacheDirectoryBuilder->build();
 
-        $this->cacheDirectory = $cacheDirectoryBuilder->getResult();
+        $this->appDataDirectory = $cacheDirectoryBuilder->getResult();
 
         $this->dockerFacade = new DockerFacade(
             $configuration->getDockerRepository(),
@@ -63,7 +63,7 @@ class Inspection
         );
 
         $this->resultsProcessor = new ResultsProcessor(
-            $this->cacheDirectory->getSubDirectory(CacheDirectoryBuilder::DIRECTORY_RESULTS),
+            $this->appDataDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_RESULTS),
             $configuration
         );
     }
@@ -76,10 +76,12 @@ class Inspection
      */
     public function run(): Problems
     {
-        $projectCopyDirectory = $this->cacheDirectory->getSubDirectory(CacheDirectoryBuilder::DIRECTORY_PROJECT_COPY);
-        $resultsDirectory = $this->cacheDirectory->getSubDirectory(CacheDirectoryBuilder::DIRECTORY_RESULTS);
-        $ideaDirectory = $this->cacheDirectory->getSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
-        $jetbrainsDirectory = $this->cacheDirectory->getSubDirectory(CacheDirectoryBuilder::DIRECTORY_JETBRAINS);
+        $projectCopyDirectory = $this->appDataDirectory->getSubDirectory(
+            AppDataDirectoryBuilder::DIRECTORY_PROJECT_COPY
+        );
+        $resultsDirectory = $this->appDataDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_RESULTS);
+        $ideaDirectory = $this->appDataDirectory->getSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
+        $cacheDirectory = $this->appDataDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_CACHE);
 
         $this->dockerFacade
             ->mount($projectCopyDirectory->getPath(), '/app')
@@ -87,7 +89,7 @@ class Inspection
             ->mount($resultsDirectory->getPath(), '/results')
             ->mount('/etc/group', '/etc/group', true)
             ->mount('/etc/passwd', '/etc/passwd', true)
-            ->mount($jetbrainsDirectory->getPath(), '/home/$USER/.cache/JetBrains')
+            ->mount($cacheDirectory->getPath(), '/home/$USER/.cache/JetBrains')
             ->addCommand('chown -R $USER:$USER /home/$USER')
             ->addCommand($this->getPhpstormCommand());
 
