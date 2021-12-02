@@ -32,6 +32,7 @@ class CommandRunner
         }
 
         if ($code !== 0) {
+            /** @psalm-suppress MixedArgumentTypeCoercion - We know $output is fine for this purpose */
             throw new \RuntimeException(
                 'Failure when running command.'
                 // Don't re-print output if we already used passthru.

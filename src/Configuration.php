@@ -95,7 +95,13 @@ class Configuration
     ) {
         $this->projectDirectory = new Directory($projectPath, $output);
 
-        $this->inspectionProfilePath = self::DEFAULT_INSPECTION_PROFILE_PATH;
+        $realPath = realpath(self::DEFAULT_INSPECTION_PROFILE_PATH);
+
+        if (false === $realPath) {
+            throw new FilesystemException('Could not establish default inspection profile path');
+        }
+
+        $this->inspectionProfilePath = $realPath;
 
         $this->output = $output;
     }

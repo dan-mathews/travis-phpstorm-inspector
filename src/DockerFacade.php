@@ -10,7 +10,7 @@ use TravisPhpstormInspector\Exceptions\DockerException;
 class DockerFacade
 {
     /**
-     * @var array
+     * @var array<int, string>
      */
     private const OPTIONS_TYPE = [
         'bind',
@@ -19,7 +19,7 @@ class DockerFacade
     ];
 
     /**
-     * @var array
+     * @var array<int, string>
      */
     private const OPTIONS_BIND_PROPAGATION = [
         'rprivate',
@@ -44,11 +44,6 @@ class DockerFacade
      * @var string
      */
     private $tag;
-
-    /**
-     * @var string
-     */
-    private $imageDigest;
 
     /**
      * @var string[]
@@ -88,14 +83,6 @@ class DockerFacade
 
         if (!$process->isSuccessful()) {
             throw new DockerException('Docker image \'' . $this->imageName . '\' doesn\'t seem to exist locally.');
-        }
-
-        try {
-            $output = json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR);
-
-            $this->imageDigest = $output[0]['ContainerConfig']['Image'] ?? null;
-        } catch (\Throwable $e) {
-            throw new DockerException('Docker image digest could not be established from docker command.');
         }
     }
 
@@ -167,10 +154,5 @@ class DockerFacade
     public function getImageName(): string
     {
         return $this->imageName;
-    }
-
-    public function getImageDigest(): string
-    {
-        return $this->imageDigest;
     }
 }

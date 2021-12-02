@@ -13,8 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Inspection;
-use TravisPhpstormInspector\Views\Fail;
 use TravisPhpstormInspector\Views\Error;
+use TravisPhpstormInspector\Views\Fail;
 use TravisPhpstormInspector\Views\Pass;
 
 class InspectCommand extends Command
@@ -77,7 +77,7 @@ class InspectCommand extends Command
             null,
             InputOption::VALUE_OPTIONAL,
             'The absolute or relative path of the inspection profile to use' . PHP_EOL
-            . '- default: PhpStorm\'s default profile, see ' . Configuration::DEFAULT_INSPECTION_PROFILE_PATH
+            . '- default: PhpStorm\'s default profile, see ' . $this->getRelativeDefaultPath()
         );
 
         $this->addOption(
@@ -190,5 +190,33 @@ class InspectCommand extends Command
         }
 
         return $workingDirectory;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getRelativeDefaultPath(): string
+    {
+        $errorMessage = 'Could not process default profile path relative to project root';
+
+        $defaultProfilePath = realpath(Configuration::DEFAULT_INSPECTION_PROFILE_PATH);
+
+        if (false === $defaultProfilePath) {
+            throw new InvalidArgumentException($errorMessage);
+        }
+
+        $startPosition = strripos($defaultProfilePath, 'data');
+
+        if (false === $startPosition) {
+            throw new InvalidArgumentException($errorMessage);
+        }
+
+        $relativeDefaultProfilePath = substr($defaultProfilePath, $startPosition);
+
+        if (empty($relativeDefaultProfilePath)) {
+            throw new InvalidArgumentException($errorMessage);
+        }
+
+        return $relativeDefaultProfilePath;
     }
 }

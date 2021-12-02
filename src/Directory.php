@@ -19,6 +19,11 @@ class Directory
     private $output;
 
     /**
+     * @var array<array-key, Directory>
+     */
+    private $subDirectories = [];
+
+    /**
      * @throws FilesystemException
      */
     public function __construct(
@@ -34,7 +39,11 @@ class Directory
 
         $realPath = realpath($absolutePath);
 
-        if (!$this->isDirectoryReadable($realPath)) {
+        if (
+            false === is_string($realPath) ||
+            false === is_dir($realPath) ||
+            false === is_readable($realPath)
+        ) {
             if (false === $createIfNotFound) {
                 throw new FilesystemException('Could not find a readable directory at ' . $absolutePath);
             }
@@ -105,20 +114,43 @@ class Directory
     {
         $absolutePath = $this->path . '/' . $name;
 
-        return $this->createDirectory($absolutePath);
+        $subDirectory = $this->createDirectory($absolutePath);
+
+        $this->subDirectories[$name] = $subDirectory;
+
+        return $subDirectory;
+    }
+
+    /**
+     * todo merge with createSubDirectory() with a flag.
+     *  keep createDirectory() pure but have new Directory throw an error then catch if flag is set
+     * @throws FilesystemException
+     */
+    public function setOrCreateSubDirectory(string $name): Directory
+    {
+        $absolutePath = $this->path . '/' . $name;
+
+        $subDirectory = new Directory($absolutePath, $this->output, true);
+
+        $this->subDirectories[$name] = $subDirectory;
+
+        return $subDirectory;
     }
 
     /**
      * @throws FilesystemException
      */
-    public function getOrCreateSubDirectory(string $name): Directory
+    public function getSubDirectory(string $name): Directory
     {
-        $absolutePath = $this->path . '/' . $name;
+        if (!isset($this->subDirectories[$name])) {
+            throw new FilesystemException('No ' . $name . ' directory found in ' . $this->getPath());
+        }
 
-        return new Directory($absolutePath, $this->output, true);
+        return $this->subDirectories[$name];
     }
 
     /**
+     * todo keep object properties in line with the real filesystem - remove all directories in subDirectories arr. here
      * @throws FilesystemException
      */
     public function empty(): void
@@ -126,6 +158,25 @@ class Directory
         $directoryIterator = $this->getDirectoryIterator($this->path);
 
         $this->emptyDirectory($directoryIterator);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function removeSubDirectory(string $name): void
+    {
+        $absolutePath = $this->path . '/' . $name;
+
+        //todo should be able to look in subDirectories array here if it's populated on creation
+        if (!is_dir($absolutePath)) {
+            return;
+        }
+
+        $directoryIterator = $this->getDirectoryIterator($absolutePath);
+
+        $this->removeDirectory($directoryIterator);
+
+        unset($this->subDirectories[$name]);
     }
 
     /**
@@ -157,21 +208,9 @@ class Directory
     }
 
     /**
-     * @param false|string $realPath
-     * @return bool
-     */
-    private function isDirectoryReadable($realPath): bool
-    {
-        return
-            true === is_string($realPath) &&
-            true === is_dir($realPath) &&
-            true === is_readable($realPath);
-    }
-
-    /**
      * @throws FilesystemException
      */
-    private function emptyDirectory(\DirectoryIterator $directoryIterator)
+    private function emptyDirectory(\DirectoryIterator $directoryIterator): void
     {
         foreach ($directoryIterator as $info) {
             if ($info->isDot()) {
@@ -203,7 +242,10 @@ class Directory
     }
 
     /**
-     * @throws \RuntimeException
+     * @param Directory $directory
+     * @param array<int, string> $excludeFolders
+     * @param CommandRunner $commandRunner
+     * @throws FilesystemException
      */
     public function copyTo(Directory $directory, array $excludeFolders, CommandRunner $commandRunner): void
     {
@@ -216,12 +258,15 @@ class Directory
             $excludeString .= '--exclude \'' . $folder . '\' ';
         }
 
-        //todo name each command to represent what it does
         //todo follow the ->addCommand() pattern from dockerFacade
         //todo make a cache class to keep all this logic and hold relevant dirs
         //todo: strip these excludes back so they make sense in flashcard context. Solve self-analysis another time
-        $command = 'rsync -a ' . $excludeString . $this->path . '/ ' . $directory->getPath();
+        $rsyncCommand = 'rsync -a ' . $excludeString . $this->path . '/ ' . $directory->getPath();
 
-        $commandRunner->run($command);
+        try {
+            $commandRunner->run($rsyncCommand);
+        } catch (\RuntimeException $e) {
+            throw new FilesystemException('Could not copy directory', 1, $e);
+        }
     }
 }

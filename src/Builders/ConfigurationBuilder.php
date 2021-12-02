@@ -10,7 +10,6 @@ use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Configuration\ConfigurationFile;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
 /**
  * @implements BuilderInterface<Configuration>
@@ -55,7 +54,7 @@ class ConfigurationBuilder implements BuilderInterface
             throw new ConfigurationException(InspectCommand::ARGUMENT_PROJECT_PATH . ' must be a string.');
         }
 
-        // The project path can be specified in the command arguments or we assume it's the working directory.
+        // The project path can be specified in the command arguments, or we assume it's the working directory.
         $projectPath = $arguments[InspectCommand::ARGUMENT_PROJECT_PATH] ?? $workingDirectory;
 
         $this->options = $options;

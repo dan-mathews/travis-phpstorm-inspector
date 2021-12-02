@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Builders;
 
-use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Directory;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\FileContents\InspectionProfileXml;
@@ -18,8 +17,9 @@ use TravisPhpstormInspector\FileContents\ProjectIml;
  */
 class IdeaDirectoryBuilder implements BuilderInterface
 {
-    private const DIRECTORY_IDEA = 'travis-phpstorm-inspector-.idea';
-    private const DIRECTORY_INSPECTION_PROFILES = 'inspectionProfiles';
+    public const DIRECTORY_IDEA = '.idea';
+    public const DIRECTORY_INSPECTION_PROFILES = 'inspectionProfiles';
+
     private const FILE_MODULES_XML = 'modules.xml';
     private const FILE_PHP_XML = 'php.xml';
     private const FILE_PROFILES_SETTINGS = 'profiles_settings.xml';
@@ -28,7 +28,7 @@ class IdeaDirectoryBuilder implements BuilderInterface
     /**
      * @var InspectionProfileXml
      */
-    private $inspectionsXml;
+    private $inspectionsXmlContents;
 
     /**
      * @var string
@@ -47,20 +47,20 @@ class IdeaDirectoryBuilder implements BuilderInterface
 
     /**
      * @param Directory $parentDirectory
-     * @param InspectionProfileXml $inspectionsXml
+     * @param InspectionProfileXml $inspectionsXmlContents
      * @param string $phpVersion
      * @param array<string> $excludeFolders
      * @throws FilesystemException
      */
     public function __construct(
         Directory $parentDirectory,
-        InspectionProfileXml $inspectionsXml,
+        InspectionProfileXml $inspectionsXmlContents,
         string $phpVersion,
         array $excludeFolders
     ) {
-        $this->inspectionsXml = $inspectionsXml;
+        $this->inspectionsXmlContents = $inspectionsXmlContents;
         $this->phpVersion = $phpVersion;
-        $this->ideaDirectory = $parentDirectory->getOrCreateSubDirectory(self::DIRECTORY_IDEA);
+        $this->ideaDirectory = $parentDirectory->setOrCreateSubDirectory(self::DIRECTORY_IDEA);
         $this->ideaDirectory->empty();
         $this->excludeFolders = $excludeFolders;
     }
@@ -70,20 +70,21 @@ class IdeaDirectoryBuilder implements BuilderInterface
      */
     public function build(): void
     {
+        // Make/Create an 'inspectionProfiles' directory and fill it with the needed files.
         $inspectionProfilesDirectory = $this->ideaDirectory->createSubDirectory(self::DIRECTORY_INSPECTION_PROFILES);
-        $profileSettingsXml = new ProfileSettingsXml($this->inspectionsXml->getProfileNameValue());
+        $profileSettingsXmlContents = new ProfileSettingsXml($this->inspectionsXmlContents->getProfileNameValue());
         $inspectionProfilesDirectory
-            ->createFile(self::FILE_PROFILES_SETTINGS, $profileSettingsXml)
-            ->createFile($this->inspectionsXml->getName(), $this->inspectionsXml);
+            ->createFile(self::FILE_PROFILES_SETTINGS, $profileSettingsXmlContents)
+            ->createFile($this->inspectionsXmlContents->getName(), $this->inspectionsXmlContents);
 
-        $modulesXml = new ModulesXml();
-        $phpXml = new PhpXml($this->phpVersion);
-        $projectIml = new ProjectIml($this->excludeFolders);
-
+        // Fill the '.idea' directory with the needed files.
+        $modulesXmlContents = new ModulesXml();
+        $phpXmlContents = new PhpXml($this->phpVersion);
+        $projectImlContents = new ProjectIml($this->excludeFolders);
         $this->ideaDirectory
-            ->createFile(self::FILE_MODULES_XML, $modulesXml)
-            ->createFile(self::FILE_PHP_XML, $phpXml)
-            ->createFile(self::FILE_PROJECT_IML, $projectIml);
+            ->createFile(self::FILE_MODULES_XML, $modulesXmlContents)
+            ->createFile(self::FILE_PHP_XML, $phpXmlContents)
+            ->createFile(self::FILE_PROJECT_IML, $projectImlContents);
     }
 
     /**

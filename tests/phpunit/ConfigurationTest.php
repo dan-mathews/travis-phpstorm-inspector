@@ -101,7 +101,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             ['verbose' => false],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -110,7 +109,6 @@ final class ConfigurationTest extends TestCase
         $configuration = $configurationBuilder->getResult();
 
         self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
-        self::assertSame(realpath(self::APP_ROOT_PATH), $configuration->getAppDirectory()->getPath());
         self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
@@ -173,7 +171,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             $options,
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -182,7 +179,6 @@ final class ConfigurationTest extends TestCase
         $configuration = $configurationBuilder->getResult();
 
         self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
-        self::assertSame(realpath(self::APP_ROOT_PATH), $configuration->getAppDirectory()->getPath());
         self::assertTrue($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -224,7 +220,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             [$this->projectName],
             $options,
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -233,7 +228,6 @@ final class ConfigurationTest extends TestCase
         $configuration = $configurationBuilder->getResult();
 
         self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
-        self::assertSame(realpath(self::APP_ROOT_PATH), $configuration->getAppDirectory()->getPath());
         self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
@@ -256,7 +250,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             ['verbose' => false],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -284,7 +277,6 @@ final class ConfigurationTest extends TestCase
                 'profile' => 'profile.xml',
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -313,7 +305,6 @@ final class ConfigurationTest extends TestCase
                 'configuration' => $this->projectPath . '/myConfig.json',
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -340,7 +331,6 @@ final class ConfigurationTest extends TestCase
                 'configuration' => $this->projectPath . '/nonExistent.json',
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -354,7 +344,6 @@ final class ConfigurationTest extends TestCase
                 'docker-repository' => 3,
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -373,7 +362,6 @@ final class ConfigurationTest extends TestCase
                 'docker-tag' => 3,
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -392,7 +380,6 @@ final class ConfigurationTest extends TestCase
                 'profile' => 3,
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -411,7 +398,6 @@ final class ConfigurationTest extends TestCase
                 'profile' => 'profile.xml',
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -434,7 +420,6 @@ final class ConfigurationTest extends TestCase
                 'php-version' => 3,
                 'verbose' => false
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -461,7 +446,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             ['verbose' => false],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -533,7 +517,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             ['verbose' => false],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -581,7 +564,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             ['verbose' => false],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -602,7 +584,6 @@ final class ConfigurationTest extends TestCase
                     'verbose' => false,
                     'ignore-severities' => 3,
                 ],
-                self::APP_ROOT_PATH,
                 $this->projectPath,
                 $this->outputDummy
             );
@@ -621,7 +602,6 @@ final class ConfigurationTest extends TestCase
                 'verbose' => false,
                 'ignore-severities' => 'cat',
             ],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -643,7 +623,6 @@ final class ConfigurationTest extends TestCase
         new ConfigurationBuilder(
             ['project-path' => 0],
             [],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
@@ -660,7 +639,6 @@ final class ConfigurationTest extends TestCase
         $configurationBuilder = new ConfigurationBuilder(
             ['project-path' => $this->projectPath],
             ['verbose' => false],
-            self::APP_ROOT_PATH,
             $this->projectPath,
             $this->outputDummy
         );
