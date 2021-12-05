@@ -10,11 +10,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Inspection;
-use TravisPhpstormInspector\Views\Fail;
 use TravisPhpstormInspector\Views\Error;
+use TravisPhpstormInspector\Views\Fail;
 use TravisPhpstormInspector\Views\Pass;
 
 class InspectCommand extends Command
@@ -54,6 +55,7 @@ class InspectCommand extends Command
 
     /**
      * @throws InvalidArgumentException
+     * @throws \LogicException
      */
     protected function configure(): void
     {
@@ -77,7 +79,7 @@ class InspectCommand extends Command
             null,
             InputOption::VALUE_OPTIONAL,
             'The absolute or relative path of the inspection profile to use' . PHP_EOL
-            . '- default: PhpStorm\'s default profile, see ' . Configuration::DEFAULT_INSPECTION_PROFILE_PATH
+            . '- default: PhpStorm\'s default profile, see ' . $this->getRelativeDefaultProfilePath()
         );
 
         $this->addOption(
@@ -123,22 +125,22 @@ class InspectCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $appRootPath = __DIR__ . '/../../../travis-phpstorm-inspector/';
-
             $workingDirectory = $this->getWorkingDirectory();
+
+            $filesystem = new Filesystem();
 
             $configurationBuilder = new ConfigurationBuilder(
                 $input->getArguments(),
                 $input->getOptions(),
-                $appRootPath,
                 $workingDirectory,
+                $filesystem,
                 $output
             );
 
             $configurationBuilder->build();
             $configuration = $configurationBuilder->getResult();
 
-            $inspection = new Inspection($configuration);
+            $inspection = new Inspection($configuration, $filesystem, $output);
 
             $problems = $inspection->run();
 
@@ -193,5 +195,29 @@ class InspectCommand extends Command
         }
 
         return $workingDirectory;
+    }
+
+    /**
+     * @throws \LogicException
+     */
+    private function getRelativeDefaultProfilePath(): string
+    {
+        $errorMessage = 'Could not process default profile path relative to project root';
+
+        $defaultProfilePath = Configuration::DEFAULT_INSPECTION_PROFILE_PATH;
+
+        $startPosition = strripos($defaultProfilePath, 'data');
+
+        if (false === $startPosition) {
+            throw new \LogicException($errorMessage);
+        }
+
+        $relativeDefaultProfilePath = substr($defaultProfilePath, $startPosition);
+
+        if (empty($relativeDefaultProfilePath)) {
+            throw new \LogicException($errorMessage);
+        }
+
+        return $relativeDefaultProfilePath;
     }
 }

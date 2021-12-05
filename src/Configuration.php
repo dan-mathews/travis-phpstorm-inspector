@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
+use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
+use TravisPhpstormInspector\FileContents\InspectionProfileXml;
 
 class Configuration
 {
@@ -15,7 +18,7 @@ class Configuration
     public const DEFAULT_EXCLUDE_FOLDERS = [];
     public const DEFAULT_IGNORE_LINES = [];
     public const DEFAULT_IGNORE_SEVERITIES = [];
-    public const DEFAULT_INSPECTION_PROFILE_PATH = '/data/default.xml';
+    public const DEFAULT_INSPECTION_PROFILE_PATH = __DIR__ . '/../../travis-phpstorm-inspector/data/default.xml';
     public const DEFAULT_PHP_VERSION = '7.3';
     public const DEFAULT_VERBOSE = true;
     public const DEFAULT_WHOLE_PROJECT = false;
@@ -55,11 +58,6 @@ class Configuration
     private $excludeFolders = self::DEFAULT_EXCLUDE_FOLDERS;
 
     /**
-     * @var Directory
-     */
-    private $appDirectory;
-
-    /**
      * @var bool
      */
     private $verbose = self::DEFAULT_VERBOSE;
@@ -70,9 +68,9 @@ class Configuration
     private $projectDirectory;
 
     /**
-     * @var string
+     * @var InspectionProfileXml
      */
-    private $inspectionProfilePath;
+    private $inspectionProfile;
 
     /**
      * @var string
@@ -90,21 +88,26 @@ class Configuration
     private $output;
 
     /**
+     * @var Filesystem
+     */
+    private $filesystem;
+
+    /**
      * @param string $projectPath
-     * @param string $appRootPath
+     * @param Filesystem $filesystem
      * @param OutputInterface $output
      * @throws FilesystemException
      */
     public function __construct(
         string $projectPath,
-        string $appRootPath,
+        Filesystem $filesystem,
         OutputInterface $output
     ) {
-        $this->projectDirectory = new Directory($projectPath, $output);
+        $this->filesystem = $filesystem;
 
-        $this->appDirectory = new Directory($appRootPath, $output);
+        $this->projectDirectory = new Directory($projectPath, $output, $this->filesystem);
 
-        $this->inspectionProfilePath = $this->appDirectory->getPath() . self::DEFAULT_INSPECTION_PROFILE_PATH;
+        $this->inspectionProfile = new InspectionProfileXml(self::DEFAULT_INSPECTION_PROFILE_PATH);
 
         $this->output = $output;
     }
@@ -177,7 +180,11 @@ class Configuration
         foreach ($excludeFolders as $folderName) {
             try {
                 // Use Directory to validate that this is a relative path from the project to a real folder.
-                new Directory($this->getProjectDirectory()->getPath() . '/' . $folderName, $this->output);
+                new Directory(
+                    $this->getProjectDirectory()->getPath() . '/' . $folderName,
+                    $this->output,
+                    $this->filesystem
+                );
             } catch (FilesystemException $e) {
                 throw new ConfigurationException(
                     'Folders to exclude must be specified as relative paths from the project root. '
@@ -225,11 +232,6 @@ class Configuration
         return $this->excludeFolders;
     }
 
-    public function getAppDirectory(): Directory
-    {
-        return $this->appDirectory;
-    }
-
     public function getProjectDirectory(): Directory
     {
         return $this->projectDirectory;
@@ -240,9 +242,9 @@ class Configuration
         return $this->verbose;
     }
 
-    public function getInspectionProfilePath(): string
+    public function getInspectionProfile(): InspectionProfileXml
     {
-        return $this->inspectionProfilePath;
+        return $this->inspectionProfile;
     }
 
     public function getPhpVersion(): string
@@ -261,25 +263,15 @@ class Configuration
     }
 
     /**
-     * @throws ConfigurationException
+     * @throws InspectionsProfileException
      */
-    public function setInspectionProfilePath(string $inspectionProfilePath): void
+    public function setInspectionProfile(string $path): void
     {
-        if (file_exists($this->projectDirectory->getPath() . '/' . $inspectionProfilePath)) {
-            $this->inspectionProfilePath = $this->projectDirectory->getPath() . '/' . $inspectionProfilePath;
-            return;
+        if (file_exists($this->projectDirectory->getPath() . '/' . $path)) {
+            $path = $this->projectDirectory->getPath() . '/' . $path;
         }
 
-        if (file_exists($inspectionProfilePath)) {
-            $this->inspectionProfilePath = $inspectionProfilePath;
-            return;
-        }
-
-        throw new ConfigurationException(
-            'Could not read inspection profile as a path relative to the project directory ('
-            . $this->projectDirectory->getPath() . '/' . $inspectionProfilePath . '), or an absolute path ('
-            . $inspectionProfilePath . ')'
-        );
+        $this->inspectionProfile = new InspectionProfileXml($path);
     }
 
     public function setPhpVersion(string $phpVersion): void

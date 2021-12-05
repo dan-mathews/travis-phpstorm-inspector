@@ -415,11 +415,21 @@ class FeatureContext implements Context
 
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
 
-        if ($string->getRaw() !== $actualOutputLinesForComparison) {
+        $expectedString = $string->getRaw();
+
+        // PyStrings seem to parse tabs as 2 spaces, so we do the same on the output for comparison.
+        $actualOutputLinesForComparison = str_replace("\t", '  ', $actualOutputLinesForComparison);
+
+        // We could use Twig, but this is currently the only variable, so adding a new dependency would be overkill.
+        if (false !== strpos($expectedString, '{{ projectRoot }}')) {
+            $expectedString = str_replace('{{ projectRoot }}', $this->getProjectPath(), $string->getRaw());
+        }
+
+        if ($expectedString !== $actualOutputLinesForComparison) {
             echo "For debugging, the last 40 lines of output were:\n" . $this->getLastLinesOfOutput(40);
         }
 
-        Assert::assertSame($string->getRaw(), $actualOutputLinesForComparison);
+        Assert::assertSame($expectedString, $actualOutputLinesForComparison);
     }
 
     /**

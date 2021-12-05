@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Configuration\ConfigurationFile;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
-use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
 
 /**
  * @implements BuilderInterface<Configuration>
@@ -37,8 +37,8 @@ class ConfigurationBuilder implements BuilderInterface
     /**
      * @param array<array-key, mixed> $arguments
      * @param array<array-key, mixed> $options
-     * @param string $appRootPath
      * @param string $workingDirectory
+     * @param Filesystem $filesystem
      * @param OutputInterface $output
      * @throws ConfigurationException
      * @throws FilesystemException
@@ -46,8 +46,8 @@ class ConfigurationBuilder implements BuilderInterface
     public function __construct(
         array $arguments,
         array $options,
-        string $appRootPath,
         string $workingDirectory,
+        Filesystem $filesystem,
         OutputInterface $output
     ) {
         if (
@@ -57,12 +57,12 @@ class ConfigurationBuilder implements BuilderInterface
             throw new ConfigurationException(InspectCommand::ARGUMENT_PROJECT_PATH . ' must be a string.');
         }
 
-        // The project path can be specified in the command arguments or we assume it's the working directory.
+        // The project path can be specified in the command arguments, or we assume it's the working directory.
         $projectPath = $arguments[InspectCommand::ARGUMENT_PROJECT_PATH] ?? $workingDirectory;
 
         $this->options = $options;
 
-        $this->configuration = new Configuration($projectPath, $appRootPath, $output);
+        $this->configuration = new Configuration($projectPath, $filesystem, $output);
 
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();
@@ -252,7 +252,7 @@ class ConfigurationBuilder implements BuilderInterface
             throw new ConfigurationException(InspectCommand::OPTION_INSPECTION_PROFILE . ' must be a string.');
         }
 
-        $this->configuration->setInspectionProfilePath($value);
+        $this->configuration->setInspectionProfile($value);
     }
 
     /**

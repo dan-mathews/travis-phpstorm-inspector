@@ -18,7 +18,7 @@ class ProfileSettingsXml implements GetContentsInterface
 
     public function getContents(): string
     {
-        //PhpStorm creates this without an XML declaration, so we do the same
+        // PhpStorm creates this without an XML declaration, so we do the same.
         return '<component name="InspectionProjectProfileManager">'
         . '<settings><option name="PROJECT_PROFILE" value="' . $this->profileName . '" />'
         . '<version value="1.0" />'

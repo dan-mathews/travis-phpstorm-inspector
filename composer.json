@@ -16,14 +16,17 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "BehatTests\\": "tests/behat/features"
+      "BehatTests\\": "tests/behat/features",
+      "PhpUnitTests\\": "tests/phpunit"
     }
   },
   "require": {
     "php": "~7.3",
     "ext-json": "*",
     "ext-xmlreader": "*",
-    "symfony/console": "^5.3"
+    "symfony/console": "^5.3",
+    "ext-posix": "*",
+    "symfony/filesystem": "^5.4"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
