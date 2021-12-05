@@ -78,7 +78,8 @@ class DockerFacade
             $commandRunner->run($command);
         } catch (\RuntimeException $e) {
             throw new DockerException(
-                'Docker image \'' . $this->imageName . '\' doesn\'t seem to exist locally.',
+                'Docker image \'' . $this->imageName . '\' doesn\'t seem to exist locally.' . "\n"
+                . "If you would like to pull it, use this command:\n\n\tdocker pull " . $this->imageName,
                 1,
                 $e
             );

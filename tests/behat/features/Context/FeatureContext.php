@@ -417,6 +417,9 @@ class FeatureContext implements Context
 
         $expectedString = $string->getRaw();
 
+        // PyStrings seem to parse tabs as 2 spaces, so we do the same on the output for comparison.
+        $actualOutputLinesForComparison = str_replace("\t", '  ', $actualOutputLinesForComparison);
+
         // We could use Twig, but this is currently the only variable, so adding a new dependency would be overkill.
         if (false !== strpos($expectedString, '{{ projectRoot }}')) {
             $expectedString = str_replace('{{ projectRoot }}', $this->getProjectPath(), $string->getRaw());

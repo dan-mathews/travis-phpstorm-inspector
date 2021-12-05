@@ -78,7 +78,7 @@ class InspectCommand extends Command
             null,
             InputOption::VALUE_OPTIONAL,
             'The absolute or relative path of the inspection profile to use' . PHP_EOL
-            . '- default: PhpStorm\'s default profile, see ' . $this->getRelativeDefaultPath()
+            . '- default: PhpStorm\'s default profile, see ' . $this->getRelativeDefaultProfilePath()
         );
 
         $this->addOption(
@@ -196,7 +196,7 @@ class InspectCommand extends Command
     /**
      * @throws \LogicException
      */
-    private function getRelativeDefaultPath(): string
+    private function getRelativeDefaultProfilePath(): string
     {
         $errorMessage = 'Could not process default profile path relative to project root';
 
