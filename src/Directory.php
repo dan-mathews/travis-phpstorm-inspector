@@ -156,7 +156,6 @@ class Directory
     }
 
     /**
-     * todo keep object properties in line with the real filesystem - remove all directories in subDirectories arr. here
      * @throws FilesystemException
      */
     public function empty(): void
