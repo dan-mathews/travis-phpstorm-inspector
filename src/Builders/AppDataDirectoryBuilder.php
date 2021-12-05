@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\CommandRunner;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Directory;
@@ -57,7 +58,7 @@ class AppDataDirectoryBuilder implements BuilderInterface
 
         $cachePath = '/home/' . $user . '/' . self::DIRECTORY_STORAGE;
 
-        $this->appDataDirectory = new Directory($cachePath, $output, true);
+        $this->appDataDirectory = new Directory($cachePath, $output, new Filesystem(), true);
     }
 
     /**

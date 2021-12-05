@@ -3,15 +3,14 @@
 namespace TravisPhpstormInspector;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\FileContents\GetContentsInterface;
 
 /**
  * This is not a perfect class for Directory management by any means.
  * Amongst other things, the subDirectories array property should probably be populated on construction.
- * I reviewed the compatibility of Symfony Filesystem, but it didn't offer what I was looking for:
- *   - A simple set of methods to guarantee the existence and state of certain directories
- *   - Which, on failure, threw errors rather than returning false like the native hp filesystem methods
  * TODO: look further into open source alternatives for this filesystem management.
  */
 class Directory
@@ -32,16 +31,24 @@ class Directory
     private $subDirectories = [];
 
     /**
+     * @var Filesystem
+     */
+    private $filesystem;
+
+    /**
      * @throws FilesystemException
      */
     public function __construct(
         string $absolutePath,
         OutputInterface $output,
+        Filesystem $filesystem,
         bool $createIfNotFound = false
     ) {
         if ('' === $absolutePath) {
             throw new FilesystemException('Cannot construct a Directory with an empty path');
         }
+
+        $this->filesystem = $filesystem;
 
         $this->output = $output;
 
@@ -74,18 +81,10 @@ class Directory
     {
         $absolutePath = $this->path . '/' . $name;
 
-        $file = fopen($absolutePath, 'wb');
-
-        if (false === $file) {
-            throw new FilesystemException('Failed to create file at path: "' . $absolutePath . '".');
-        }
-
-        if (false === fwrite($file, $contents->getContents())) {
-            throw new FilesystemException('Failed to write to file at path: "' . $absolutePath . '".');
-        }
-
-        if (false === fclose($file)) {
-            throw new FilesystemException('Failed to close file at path: "' . $absolutePath . '".');
+        try {
+            $this->filesystem->dumpFile($absolutePath, $contents->getContents());
+        } catch (IOException $e) {
+            throw new FilesystemException('Failed to create file at path: "' . $absolutePath . '".', 2, $e);
         }
 
         $this->output->writeln('Created file ' . $absolutePath);
@@ -102,17 +101,19 @@ class Directory
             throw new FilesystemException('Cannot create a directory with an empty path');
         }
 
-        if (file_exists($absolutePath)) {
-            throw new FilesystemException('Cannot create directory, file already exists at: ' . $absolutePath);
-        }
+        try {
+            if ($this->filesystem->exists($absolutePath)) {
+                throw new FilesystemException('Cannot create directory, file already exists at: ' . $absolutePath);
+            }
 
-        if (false === mkdir($absolutePath) && false === is_dir($absolutePath)) {
-            throw new FilesystemException(sprintf('Directory "%s" was not created', $absolutePath));
+            $this->filesystem->mkdir($absolutePath);
+        } catch (IOException $e) {
+            throw new FilesystemException('Could not create directory at ' . $absolutePath, 2, $e);
         }
 
         $this->output->writeln('Created directory ' . $absolutePath);
 
-        return new Directory($absolutePath, $this->output);
+        return new Directory($absolutePath, $this->output, $this->filesystem);
     }
 
     /**
@@ -136,7 +137,7 @@ class Directory
     {
         $absolutePath = $this->path . '/' . $name;
 
-        $subDirectory = new Directory($absolutePath, $this->output, true);
+        $subDirectory = new Directory($absolutePath, $this->output, $this->filesystem, true);
 
         $this->subDirectories[$name] = $subDirectory;
 
@@ -172,31 +173,13 @@ class Directory
     {
         $absolutePath = $this->path . '/' . $name;
 
-        if (!is_dir($absolutePath)) {
-            return;
+        try {
+            $this->filesystem->remove($absolutePath);
+        } catch (IOException $e) {
+            throw new FilesystemException('Could not remove directory ' . $name . ' from ' . $this->getPath(), 2, $e);
         }
-
-        $directoryIterator = $this->getDirectoryIterator($absolutePath);
-
-        $this->removeDirectory($directoryIterator);
 
         unset($this->subDirectories[$name]);
-    }
-
-    /**
-     * @throws FilesystemException
-     */
-    private function removeDirectory(\DirectoryIterator $directoryIterator): void
-    {
-        $directoryPath = $directoryIterator->getPath();
-
-        $this->emptyDirectory($directoryIterator);
-
-        if (false === rmdir($directoryPath)) {
-            throw new FilesystemException('Could not remove directory at path ' . $directoryPath);
-        }
-
-        $this->output->writeln('Removed directory ' . $directoryPath);
     }
 
     /**
@@ -227,18 +210,10 @@ class Directory
                 throw new FilesystemException('Could not get real path of ' . $info->getPath());
             }
 
-            if ($info->isDir()) {
-                $directoryIterator = $this->getDirectoryIterator($filePath);
-
-                $this->removeDirectory($directoryIterator);
-                continue;
-            }
-
-            if (
-                $info->isFile() &&
-                false === unlink($filePath)
-            ) {
-                throw new FilesystemException('Could not remove file at path ' . $filePath);
+            try {
+                $this->filesystem->remove($filePath);
+            } catch (IOException $e) {
+                throw new FilesystemException('Could not remove file at path ' . $filePath, 2, $e);
             }
 
             $this->output->writeln('Removed file ' . $filePath);
@@ -246,17 +221,18 @@ class Directory
     }
 
     /**
+     * This differs from Symfony's mirror() in that you can add directories to exclude.
      * @param Directory $directory
-     * @param array<int, string> $excludeFolders
+     * @param array<int, string> $excludeDirectories
      * @param CommandRunner $commandRunner
      * @throws FilesystemException
      */
-    public function copyTo(Directory $directory, array $excludeFolders, CommandRunner $commandRunner): void
+    public function copyTo(Directory $directory, array $excludeDirectories, CommandRunner $commandRunner): void
     {
         $excludeString = '';
 
-        foreach ($excludeFolders as $folder) {
-            $excludeString .= '--exclude \'' . $folder . '\' ';
+        foreach ($excludeDirectories as $excludeDirectory) {
+            $excludeString .= '--exclude \'' . $excludeDirectory . '\' ';
         }
 
         $rsyncCommand = 'rsync -a ' . $excludeString . $this->path . '/ ' . $directory->getPath();

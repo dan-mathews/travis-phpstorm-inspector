@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Exceptions\ConfigurationException;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\Exceptions\InspectionsProfileException;
@@ -87,6 +88,11 @@ class Configuration
     private $output;
 
     /**
+     * @var Filesystem
+     */
+    private $filesystem;
+
+    /**
      * @param string $projectPath
      * @param OutputInterface $output
      * @throws FilesystemException
@@ -95,7 +101,9 @@ class Configuration
         string $projectPath,
         OutputInterface $output
     ) {
-        $this->projectDirectory = new Directory($projectPath, $output);
+        $this->filesystem = new Filesystem();
+
+        $this->projectDirectory = new Directory($projectPath, $output, $this->filesystem);
 
         $this->inspectionProfile = new InspectionProfileXml(self::DEFAULT_INSPECTION_PROFILE_PATH);
 
@@ -170,7 +178,11 @@ class Configuration
         foreach ($excludeFolders as $folderName) {
             try {
                 // Use Directory to validate that this is a relative path from the project to a real folder.
-                new Directory($this->getProjectDirectory()->getPath() . '/' . $folderName, $this->output);
+                new Directory(
+                    $this->getProjectDirectory()->getPath() . '/' . $folderName,
+                    $this->output,
+                    $this->filesystem
+                );
             } catch (FilesystemException $e) {
                 throw new ConfigurationException(
                     'Folders to exclude must be specified as relative paths from the project root. '
