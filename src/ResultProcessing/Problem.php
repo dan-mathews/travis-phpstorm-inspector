@@ -32,12 +32,19 @@ class Problem
     private $severity;
 
     /**
+     * @var string
+     */
+    private $filenameLink;
+
+    /**
      * @param array<string, mixed> $problem
      * @psalm-suppress MixedAssignment - we know from phpStorm's result structure what types these will be
      */
-    public function __construct(array $problem)
+    public function __construct(array $problem, string $projectDirectoryPath)
     {
         $this->filename = $this->getCleanFilename($problem);
+
+        $this->filenameLink = 'file:///' . $projectDirectoryPath . '/' . $this->filename;
 
         $this->description = $problem['description'] ?? 'unknown description';
 
@@ -73,6 +80,11 @@ class Problem
     public function getFilename(): string
     {
         return $this->filename;
+    }
+
+    public function getFilenameLink(): string
+    {
+        return $this->filenameLink;
     }
 
     public function getLine(): string

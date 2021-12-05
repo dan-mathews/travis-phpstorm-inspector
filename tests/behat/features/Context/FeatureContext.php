@@ -415,11 +415,14 @@ class FeatureContext implements Context
 
         $actualOutputLinesForComparison = $this->getLastLinesOfOutput($assertedOutputLineCount);
 
-        if ($string->getRaw() !== $actualOutputLinesForComparison) {
+        // We could use Twig, but this is currently the only variable, so adding a new dependency would be overkill.
+        $expectedString = str_replace('{{ projectRoot }}', $this->getProjectPath(), $string->getRaw());
+
+        if ($expectedString !== $actualOutputLinesForComparison) {
             echo "For debugging, the last 40 lines of output were:\n" . $this->getLastLinesOfOutput(40);
         }
 
-        Assert::assertSame($string->getRaw(), $actualOutputLinesForComparison);
+        Assert::assertSame($expectedString, $actualOutputLinesForComparison);
     }
 
     /**

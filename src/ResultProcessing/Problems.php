@@ -25,7 +25,7 @@ class Problems extends \SplHeap
     {
         /** @var array<string, mixed> $jsonProblem */
         foreach ($jsonProblems as $jsonProblem) {
-            $problem = new Problem($jsonProblem);
+            $problem = new Problem($jsonProblem, $this->configuration->getProjectDirectory()->getPath());
 
             if (\in_array($problem->getSeverity(), $this->configuration->getIgnoreSeverities(), true)) {
                 continue;

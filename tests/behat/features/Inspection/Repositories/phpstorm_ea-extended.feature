@@ -33,7 +33,7 @@ Feature: Run inspections
     """
     49 problems were found during phpStorm inspection.
 
-    Problems in src/InspectionViolator.php:
+    Problems in file:///{{ projectRoot }}/src/InspectionViolator.php:
       line 1    ERROR         (PHP short open tag usage) [EA] Using the '<?' short tag considered to be a bad practice
       line 1    ERROR         (Short open tag usage) Short opening tag usage
       line 5    ERROR         (Undefined class) Undefined class 'NonExistent'

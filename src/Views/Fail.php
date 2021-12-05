@@ -34,7 +34,7 @@ class Fail implements DisplayInterface
             $problem = $this->problems->current();
 
             if ($problem->getFilename() !== $currentFilename) {
-                $output .= "\nProblems in " . $problem->getFilename() . ":\n";
+                $output .= "\nProblems in " . $problem->getFilenameLink() . ":\n";
                 $currentFilename = $problem->getFilename();
             }
 
