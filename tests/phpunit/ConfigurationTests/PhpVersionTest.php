@@ -27,6 +27,7 @@ final class PhpVersionTest extends AbstractConfigurationTest
                 'verbose' => false
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 

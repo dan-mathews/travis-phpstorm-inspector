@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector\Builders;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Commands\InspectCommand;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Configuration\ConfigurationFile;
@@ -37,6 +38,7 @@ class ConfigurationBuilder implements BuilderInterface
      * @param array<array-key, mixed> $arguments
      * @param array<array-key, mixed> $options
      * @param string $workingDirectory
+     * @param Filesystem $filesystem
      * @param OutputInterface $output
      * @throws ConfigurationException
      * @throws FilesystemException
@@ -45,6 +47,7 @@ class ConfigurationBuilder implements BuilderInterface
         array $arguments,
         array $options,
         string $workingDirectory,
+        Filesystem $filesystem,
         OutputInterface $output
     ) {
         if (
@@ -59,7 +62,7 @@ class ConfigurationBuilder implements BuilderInterface
 
         $this->options = $options;
 
-        $this->configuration = new Configuration($projectPath, $output);
+        $this->configuration = new Configuration($projectPath, $filesystem, $output);
 
         // We set this first to allow control over verbosity ASAP.
         $this->setVerbose();

@@ -31,6 +31,7 @@ final class InspectionProfileTest extends AbstractConfigurationTest
                 'verbose' => false
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -53,6 +54,7 @@ final class InspectionProfileTest extends AbstractConfigurationTest
                 'verbose' => false
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -83,6 +85,7 @@ final class InspectionProfileTest extends AbstractConfigurationTest
                 'verbose' => false
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 

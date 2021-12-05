@@ -26,6 +26,7 @@ final class ProjectPathTest extends AbstractConfigurationTest
             ['project-path' => 0],
             [],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
     }

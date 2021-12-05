@@ -42,7 +42,8 @@ class AppDataDirectoryBuilder implements BuilderInterface
     public function __construct(
         Configuration $configuration,
         OutputInterface $output,
-        CommandRunner $commandRunner
+        CommandRunner $commandRunner,
+        Filesystem $filesystem
     ) {
         $this->configuration = $configuration;
         $this->commandRunner = $commandRunner;
@@ -58,7 +59,7 @@ class AppDataDirectoryBuilder implements BuilderInterface
 
         $cachePath = '/home/' . $user . '/' . self::DIRECTORY_STORAGE;
 
-        $this->appDataDirectory = new Directory($cachePath, $output, new Filesystem(), true);
+        $this->appDataDirectory = new Directory($cachePath, $output, $filesystem, true);
     }
 
     /**

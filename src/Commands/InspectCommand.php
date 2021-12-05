@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Inspection;
@@ -126,17 +127,20 @@ class InspectCommand extends Command
         try {
             $workingDirectory = $this->getWorkingDirectory();
 
+            $filesystem = new Filesystem();
+
             $configurationBuilder = new ConfigurationBuilder(
                 $input->getArguments(),
                 $input->getOptions(),
                 $workingDirectory,
+                $filesystem,
                 $output
             );
 
             $configurationBuilder->build();
             $configuration = $configurationBuilder->getResult();
 
-            $inspection = new Inspection($configuration, $output);
+            $inspection = new Inspection($configuration, $filesystem, $output);
 
             $problems = $inspection->run();
 

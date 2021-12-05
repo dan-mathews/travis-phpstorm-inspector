@@ -27,6 +27,7 @@ final class IgnoreSeveritiesTest extends AbstractConfigurationTest
                 'ignore-severities' => 3,
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -49,6 +50,7 @@ final class IgnoreSeveritiesTest extends AbstractConfigurationTest
                 'ignore-severities' => 'cat',
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -78,6 +80,7 @@ final class IgnoreSeveritiesTest extends AbstractConfigurationTest
             ['project-path' => $this->projectPath],
             ['verbose' => false],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 

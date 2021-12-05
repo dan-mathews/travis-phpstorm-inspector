@@ -60,6 +60,7 @@ final class CommandlineConfigurationTest extends AbstractConfigurationTest
             ['project-path' => $this->projectPath],
             $options,
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -118,6 +119,7 @@ final class CommandlineConfigurationTest extends AbstractConfigurationTest
             [$this->projectName],
             $options,
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 

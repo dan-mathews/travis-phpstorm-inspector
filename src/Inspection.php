@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TravisPhpstormInspector;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Builders\AppDataDirectoryBuilder;
 use TravisPhpstormInspector\Builders\IdeaDirectoryBuilder;
 use TravisPhpstormInspector\Exceptions\DockerException;
@@ -40,7 +41,7 @@ class Inspection
      * @throws DockerException
      * @throws \RuntimeException
      */
-    public function __construct(Configuration $configuration, OutputInterface $output)
+    public function __construct(Configuration $configuration, Filesystem $filesystem, OutputInterface $output)
     {
         $this->configuration = $configuration;
 
@@ -49,7 +50,8 @@ class Inspection
         $cacheDirectoryBuilder = new AppDataDirectoryBuilder(
             $configuration,
             $output,
-            $commandRunner
+            $commandRunner,
+            $filesystem
         );
 
         $cacheDirectoryBuilder->build();

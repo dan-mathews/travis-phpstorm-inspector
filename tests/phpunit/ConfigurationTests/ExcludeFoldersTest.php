@@ -34,6 +34,7 @@ final class ExcludeFoldersTest extends AbstractConfigurationTest
             ['project-path' => $this->projectPath],
             ['verbose' => false],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -86,6 +87,7 @@ final class ExcludeFoldersTest extends AbstractConfigurationTest
             ['project-path' => $this->projectPath],
             ['verbose' => false],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 

@@ -94,14 +94,16 @@ class Configuration
 
     /**
      * @param string $projectPath
+     * @param Filesystem $filesystem
      * @param OutputInterface $output
      * @throws FilesystemException
      */
     public function __construct(
         string $projectPath,
+        Filesystem $filesystem,
         OutputInterface $output
     ) {
-        $this->filesystem = new Filesystem();
+        $this->filesystem = $filesystem;
 
         $this->projectDirectory = new Directory($projectPath, $output, $this->filesystem);
 

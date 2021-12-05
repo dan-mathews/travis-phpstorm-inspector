@@ -54,6 +54,7 @@ final class ConfigurationFileTest extends AbstractConfigurationTest
             ['project-path' => $this->projectPath],
             ['verbose' => false],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -113,6 +114,7 @@ final class ConfigurationFileTest extends AbstractConfigurationTest
                 'verbose' => false
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
 
@@ -142,6 +144,7 @@ final class ConfigurationFileTest extends AbstractConfigurationTest
                 'verbose' => false
             ],
             $this->projectPath,
+            $this->filesystem,
             $this->outputDummy
         );
     }

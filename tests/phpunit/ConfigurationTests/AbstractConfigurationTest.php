@@ -8,9 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophet;
 use Symfony\Component\Console\Output\OutputInterface;
-use TravisPhpstormInspector\Builders\ConfigurationBuilder;
-use TravisPhpstormInspector\Exceptions\ConfigurationException;
-use TravisPhpstormInspector\FileContents\InspectionProfileXml;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \TravisPhpstormInspector\Builders\ConfigurationBuilder
@@ -49,6 +47,11 @@ abstract class AbstractConfigurationTest extends TestCase
     protected $outputDummy;
 
     /**
+     * @var Filesystem
+     */
+    protected $filesystem;
+
+    /**
      * @throws \Exception
      */
     protected function setUp(): void
@@ -71,6 +74,8 @@ abstract class AbstractConfigurationTest extends TestCase
          * @phpstan-ignore-next-line
          */
         $this->outputDummy = $this->outputProphesy->reveal();
+
+        $this->filesystem = new Filesystem();
 
         parent::setUp();
     }
