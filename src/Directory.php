@@ -6,6 +6,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Exceptions\FilesystemException;
 use TravisPhpstormInspector\FileContents\GetContentsInterface;
 
+/**
+ * This is not a perfect class for Directory management by any means.
+ * Amongst other things, the subDirectories array property should probably be populated on construction.
+ * I reviewed the compatibility of Symfony Filesystem, but it didn't offer what I was looking for:
+ *   - A simple set of methods to guarantee the existence and state of certain directories
+ *   - Which, on failure, threw errors rather than returning false like the native hp filesystem methods
+ * TODO: look further into open source alternatives for this filesystem management.
+ */
 class Directory
 {
     /**
@@ -122,8 +130,6 @@ class Directory
     }
 
     /**
-     * todo merge with createSubDirectory() with a flag.
-     *  keep createDirectory() pure but have new Directory throw an error then catch if flag is set
      * @throws FilesystemException
      */
     public function setOrCreateSubDirectory(string $name): Directory
@@ -167,7 +173,6 @@ class Directory
     {
         $absolutePath = $this->path . '/' . $name;
 
-        //todo should be able to look in subDirectories array here if it's populated on creation
         if (!is_dir($absolutePath)) {
             return;
         }
