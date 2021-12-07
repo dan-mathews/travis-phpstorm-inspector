@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Views;
 
+use Symfony\Component\Console\Output\OutputInterface;
+use TravisPhpstormInspector\Output\OutputStyler;
 use TravisPhpstormInspector\ResultProcessing\Problem;
 use TravisPhpstormInspector\ResultProcessing\Problems;
 
@@ -14,16 +16,25 @@ class Fail implements DisplayInterface
      */
     private $problems;
 
-    public function __construct(Problems $problems)
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    public function __construct(Problems $problems, OutputInterface $output)
     {
         $this->problems = $problems;
+
+        $this->output = $output;
     }
 
     public function display(): void
     {
         $count = $this->problems->count();
 
-        $output = $count . " problems were found during phpStorm inspection.\n";
+        $this->output->writeln('');
+
+        $this->output->writeln(OutputStyler::warn($count . ' problems were found during phpStorm inspection.'));
 
         $currentFilename = '';
 
@@ -34,16 +45,17 @@ class Fail implements DisplayInterface
             $problem = $this->problems->current();
 
             if ($problem->getFilename() !== $currentFilename) {
-                $output .= "\nProblems in " . $problem->getFilenameLink() . ":\n";
+                $this->output->writeln('');
+                $this->output->writeln('Problems in ' . $problem->getFilenameLink() . ':');
                 $currentFilename = $problem->getFilename();
             }
 
-            $output .= '  line ' . str_pad($problem->getLine(), 4) . ' ' . str_pad($problem->getSeverity(), 13) . ' ('
-                . $problem->getProblemName() . ') ' . $problem->getDescription() . "\n";
+            $this->output->writeln(
+                '  line ' . str_pad($problem->getLine(), 4) . ' ' . str_pad($problem->getSeverity(), 13) . ' ('
+                . $problem->getProblemName() . ') ' . $problem->getDescription()
+            );
 
             $this->problems->next();
         }
-
-        echo $output;
     }
 }

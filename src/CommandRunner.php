@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector;
 
+use Symfony\Component\Console\Output\OutputInterface;
+
 class CommandRunner
 {
     /**
-     * @var bool
+     * @var OutputInterface
      */
-    private $verbose;
+    private $output;
 
-    public function __construct(bool $verbose = false)
+    public function __construct(OutputInterface $output)
     {
-        $this->verbose = $verbose;
+        $this->output = $output;
     }
 
     /**
@@ -25,7 +27,11 @@ class CommandRunner
 
         $code = 1;
 
-        if ($this->verbose) {
+        $verbose = $this->output->getVerbosity() > OutputInterface::VERBOSITY_NORMAL;
+
+        if ($verbose) {
+            $this->output->writeln('Running command: ' . $command . ' 2>&1');
+
             passthru($command . ' 2>&1', $code);
         } else {
             exec($command . ' 2>&1', $output, $code);
@@ -36,7 +42,7 @@ class CommandRunner
             throw new \RuntimeException(
                 'Failure when running command.'
                 // Don't re-print output if we already used passthru.
-                . ($this->verbose ? '' : "\nOutput was: \n\t" . implode("\n\t", $output))
+                . ($verbose ? '' : "\nOutput was: \n\t" . implode("\n\t", $output))
             );
         }
     }

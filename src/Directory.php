@@ -87,7 +87,7 @@ class Directory
             throw new FilesystemException('Failed to create file at path: "' . $absolutePath . '".', 2, $e);
         }
 
-        $this->output->writeln('Created file ' . $absolutePath);
+        $this->output->writeln('Created file ' . $absolutePath, OutputInterface::VERBOSITY_VERBOSE);
 
         return $this;
     }
@@ -111,7 +111,7 @@ class Directory
             throw new FilesystemException('Could not create directory at ' . $absolutePath, 2, $e);
         }
 
-        $this->output->writeln('Created directory ' . $absolutePath);
+        $this->output->writeln('Created directory ' . $absolutePath, OutputInterface::VERBOSITY_VERBOSE);
 
         return new Directory($absolutePath, $this->output, $this->filesystem);
     }
@@ -179,6 +179,8 @@ class Directory
             throw new FilesystemException('Could not remove directory ' . $name . ' from ' . $this->getPath(), 2, $e);
         }
 
+        $this->output->writeln('Removed Directory ' . $absolutePath, OutputInterface::VERBOSITY_VERBOSE);
+
         unset($this->subDirectories[$name]);
     }
 
@@ -216,7 +218,7 @@ class Directory
                 throw new FilesystemException('Could not remove file at path ' . $filePath, 2, $e);
             }
 
-            $this->output->writeln('Removed file ' . $filePath);
+            $this->output->writeln('Removed file ' . $filePath, OutputInterface::VERBOSITY_VERBOSE);
         }
     }
 
@@ -242,5 +244,10 @@ class Directory
         } catch (\RuntimeException $e) {
             throw new FilesystemException('Could not copy directory', 1, $e);
         }
+
+        $this->output->writeln(
+            'Copied Directory ' . $this->path . ' to ' . $directory->path,
+            OutputInterface::VERBOSITY_VERBOSE
+        );
     }
 }

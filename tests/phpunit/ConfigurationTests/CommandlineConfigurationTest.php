@@ -51,7 +51,6 @@ final class CommandlineConfigurationTest extends AbstractConfigurationTest
             'docker-repository' => 'docker-repository-from-arg',
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::DEFAULT_INSPECTION_PROFILE_PATH,
-            'verbose' => true,
             'php-version' => '8.0',
             'whole-project' => true,
         ];
@@ -68,7 +67,6 @@ final class CommandlineConfigurationTest extends AbstractConfigurationTest
         $configuration = $configurationBuilder->getResult();
 
         self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
-        self::assertTrue($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());
@@ -105,7 +103,6 @@ final class CommandlineConfigurationTest extends AbstractConfigurationTest
             'docker-repository' => 'docker-repository-from-arg',
             'ignore-severities' => 'TYPO,WEAK WARNING,WARNING',
             'profile' => self::TEST_INSPECTION_PROFILE_PATH,
-            'verbose' => false,
             'php-version' => '7.4',
             'whole-project' => true,
         ];
@@ -127,7 +124,6 @@ final class CommandlineConfigurationTest extends AbstractConfigurationTest
         $configuration = $configurationBuilder->getResult();
 
         self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
-        self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-arg', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-arg', $configuration->getDockerRepository());
         self::assertSame(['TYPO', 'WEAK WARNING', 'WARNING'], $configuration->getIgnoreSeverities());

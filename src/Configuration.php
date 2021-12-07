@@ -20,7 +20,6 @@ class Configuration
     public const DEFAULT_IGNORE_SEVERITIES = [];
     public const DEFAULT_INSPECTION_PROFILE_PATH = __DIR__ . '/../../travis-phpstorm-inspector/data/default.xml';
     public const DEFAULT_PHP_VERSION = '7.3';
-    public const DEFAULT_VERBOSE = true;
     public const DEFAULT_WHOLE_PROJECT = false;
 
     public const VALID_IGNORE_SEVERITIES = [
@@ -56,11 +55,6 @@ class Configuration
      * @var array<string>
      */
     private $excludeFolders = self::DEFAULT_EXCLUDE_FOLDERS;
-
-    /**
-     * @var bool
-     */
-    private $verbose = self::DEFAULT_VERBOSE;
 
     /**
      * @var Directory
@@ -110,11 +104,6 @@ class Configuration
         $this->inspectionProfile = new InspectionProfileXml(self::DEFAULT_INSPECTION_PROFILE_PATH);
 
         $this->output = $output;
-    }
-
-    public function setVerbose(bool $verbose): void
-    {
-        $this->verbose = $verbose;
     }
 
     /**
@@ -177,6 +166,8 @@ class Configuration
      */
     public function setExcludeFolders(array $excludeFolders): void
     {
+        $this->excludeFolders = [];
+
         foreach ($excludeFolders as $folderName) {
             try {
                 // Use Directory to validate that this is a relative path from the project to a real folder.
@@ -235,11 +226,6 @@ class Configuration
     public function getProjectDirectory(): Directory
     {
         return $this->projectDirectory;
-    }
-
-    public function getVerbose(): bool
-    {
-        return $this->verbose;
     }
 
     public function getInspectionProfile(): InspectionProfileXml

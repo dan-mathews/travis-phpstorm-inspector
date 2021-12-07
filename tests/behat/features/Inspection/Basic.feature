@@ -4,7 +4,7 @@ Feature: Run inspections
     Given I create a new project
     And I initialise git
 
-  @issue-1 @negative @createsProject
+  @issue-1 @negative
   Scenario: Use an inspections file with the wrong extension
     Given I create an invalid inspections xml file
     And I create a php file without problems

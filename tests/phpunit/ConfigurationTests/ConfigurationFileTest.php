@@ -62,7 +62,6 @@ final class ConfigurationFileTest extends AbstractConfigurationTest
         $configuration = $configurationBuilder->getResult();
 
         self::assertSame($this->projectPath, $configuration->getProjectDirectory()->getPath());
-        self::assertFalse($configuration->getVerbose());
         self::assertSame('docker-tag-from-config', $configuration->getDockerTag());
         self::assertSame('docker-repository-from-config', $configuration->getDockerRepository());
         self::assertSame(

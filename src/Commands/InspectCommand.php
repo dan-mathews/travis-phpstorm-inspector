@@ -14,6 +14,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use TravisPhpstormInspector\Builders\ConfigurationBuilder;
 use TravisPhpstormInspector\Configuration;
 use TravisPhpstormInspector\Inspection;
+use TravisPhpstormInspector\Output\OutputStyler;
 use TravisPhpstormInspector\Views\Error;
 use TravisPhpstormInspector\Views\Fail;
 use TravisPhpstormInspector\Views\Pass;
@@ -33,8 +34,6 @@ class InspectCommand extends Command
     public const OPTION_PHP_VERSION = 'php-version';
     public const OPTION_INSPECTION_PROFILE = 'profile';
     public const OPTION_WHOLE_PROJECT = 'whole-project';
-
-    public const FLAG_VERBOSE = 'verbose';
 
     public const OPTIONS = [
         self::OPTION_CONFIGURATION,
@@ -124,6 +123,8 @@ class InspectCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        OutputStyler::init($output);
+
         try {
             $workingDirectory = $this->getWorkingDirectory();
 
@@ -145,7 +146,7 @@ class InspectCommand extends Command
             $problems = $inspection->run();
 
             if (!$problems->isEmpty()) {
-                $view = new Fail($problems);
+                $view = new Fail($problems, $output);
 
                 $view->display();
 
@@ -156,7 +157,7 @@ class InspectCommand extends Command
                 return Command::FAILURE;
             }
 
-            $view = new Pass();
+            $view = new Pass($output);
 
             $view->display();
 
@@ -166,11 +167,7 @@ class InspectCommand extends Command
              */
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            // We default to verbose if the ConfigurationBuilder wasn't successfully constructed.
-            /** @noinspection UnSafeIsSetOverArrayInspection - We need to check if it's set, rather than null. */
-            $verbose = !isset($configurationBuilder) || $configurationBuilder->getResult()->getVerbose();
-
-            $view = new Error($e, $verbose);
+            $view = new Error($e, $output);
 
             $view->display();
 

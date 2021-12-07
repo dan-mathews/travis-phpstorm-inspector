@@ -64,9 +64,6 @@ class ConfigurationBuilder implements BuilderInterface
 
         $this->configuration = new Configuration($projectPath, $filesystem, $output);
 
-        // We set this first to allow control over verbosity ASAP.
-        $this->setVerbose();
-
         $configurationPath = $projectPath . '/' . self::FILENAME;
 
         if (isset($this->options[InspectCommand::OPTION_CONFIGURATION])) {
@@ -225,14 +222,6 @@ class ConfigurationBuilder implements BuilderInterface
         }
 
         $this->configuration->setDockerTag($value);
-    }
-
-    private function setVerbose(): void
-    {
-        /** @var bool $verbose */
-        $verbose = $this->options[InspectCommand::FLAG_VERBOSE];
-
-        $this->configuration->setVerbose($verbose);
     }
 
     /**
