@@ -235,7 +235,7 @@ class Directory
             $excludeString .= '--exclude \'' . $excludeDirectory . '\' ';
         }
 
-        $rsyncCommand = 'rsync -a ' . $excludeString . $this->path . '/ ' . $directory->getPath();
+        $rsyncCommand = 'rsync -aW --delete ' . $excludeString . $this->path . '/ ' . $directory->getPath();
 
         try {
             $commandRunner->run($rsyncCommand);

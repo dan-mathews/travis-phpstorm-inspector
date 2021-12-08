@@ -33,7 +33,7 @@ class Inspection
     /**
      * @var Directory
      */
-    private $appDataDirectory;
+    private $currentProjectStorageDirectory;
 
     /**
      * @throws \InvalidArgumentException
@@ -47,16 +47,21 @@ class Inspection
 
         $commandRunner = new CommandRunner($configuration->getVerbose());
 
-        $cacheDirectoryBuilder = new AppDataDirectoryBuilder(
+        $currentProjectStorageDirectoryName = str_replace('/', '.', $configuration->getProjectDirectory()->getPath());
+
+        $appDataDirectoryBuilder = new AppDataDirectoryBuilder(
             $configuration,
             $output,
             $commandRunner,
-            $filesystem
+            $filesystem,
+            $currentProjectStorageDirectoryName
         );
 
-        $cacheDirectoryBuilder->build();
+        $appDataDirectoryBuilder->build();
 
-        $this->appDataDirectory = $cacheDirectoryBuilder->getResult();
+        $appDataDirectory = $appDataDirectoryBuilder->getResult();
+
+        $this->currentProjectStorageDirectory = $appDataDirectory->getSubDirectory($currentProjectStorageDirectoryName);
 
         $this->dockerFacade = new DockerFacade(
             $configuration->getDockerRepository(),
@@ -65,7 +70,7 @@ class Inspection
         );
 
         $this->resultsProcessor = new ResultsProcessor(
-            $this->appDataDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_RESULTS),
+            $this->currentProjectStorageDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_RESULTS),
             $configuration
         );
     }
@@ -78,12 +83,21 @@ class Inspection
      */
     public function run(): Problems
     {
-        $projectCopyDirectory = $this->appDataDirectory->getSubDirectory(
+        $projectCopyDirectory = $this->currentProjectStorageDirectory->getSubDirectory(
             AppDataDirectoryBuilder::DIRECTORY_PROJECT_COPY
         );
-        $resultsDirectory = $this->appDataDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_RESULTS);
-        $ideaDirectory = $this->appDataDirectory->getSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
-        $cacheDirectory = $this->appDataDirectory->getSubDirectory(AppDataDirectoryBuilder::DIRECTORY_CACHE);
+
+        $resultsDirectory = $this->currentProjectStorageDirectory->getSubDirectory(
+            AppDataDirectoryBuilder::DIRECTORY_RESULTS
+        );
+
+        $ideaDirectory = $this->currentProjectStorageDirectory->getSubDirectory(
+            IdeaDirectoryBuilder::DIRECTORY_IDEA
+        );
+
+        $cacheDirectory = $this->currentProjectStorageDirectory->getSubDirectory(
+            AppDataDirectoryBuilder::DIRECTORY_CACHE
+        );
 
         $this->dockerFacade
             ->mount($projectCopyDirectory->getPath(), '/app')
