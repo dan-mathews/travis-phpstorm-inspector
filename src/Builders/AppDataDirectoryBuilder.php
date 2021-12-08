@@ -62,32 +62,41 @@ class AppDataDirectoryBuilder implements BuilderInterface
         $this->appDataDirectory = new Directory($cachePath, $output, $filesystem, true);
     }
 
+    public static function getCurrentProjectStorageDirectoryName(Configuration $configuration)
+    {
+        return str_replace('/', '.', $configuration->getProjectDirectory()->getPath());
+    }
+
     /**
      * @throws FilesystemException
      */
     public function build(): void
     {
+        $currentProjectStorageDirectory = $this->appDataDirectory->setOrCreateSubDirectory(
+            self::getCurrentProjectStorageDirectoryName($this->configuration)
+        );
+
         // Make/Create a 'cache' directory to house PhpStorm's cache.
 
-        $this->appDataDirectory->setOrCreateSubDirectory(self::DIRECTORY_CACHE);
+        $currentProjectStorageDirectory->setOrCreateSubDirectory(self::DIRECTORY_CACHE);
 
 
         // Make/Create an empty 'projectCopy' directory to hold a copy of the user's project.
         // This allows the user to continue to make changes while the inspections are being run.
 
-        $projectCopyDirectory = $this->appDataDirectory->setOrCreateSubDirectory(self::DIRECTORY_PROJECT_COPY);
+//        $this->appDataDirectory->removeSubDirectory(self::DIRECTORY_PROJECT_COPY);
 
-        $projectCopyDirectory->empty();
+        $projectCopyDirectory = $currentProjectStorageDirectory->setOrCreateSubDirectory(self::DIRECTORY_PROJECT_COPY);
 
         $this->configuration->getProjectDirectory()->copyTo($projectCopyDirectory, ['.idea'], $this->commandRunner);
 
 
         // Remove and freshly recreate the '.idea' directory according to the configuration we've received.
 
-        $this->appDataDirectory->removeSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
+        $currentProjectStorageDirectory->removeSubDirectory(IdeaDirectoryBuilder::DIRECTORY_IDEA);
 
         $ideaDirectoryBuilder = new IdeaDirectoryBuilder(
-            $this->appDataDirectory,
+            $currentProjectStorageDirectory,
             $this->configuration->getInspectionProfile(),
             $this->configuration->getPhpVersion(),
             $this->configuration->getExcludeFolders()
@@ -98,7 +107,7 @@ class AppDataDirectoryBuilder implements BuilderInterface
 
         // Make/Create an empty 'results' directory to hold the results of the inspection.
 
-        $resultsDirectory = $this->appDataDirectory->setOrCreateSubDirectory(self::DIRECTORY_RESULTS);
+        $resultsDirectory = $currentProjectStorageDirectory->setOrCreateSubDirectory(self::DIRECTORY_RESULTS);
 
         $resultsDirectory->empty();
     }
