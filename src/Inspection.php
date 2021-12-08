@@ -47,20 +47,21 @@ class Inspection
 
         $commandRunner = new CommandRunner($configuration->getVerbose());
 
+        $currentProjectStorageDirectoryName = str_replace('/', '.', $configuration->getProjectDirectory()->getPath());
+
         $appDataDirectoryBuilder = new AppDataDirectoryBuilder(
             $configuration,
             $output,
             $commandRunner,
-            $filesystem
+            $filesystem,
+            $currentProjectStorageDirectoryName
         );
 
         $appDataDirectoryBuilder->build();
 
         $appDataDirectory = $appDataDirectoryBuilder->getResult();
 
-        $this->currentProjectStorageDirectory = $appDataDirectory->getSubDirectory(
-            AppDataDirectoryBuilder::getCurrentProjectStorageDirectoryName($this->configuration)
-        );
+        $this->currentProjectStorageDirectory = $appDataDirectory->getSubDirectory($currentProjectStorageDirectoryName);
 
         $this->dockerFacade = new DockerFacade(
             $configuration->getDockerRepository(),

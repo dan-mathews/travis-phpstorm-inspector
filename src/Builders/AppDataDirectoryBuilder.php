@@ -36,6 +36,11 @@ class AppDataDirectoryBuilder implements BuilderInterface
     private $commandRunner;
 
     /**
+     * @var string
+     */
+    private $currentProjectStorageDirectoryName;
+
+    /**
      * @throws FilesystemException
      * @throws \RuntimeException
      */
@@ -43,7 +48,8 @@ class AppDataDirectoryBuilder implements BuilderInterface
         Configuration $configuration,
         OutputInterface $output,
         CommandRunner $commandRunner,
-        Filesystem $filesystem
+        Filesystem $filesystem,
+        string $currentProjectStorageDirectoryName
     ) {
         $this->configuration = $configuration;
         $this->commandRunner = $commandRunner;
@@ -59,12 +65,9 @@ class AppDataDirectoryBuilder implements BuilderInterface
 
         $cachePath = '/home/' . $user . '/' . self::DIRECTORY_STORAGE;
 
-        $this->appDataDirectory = new Directory($cachePath, $output, $filesystem, true);
-    }
+        $this->currentProjectStorageDirectoryName = $currentProjectStorageDirectoryName;
 
-    public static function getCurrentProjectStorageDirectoryName(Configuration $configuration)
-    {
-        return str_replace('/', '.', $configuration->getProjectDirectory()->getPath());
+        $this->appDataDirectory = new Directory($cachePath, $output, $filesystem, true);
     }
 
     /**
@@ -73,8 +76,9 @@ class AppDataDirectoryBuilder implements BuilderInterface
     public function build(): void
     {
         $currentProjectStorageDirectory = $this->appDataDirectory->setOrCreateSubDirectory(
-            self::getCurrentProjectStorageDirectoryName($this->configuration)
+            $this->currentProjectStorageDirectoryName
         );
+
 
         // Make/Create a 'cache' directory to house PhpStorm's cache.
 
@@ -83,8 +87,6 @@ class AppDataDirectoryBuilder implements BuilderInterface
 
         // Make/Create an empty 'projectCopy' directory to hold a copy of the user's project.
         // This allows the user to continue to make changes while the inspections are being run.
-
-//        $this->appDataDirectory->removeSubDirectory(self::DIRECTORY_PROJECT_COPY);
 
         $projectCopyDirectory = $currentProjectStorageDirectory->setOrCreateSubDirectory(self::DIRECTORY_PROJECT_COPY);
 
