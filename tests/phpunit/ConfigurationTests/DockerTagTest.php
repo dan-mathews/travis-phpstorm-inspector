@@ -24,7 +24,6 @@ final class DockerTagTest extends AbstractConfigurationTest
             ['project-path' => $this->projectPath],
             [
                 'docker-tag' => 3,
-                'verbose' => false
             ],
             $this->projectPath,
             $this->filesystem,

@@ -449,11 +449,24 @@ class FeatureContext implements Context
       */
     public function cleanProject(): void
     {
-        if (!is_dir($this->getProjectPath())) {
-            return;
-        }
-
         $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
+    }
+
+    /**
+     * @AfterScenario @createsProjectInStorage
+     *
+     * @return void
+     */
+    public function cleanProjectStorage(): void
+    {
+        $currentProjectStorageDirectoryName = str_replace('/', '.', $this->getProjectPath());
+
+        $currentProjectStorageDirectoryPath = '/home/'
+            . $this->getUserName()
+            . '/.travis-phpstorm-inspector/'
+            . $currentProjectStorageDirectoryName;
+
+        $this->removeDirectory(new \DirectoryIterator($currentProjectStorageDirectoryPath));
     }
 
     private function removeDirectory(\DirectoryIterator $directoryIterator): void
@@ -480,5 +493,17 @@ class FeatureContext implements Context
         }
 
         rmdir($directoryIterator->getPath());
+    }
+
+    private function getUserName(): string
+    {
+        $userId = posix_geteuid();
+        $userInfo = posix_getpwuid($userId);
+
+        if (false === $userInfo) {
+            throw new \RuntimeException('Could not retrieve user information, needed to create cache directory');
+        }
+
+        return $userInfo['name'];
     }
 }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TravisPhpstormInspector\Views;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use TravisPhpstormInspector\Exceptions\AbstractAppException;
+use TravisPhpstormInspector\Output\OutputStyler;
 
 class Error implements DisplayInterface
 {
@@ -14,47 +16,43 @@ class Error implements DisplayInterface
     private $throwable;
 
     /**
-     * @var bool
+     * @var OutputInterface
      */
-    private $verbose;
+    private $output;
 
-    public function __construct(\Throwable $e, bool $verbose)
+    public function __construct(\Throwable $e, OutputInterface $output)
     {
         $this->throwable = $e;
 
-        $this->verbose = $verbose;
+        $this->output = $output;
     }
 
     protected function getHeadlineMessage(): string
     {
         if (is_a($this->throwable, AbstractAppException::class)) {
-            return $this->throwable->getHeadlineMessage();
+            return OutputStyler::warn($this->throwable->getHeadlineMessage());
         }
 
-        return 'Failed to complete inspections because of an unexpected error.';
-    }
-
-    protected function getBugReportMessage(): string
-    {
-        return "If you think you've discovered a problem with the travis-phpstorm-inspector project,\n"
-            . "please provide some context and a full copy of the exceptions reported below to:\n"
-            . "  https://github.com/dan-mathews/travis-phpstorm-inspector/issues/new";
-    }
-
-    protected function getVerbosePromptMessage(): string
-    {
-        return "Please add -v to your command and rerun to see more details.";
-    }
-
-    protected function getDetails(): string
-    {
-        return ($this->verbose) ? (string) $this->throwable : $this->throwable->getMessage();
+        return OutputStyler::warn('Failed to complete inspections because of an unexpected error.');
     }
 
     public function display(): void
     {
-        echo "\n" . $this->getHeadlineMessage() . "\n\n";
-        echo ($this->verbose) ? $this->getBugReportMessage() : $this->getVerbosePromptMessage();
-        echo "\n\n" . $this->getDetails() . "\n";
+        $this->output->writeln('');
+        $this->output->writeln($this->getHeadlineMessage());
+        $this->output->writeln('');
+
+        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
+            $this->output->writeln('Please add -v to your command and rerun to see more details.');
+            $this->output->writeln('');
+            $this->output->writeln($this->throwable->getMessage());
+            return;
+        }
+
+        $this->output->writeln('If you think you\'ve discovered a problem with the travis-phpstorm-inspector project');
+        $this->output->writeln('please provide some context and a full copy of the exceptions reported below to:');
+        $this->output->writeln('  https://github.com/dan-mathews/travis-phpstorm-inspector/issues/new');
+        $this->output->writeln('');
+        $this->output->writeln((string) $this->throwable);
     }
 }

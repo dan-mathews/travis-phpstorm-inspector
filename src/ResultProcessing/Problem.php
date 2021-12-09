@@ -38,7 +38,7 @@ class Problem
 
     /**
      * @param array<string, mixed> $problem
-     * @psalm-suppress MixedAssignment - we know from phpStorm's result structure what types these will be
+     * @psalm-suppress MixedAssignment - we know from PhpStorm's result structure what types these will be
      */
     public function __construct(array $problem, string $projectDirectoryPath)
     {

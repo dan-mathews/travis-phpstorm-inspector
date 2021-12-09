@@ -45,7 +45,7 @@ class Inspection
     {
         $this->configuration = $configuration;
 
-        $commandRunner = new CommandRunner($configuration->getVerbose());
+        $commandRunner = new CommandRunner($output);
 
         $currentProjectStorageDirectoryName = str_replace('/', '.', $configuration->getProjectDirectory()->getPath());
 

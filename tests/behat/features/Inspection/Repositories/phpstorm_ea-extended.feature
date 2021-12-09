@@ -12,7 +12,7 @@ Feature: Run inspections
     }
     """
 
-  @issue-12 @positive @createsProject
+  @issue-12 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with no problems
     Given I create a php file without problems
     And I stage the php file in git
@@ -23,7 +23,7 @@ Feature: Run inspections
     No problems to report.
     """
 
-  @issue-12 @positive @createsProject
+  @issue-12 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with problems
     Given I create a php file with problems
     And I stage the php file in git
@@ -31,7 +31,7 @@ Feature: Run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    49 problems were found during phpStorm inspection.
+    49 problems were found during PhpStorm inspection.
 
     Problems in file:///{{ projectRoot }}/src/InspectionViolator.php:
       line 1    ERROR         (PHP short open tag usage) [EA] Using the '<?' short tag considered to be a bad practice

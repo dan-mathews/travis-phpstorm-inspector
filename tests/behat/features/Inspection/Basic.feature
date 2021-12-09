@@ -17,7 +17,7 @@ Feature: Run inspections
     The inspections profile invalid.txt does not have an xml extension.
     """
 
-  @issue-14 @positive @createsProject
+  @issue-14 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections without local .idea directory being changed
     Given I create a valid inspections xml file
     And I create a php file with problems

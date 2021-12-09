@@ -1,6 +1,6 @@
 Feature: Run inspections with certain severities ignored
 
-  @issue-8 @positive @createsProject
+  @issue-8 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with severities ignored in the configuration file
     Given I create a new project
     And I initialise git
@@ -21,7 +21,7 @@ Feature: Run inspections with certain severities ignored
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    25 problems were found during phpStorm inspection.
+    25 problems were found during PhpStorm inspection.
 
     Problems in file:///{{ projectRoot }}/src/InspectionViolator.php:
       line 10   WARNING       (Constant name is not following coding convention) Constant name <code>badConstant</code> doesn't match regex '[A-Z][A-Z_\d]*' #loc
