@@ -144,6 +144,24 @@ class FeatureContext implements Context
         return $this->inspectionOutput;
     }
 
+    /**
+     * @Given I pull docker image :imageReference
+     */
+    public function iPullDockerImage($imageReference): void
+    {
+        $code = 1;
+
+        $output = [];
+
+        exec('docker pull ' . $imageReference, $output, $code);
+
+        if ($code !== 0) {
+            throw new \RuntimeException(
+                'Could not pull docker image ' . $imageReference . "\n" . implode("\n", $output)
+            );
+        }
+    }
+
     private function getConfigurationPath(): string
     {
         if (null === $this->configurationPath) {
