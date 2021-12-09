@@ -1,6 +1,6 @@
 Feature: Run inspections with certain severities ignored
 
-  @issue-8 @positive @createsProject
+  @issue-8 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with severities ignored in the configuration file
     Given I create a new project
     And I initialise git

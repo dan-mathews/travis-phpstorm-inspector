@@ -7,7 +7,7 @@ Feature: Run inspections with certain lines ignored
     And I create a php file with problems
     And I stage the php file in git
 
-  @issue-35 @positive @createsProject
+  @issue-35 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with certain lines ignored
     Given I create a configuration file with:
     """
@@ -64,7 +64,7 @@ Feature: Run inspections with certain lines ignored
       line 95   WEAK WARNING  (Multiple class declarations) Multiple definitions exist for class 'InspectionViolator'
     """
 
-  @issue-35 @positive @createsProject
+  @issue-35 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with all lines of a file ignored
     Given I create a configuration file with:
     """

@@ -450,7 +450,15 @@ class FeatureContext implements Context
     public function cleanProject(): void
     {
         $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
+    }
 
+    /**
+     * @AfterScenario @createsProjectInStorage
+     *
+     * @return void
+     */
+    public function cleanProjectStorage(): void
+    {
         $currentProjectStorageDirectoryName = str_replace('/', '.', $this->getProjectPath());
 
         $currentProjectStorageDirectoryPath = '/home/'
