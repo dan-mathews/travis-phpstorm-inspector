@@ -31,7 +31,7 @@ Feature: Run inspections
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    49 problems were found during phpStorm inspection.
+    49 problems were found during PhpStorm inspection.
 
     Problems in file:///{{ projectRoot }}/src/InspectionViolator.php:
       line 1    ERROR         (PHP short open tag usage) [EA] Using the '<?' short tag considered to be a bad practice

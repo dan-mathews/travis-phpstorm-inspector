@@ -34,7 +34,7 @@ class Fail implements DisplayInterface
 
         $this->output->writeln('');
 
-        $this->output->writeln(OutputStyler::warn($count . ' problems were found during phpStorm inspection.'));
+        $this->output->writeln(OutputStyler::warn($count . ' problems were found during PhpStorm inspection.'));
 
         $currentFilename = '';
 
