@@ -30,7 +30,7 @@ class Error implements DisplayInterface
     protected function getHeadlineMessage(): string
     {
         if (is_a($this->throwable, AbstractAppException::class)) {
-            return $this->throwable->getHeadlineMessage();
+            return OutputStyler::warn($this->throwable->getHeadlineMessage());
         }
 
         return OutputStyler::warn('Failed to complete inspections because of an unexpected error.');
