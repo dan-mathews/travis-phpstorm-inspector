@@ -33,7 +33,7 @@ can also create custom docker containers to contain your specific PhpStorm plugi
 + This means that you can use PhpStorm as if it was a lightweight inspection tool.
 ```
 
-### Additional Benefits From Local Use
+## Local Use
 The Travis PhpStorm Inspector also runs locally, which brings a number of great benefits:
 1. It removes your team's dependency on PhpStorm for Development, allowing them to check their code against your coding
 standards whilst using whichever IDE they're most comfortable with
@@ -42,7 +42,7 @@ safe in the knowledge that your inspections remain consistent
 4. It removes the need to deal with PhpStorm's many quirks when it comes to PhpStorm's inspections, allowing you
 to give new or less experienced PhpStorm users a simple and pre-configured way to run inspections
 
-## Installation for use locally
+### Installation for use locally
 - Clone the repository and install dependencies via [Composer](https://getcomposer.org/) with:
 ```shell
 composer install
@@ -65,6 +65,10 @@ docker pull danmathews1/phpstorm:latest
 ```
 bin/inspector inspect path/to/project
 ```
+
+### Performance Locally
+In a test run on an old project of 856 files triggering a report of 18,925 problems:
+- With a built cache, the inspection took 1 minute and 23 seconds.
 
 ## Troubleshooting
 - You might find you need the mb-string extension, installable with: `sudo apt install php-mbstring`
