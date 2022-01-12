@@ -67,8 +67,12 @@ bin/inspector inspect path/to/project
 ```
 
 ### Performance Locally
-In a test run on an old project of 856 files triggering a report of 18,925 problems:
-- With a built cache, the inspection took 1 minute and 23 seconds.
+In a test run on an old project of 856 files, which triggers a report of 18,925 problems:
+- With a built cache, the inspection took 1 minute and 23 seconds
+- Without a built cache, the inspection took 2 minutes and 19 seconds
+
+Monitoring the verbose output during these runs makes it clear that the time is mostly spent by PhpStorm in indexing and analysis,
+rather than by the travis-phpstorm-inspector tool.
 
 ## Troubleshooting
 - You might find you need the mb-string extension, installable with: `sudo apt install php-mbstring`
