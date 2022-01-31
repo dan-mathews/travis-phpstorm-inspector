@@ -2,6 +2,7 @@ Feature: Run inspections with different versions of php
 
   Background:
     Given I create a new project
+    And I pull docker image 'danmathews1/phpstorm:2021.1.2'
     And I initialise git
     And I create a valid inspections xml file
     And I create a php file with problems
@@ -12,7 +13,8 @@ Feature: Run inspections with different versions of php
     Given I create a configuration file with:
     """
     {
-      "php-version": "7.4"
+      "php-version": "7.4",
+      "docker-tag": "2021.1.2"
     }
     """
     When I run inspections
@@ -68,7 +70,8 @@ Feature: Run inspections with different versions of php
     Given I create a configuration file with:
     """
     {
-      "php-version": "8.0"
+      "php-version": "8.0",
+      "docker-tag": "2021.1.2"
     }
     """
     When I run inspections

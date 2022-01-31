@@ -2,6 +2,7 @@ Feature: Run inspections
 
   Background:
     Given I create a new project
+    And I pull docker image 'danmathews1/phpstorm_ea-extended:2021.1.2_4.0.6.4'
     And I initialise git
     And I create a valid inspections xml file
     And I create a configuration file with:
