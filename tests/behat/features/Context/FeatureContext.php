@@ -146,8 +146,9 @@ class FeatureContext implements Context
 
     /**
      * @Given I pull docker image :imageReference
+     * @psalm-suppress MixedArgumentTypeCoercion - we know that $output can be used in the exception message
      */
-    public function iPullDockerImage($imageReference): void
+    public function iPullDockerImage(string $imageReference): void
     {
         $code = 1;
 
