@@ -6,7 +6,8 @@ Feature: Run inspections with certain lines ignored
     And I initialise git
     And I create a valid inspections xml file
     And I create a php file with problems
-    And I stage the php file in git
+    And I create a php file with problems named 'InspectionViolator2.php'
+    And I stage the php files in git
 
   @issue-35 @positive @createsProject @createsProjectInStorage
   Scenario: Run inspections on a project with certain lines ignored
@@ -18,7 +19,8 @@ Feature: Run inspections with certain lines ignored
           10,
           19,
           37
-        ]
+        ],
+        "src/InspectionViolator2.php": ["*"]
       },
       "docker-tag": "2021.1.2"
     }
@@ -27,11 +29,13 @@ Feature: Run inspections with certain lines ignored
     Then the exit code should be 1
     And the last lines of the output should be:
     """
-    33 problems were found during PhpStorm inspection.
+    36 problems were found during PhpStorm inspection.
 
     Problems in file:///{{ projectRoot }}/src/InspectionViolator.php:
       line 1    ERROR         (Short open tag usage) Short opening tag usage
+      line 1    WEAK WARNING  (Duplicated code fragment) Duplicate code: lines 1-100
       line 5    ERROR         (Undefined class) Undefined class 'NonExistent'
+      line 5    WEAK WARNING  (Multiple class declarations) Other declarations of class 'InspectionViolator' exist
       line 14   TYPO          (Typo) Typo: In word 'propertie'
       line 15   TYPO          (Typo) Typo: In word 'propertie'
       line 16   TYPO          (Typo) Typo: In word 'propertie'
@@ -63,22 +67,5 @@ Feature: Run inspections with certain lines ignored
       line 95   ERROR         (Annotator) Another definition with same name exists in this file #loc
       line 95   ERROR         (Annotator) Class should not extend itself #loc
       line 95   WEAK WARNING  (Multiple class declarations) Multiple definitions exist for class 'InspectionViolator'
-    """
-
-  @issue-35 @positive @createsProject @createsProjectInStorage
-  Scenario: Run inspections on a project with all lines of a file ignored
-    Given I create a configuration file with:
-    """
-    {
-      "ignore-lines": {
-        "src/InspectionViolator.php": ["*"]
-      },
-      "docker-tag": "2021.1.2"
-    }
-    """
-    When I run inspections
-    Then the exit code should be 0
-    And the last lines of the output should be:
-    """
-    No problems to report.
+      line 95   WEAK WARNING  (Multiple class declarations) Other declarations of class 'InspectionViolator' exist
     """
