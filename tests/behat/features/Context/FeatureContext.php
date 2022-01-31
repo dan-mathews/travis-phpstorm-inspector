@@ -339,8 +339,6 @@ class FeatureContext implements Context
         Assert::fail("The last $arg1 lines were:\n" . implode("\n", $outputSnippet));
     }
 
-
-
     /**
      * @Given I am expecting an error
      *
