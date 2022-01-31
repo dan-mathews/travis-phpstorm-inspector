@@ -256,7 +256,7 @@ class FeatureContext implements Context
      * @Given I create a php file :switch problems
      * @Given I create a php file :switch problems named :filename
      */
-    public function iCreateAPhpFileWithNoProblems(string $switch, ?string $filename = null): void
+    public function iCreateAPhpFile(string $switch, ?string $filename = null): void
     {
         switch ($switch) {
             case 'without':
