@@ -144,6 +144,25 @@ class FeatureContext implements Context
         return $this->inspectionOutput;
     }
 
+    /**
+     * @Given I pull docker image :imageReference
+     * @psalm-suppress MixedArgumentTypeCoercion - we know that $output can be used in the exception message
+     */
+    public function iPullDockerImage(string $imageReference): void
+    {
+        $code = 1;
+
+        $output = [];
+
+        exec('docker pull ' . $imageReference, $output, $code);
+
+        if ($code !== 0) {
+            throw new \RuntimeException(
+                'Could not pull docker image ' . $imageReference . "\n" . implode("\n", $output)
+            );
+        }
+    }
+
     private function getConfigurationPath(): string
     {
         if (null === $this->configurationPath) {
@@ -320,8 +339,6 @@ class FeatureContext implements Context
 
         Assert::fail("The last $arg1 lines were:\n" . implode("\n", $outputSnippet));
     }
-
-
 
     /**
      * @Given I am expecting an error
