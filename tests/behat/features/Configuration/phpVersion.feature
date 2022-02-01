@@ -8,7 +8,7 @@ Feature: Run inspections with different versions of php
     And I create a php file with problems
     And I stage the php file in git
 
-  @issue-26 @positive @createsProject @createsProjectInStorage
+  @issue-26 @positive @createsProject
   Scenario: Run inspections with php 7.4
     Given I create a configuration file with:
     """
@@ -65,7 +65,7 @@ Feature: Run inspections with different versions of php
       line 95   WEAK WARNING  (Multiple class declarations) Multiple definitions exist for class 'InspectionViolator'
     """
 
-  @issue-26 @positive @createsProject @createsProjectInStorage
+  @issue-26 @positive @createsProject
   Scenario: Run inspections with php 8.0
     Given I create a configuration file with:
     """

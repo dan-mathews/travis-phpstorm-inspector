@@ -32,9 +32,9 @@ class FeatureContext implements Context
     private $configurationPath;
 
     /**
-     * @var null|string
+     * @var null|array<string, string>
      */
-    private $phpFilePath;
+    private $phpFilePaths;
 
     /**
      * @var bool
@@ -64,7 +64,16 @@ class FeatureContext implements Context
      */
     public function iCreateANewProject(): void
     {
-        $projectName = 'testProject' . random_int(0, 9999);
+        // This was previously randomised, but to enable caching for quicker Travis runs, the name is now fixed.
+        $projectName = 'behatTestProject';
+
+        if (is_dir($projectName)) {
+            throw new \RuntimeException(
+                'In order to enable caching for quicker Travis runs, test project names are no longer randomised. The "'
+                . $projectName . '" directory should  have been deleted by the behat post hook, but you will need to '
+                . 'delete it manually.'
+            );
+        }
 
         $this->makeDirectory($projectName);
 
@@ -77,6 +86,10 @@ class FeatureContext implements Context
      */
     private function makeDirectory(string $path): void
     {
+        if (is_dir($path)) {
+            return;
+        }
+
         if (!mkdir($path) || !is_dir($path)) {
             throw new \RuntimeException(sprintf('Directory "%s" could not be created', $path));
         }
@@ -196,20 +209,22 @@ class FeatureContext implements Context
         return $this->inspectionsPath;
     }
 
-    private function getPhpFilePath(): string
+    /**
+     * @return array<string, string>
+     */
+    private function getPhpFilePaths(): array
     {
-        if (null === $this->phpFilePath) {
+        if (null === $this->phpFilePaths) {
             throw new LogicException(
-                'Php file path must be defined before it is retrieved'
+                'Php file paths must be defined before they are retrieved'
             );
         }
 
-        return $this->phpFilePath;
+        return $this->phpFilePaths;
     }
 
     /**
-     * @Given I create a :valid inspections xml file
-     * @Given I create an :valid inspections xml file
+     * @Given I create a/an :valid inspections xml file
      */
     public function iCreateAInspectionsXmlFile(string $valid): void
     {
@@ -248,25 +263,29 @@ class FeatureContext implements Context
 
     /**
      * @Given I create a php file :switch problems
+     * @Given I create a php file :switch problems named :filename
      */
-    public function iCreateAPhpFileWithNoProblems(string $switch): void
+    public function iCreateAPhpFile(string $switch, ?string $filename = null): void
     {
         switch ($switch) {
             case 'without':
-                $filename = 'Clean.php';
+                $filename = $filename ?? 'Clean.php';
+                $phpContents = $this->readFromFile('tests/data/Clean.php');
                 break;
             case 'with':
-                $filename = 'InspectionViolator.php';
+                $filename = $filename ?? 'InspectionViolator.php';
+                $phpContents = $this->readFromFile('tests/data/InspectionViolator.php');
                 break;
             default:
                 throw new \LogicException('This method can only be called "with" or "without" problems');
         }
 
-        $phpContents = $this->readFromFile('tests/data/' . $filename);
-
         $this->makeDirectory($this->getProjectPath() . '/src');
 
-        $this->phpFilePath = $this->writeToFile($this->getProjectPath() . '/src/' . $filename, $phpContents);
+        $this->phpFilePaths[$filename] = $this->writeToFile(
+            $this->getProjectPath() . '/src/' . $filename,
+            $phpContents
+        );
     }
 
     private function writeToFile(string $path, string $contents): string
@@ -388,28 +407,31 @@ class FeatureContext implements Context
     }
 
     /**
-     * @Given I stage the php file in git
+     * @Given I stage the php file/files in git
      */
-    public function iStageThePhpFileInGit(): void
+    public function iStageThePhpFilesInGit(): void
     {
         $currentPath = getcwd();
 
-        if (!chdir($this->getProjectPath())) {
-            throw new \RuntimeException('Could not change directory into the project');
+        if (false === $currentPath) {
+            throw new \RuntimeException('Could not get current working directory');
         }
 
-        $code = 1;
+        foreach ($this->getPhpFilePaths() as $filename => $filePath) {
+            if (!chdir($this->getProjectPath())) {
+                throw new \RuntimeException('Could not change directory into the project');
+            }
 
-        exec('git add ' . $this->getPhpFilePath(), $output, $code);
+            $code = 1;
 
-        if ($code !== 0) {
-            throw new \RuntimeException('Could not stage the php file in ' . $this->getProjectPath());
+            exec('git add ' . $filePath, $output, $code);
+
+            if ($code !== 0) {
+                throw new \RuntimeException('Could not stage the ' . $filename . ' file in ' . $this->getProjectPath());
+            }
         }
 
-        if (
-            false === $currentPath ||
-            !chdir($currentPath)
-        ) {
+        if (!chdir($currentPath)) {
             throw new \RuntimeException('Could not change directory back to original location');
         }
     }
@@ -467,23 +489,6 @@ class FeatureContext implements Context
     public function cleanProject(): void
     {
         $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
-    }
-
-    /**
-     * @AfterScenario @createsProjectInStorage
-     *
-     * @return void
-     */
-    public function cleanProjectStorage(): void
-    {
-        $currentProjectStorageDirectoryName = str_replace('/', '.', $this->getProjectPath());
-
-        $currentProjectStorageDirectoryPath = '/home/'
-            . $this->getUserName()
-            . '/.travis-phpstorm-inspector/'
-            . $currentProjectStorageDirectoryName;
-
-        $this->removeDirectory(new \DirectoryIterator($currentProjectStorageDirectoryPath));
     }
 
     private function removeDirectory(\DirectoryIterator $directoryIterator): void

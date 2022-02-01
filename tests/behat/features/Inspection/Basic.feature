@@ -16,14 +16,3 @@ Feature: Run inspections
     """
     The inspections profile invalid.txt does not have an xml extension.
     """
-
-  @issue-14 @positive @createsProject @createsProjectInStorage
-  Scenario: Run inspections without local .idea directory being changed
-    Given I create a valid inspections xml file
-    And I pull docker image 'danmathews1/phpstorm:latest'
-    And I create a php file with problems
-    And I stage the php file in git
-    And I have local .idea directory with a file in it
-    When I run inspections
-    Then the exit code should be 1
-    And the local .idea directory should be unchanged
