@@ -2,6 +2,7 @@ Feature: Run inspections
 
   Background:
     Given I create a new project
+    And I pull docker image 'danmathews1/phpstorm_ea-extended:2021.1.3_4.0.7.1'
     And I initialise git
     And I create a valid inspections xml file
     And I create a configuration file with:
@@ -12,7 +13,7 @@ Feature: Run inspections
     }
     """
 
-  @issue-55 @positive @createsProject @createsProjectInStorage
+  @issue-55 @positive @createsProject
   Scenario: Run inspections on a project with no problems
     Given I create a php file without problems
     And I stage the php file in git
@@ -23,7 +24,7 @@ Feature: Run inspections
     No problems to report.
     """
 
-  @issue-55 @positive @createsProject @createsProjectInStorage
+  @issue-55 @positive @createsProject
   Scenario: Run inspections on a project with problems
     Given I create a php file with problems
     And I stage the php file in git

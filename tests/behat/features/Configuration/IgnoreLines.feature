@@ -9,7 +9,7 @@ Feature: Run inspections with certain lines ignored
     And I create a php file with problems named 'InspectionViolator2.php'
     And I stage the php files in git
 
-  @issue-35 @positive @createsProject @createsProjectInStorage
+  @issue-35 @positive @createsProject
   Scenario: Run inspections on a project with certain lines ignored
     Given I create a configuration file with:
     """

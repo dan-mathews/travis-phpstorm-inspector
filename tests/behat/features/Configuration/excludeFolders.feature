@@ -8,7 +8,7 @@ Feature: Run inspections with certain folders excluded
     And I create a php file with problems
     And I stage the php file in git
 
-  @issue-39 @positive @createsProject @createsProjectInStorage
+  @issue-39 @positive @createsProject
   Scenario: Run inspections on a project with a folder excluded
     Given I create a configuration file with:
     """

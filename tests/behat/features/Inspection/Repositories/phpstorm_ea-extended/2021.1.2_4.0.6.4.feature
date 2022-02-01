@@ -13,7 +13,7 @@ Feature: Run inspections
     }
     """
 
-  @issue-12 @positive @createsProject @createsProjectInStorage
+  @issue-12 @positive @createsProject
   Scenario: Run inspections on a project with no problems
     Given I create a php file without problems
     And I stage the php file in git
@@ -24,7 +24,7 @@ Feature: Run inspections
     No problems to report.
     """
 
-  @issue-12 @positive @createsProject @createsProjectInStorage
+  @issue-12 @positive @createsProject
   Scenario: Run inspections on a project with problems
     Given I create a php file with problems
     And I stage the php file in git

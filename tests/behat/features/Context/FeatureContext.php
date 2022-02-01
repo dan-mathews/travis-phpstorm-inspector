@@ -64,7 +64,16 @@ class FeatureContext implements Context
      */
     public function iCreateANewProject(): void
     {
-        $projectName = 'testProject' . random_int(0, 9999);
+        // This was previously randomised, but to enable caching for quicker Travis runs, the name is now fixed.
+        $projectName = 'behatTestProject';
+
+        if (is_dir($projectName)) {
+            throw new \RuntimeException(
+                'In order to enable caching for quicker Travis runs, test project names are no longer randomised. The "'
+                . $projectName . '" directory should  have been deleted by the behat post hook, but you will need to '
+                . 'delete it manually.'
+            );
+        }
 
         $this->makeDirectory($projectName);
 
@@ -480,23 +489,6 @@ class FeatureContext implements Context
     public function cleanProject(): void
     {
         $this->removeDirectory(new \DirectoryIterator($this->getProjectPath()));
-    }
-
-    /**
-     * @AfterScenario @createsProjectInStorage
-     *
-     * @return void
-     */
-    public function cleanProjectStorage(): void
-    {
-        $currentProjectStorageDirectoryName = str_replace('/', '.', $this->getProjectPath());
-
-        $currentProjectStorageDirectoryPath = '/home/'
-            . $this->getUserName()
-            . '/.travis-phpstorm-inspector/'
-            . $currentProjectStorageDirectoryName;
-
-        $this->removeDirectory(new \DirectoryIterator($currentProjectStorageDirectoryPath));
     }
 
     private function removeDirectory(\DirectoryIterator $directoryIterator): void
