@@ -42,6 +42,45 @@ safe in the knowledge that your inspections remain consistent
 4. It removes the need to deal with PhpStorm's many quirks when it comes to PhpStorm's inspections, allowing you
 to give new or less experienced PhpStorm users a simple and pre-configured way to run inspections
 
+## Installation for use with Travis
+Here is an example script `.travis/inspections` which requires tweaking where indicated:
+```
+#!/bin/sh
+set -e
+git branch tmp
+git fetch `git config --get remote.origin.url` $TRAVIS_BRANCH
+git checkout FETCH_HEAD
+git merge --no-commit --no-ff tmp
+
+# Do whatever setup is necessary for your project here (in this example, it's just an install):
+composer install
+
+# Pull the image you reference in your configuration file or command line arguments here:
+docker pull danmathews1/phpstorm_ea-extended:latest
+
+# Clone the repository containing your inspections xml file here (in this example, an 'rfc' repository is referenced):
+git clone https://github.com/MY_USERNAME/rfc.git ~/rfc
+
+# Here we clone and install this project:
+git clone https://github.com/dan-mathews/travis-phpstorm-inspector.git ~/travis-phpstorm-inspector
+composer install --working-dir=/home/travis/travis-phpstorm-inspector
+
+# Here we run the inspection itself, referencing the project root, the xml configuration, and the travis-phpstorm-inspector configuration
+~/travis-phpstorm-inspector/bin/inspector inspect ~/build/MY_USERNAME/MY_PROJECT --profile ~/rfc/resources/phpstorm/inspections.xml --configuration ~/build/MY_USERNAME/MY_PROJECT/config/travis-phpstorm-inspector/travis-phpstorm-inspector.json -vvv
+```
+
+Here is an example job config within `travis.yml` to trigger the script above:
+```
+jobs:
+  include:
+    - stage: test
+      name: "PhpStorm Inspections"
+      language: php
+      php:
+        - '7.3'
+      script: ./.travis/inspections
+```
+
 ## Installation for use locally
 - Clone the repository and install dependencies via [Composer](https://getcomposer.org/) with:
 ```shell
